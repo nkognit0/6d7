@@ -229,6 +229,7 @@ export class CampaignSession {
 
   /** Writes the changed documents whole («Сохранить», a pause, closing). */
   save(): Promise<void> {
+    if (this.closed) return this.saving
     this.flushJournal()
     if (this.timer) clearTimeout(this.timer)
     this.timer = null
@@ -257,7 +258,25 @@ export class CampaignSession {
 
   /** Saves and stops: the screen that opened the campaign is gone. */
   async close() {
+    if (this.closed) return this.saving
     await this.save()
+    this.stop()
+  }
+
+  /**
+   * Stops without writing what is not saved yet (the campaign is being deleted); resolves when
+   * the writes already sent are done.
+   */
+  discard(): Promise<void> {
+    this.pending = []
+    this.dirty.clear()
+    this.stop()
+    return this.saving
+  }
+
+  private stop() {
+    if (this.timer) clearTimeout(this.timer)
+    this.timer = null
     this.closed = true
     for (const off of this.unsubscribe.values()) off()
     this.unsubscribe.clear()

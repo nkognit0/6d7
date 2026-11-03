@@ -5,5 +5,5 @@ export { createCampaign, newPlayer, freeColor, normalizeCode, metaOf, FLOW_ORDER
 export { CampaignSession } from './session'
 export { ArchiveError, ARCHIVE_EXT } from './archive'
 export { repo, type CodeTarget } from './local/LocalRepo'
-export { downloadArchive, importArchive } from './local/transfer'
-export { useSession } from './useSession'
+export { downloadArchive, importArchive, importInto } from './local/transfer'
+export { useSession, type SessionState } from './useSession'

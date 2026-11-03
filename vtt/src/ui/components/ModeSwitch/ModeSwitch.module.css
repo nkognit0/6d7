@@ -1,0 +1,38 @@
+/* top-panel / mode-switch (100:3310) */
+.switch {
+  display: flex;
+  align-items: center;
+  gap: var(--spacer-xxs);
+  padding: var(--spacer-xs);
+  border-radius: var(--radius-default);
+  background: var(--bg-tertiary);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacer-s);
+  border: 0;
+  border-radius: var(--radius-small);
+  background: transparent;
+  color: var(--icon-primary);
+  cursor: pointer;
+}
+
+.option:hover:not([aria-checked='true']),
+.option[data-state='hover'] {
+  background: var(--bg-tertiary);
+}
+
+.option[aria-checked='true'] {
+  background: var(--icon-button);
+  box-shadow: var(--elevation-context);
+  cursor: default;
+}
+
+.option:focus-visible,
+.option[data-state='focus'] {
+  outline: none;
+  box-shadow: var(--focus-outline);
+}

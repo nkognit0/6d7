@@ -49,7 +49,9 @@ export function ProjectMenu({ title, children, disabled, align = 'start', classN
 }
 
 /** Figma: Dropdowns & menus / user-menu (26:743): avatar, optional name and the user's menu. */
-export function UserMenu({ name, color = 'orange', avatarSrc, showName = true, children, disabled, align = 'start', className, previewState }: MenuButtonBase & {
+export function UserMenu({ name, color = 'orange', avatarSrc, showName = true, children, disabled, align = 'start', className, previewState }: Omit<MenuButtonBase, 'children'> & {
+  /** menu items; without them a click does nothing (the editor: options will come later) */
+  children?: ReactNode
   name: string
   color?: Exclude<PlayerColor, 'grey'>
   avatarSrc?: string
@@ -65,7 +67,7 @@ export function UserMenu({ name, color = 'orange', avatarSrc, showName = true, c
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={showName ? undefined : name}
-        onClick={toggle}
+        onClick={children ? toggle : undefined}
         {...stateAttr(open ? 'active' : previewState)}
       >
         <Avatar name={name} color={color} src={avatarSrc} className={styles.avatar} />

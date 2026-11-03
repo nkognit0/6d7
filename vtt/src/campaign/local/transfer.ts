@@ -4,7 +4,8 @@ import { getMedia, putMedia } from '../../game/media/media'
 import { newId } from '../../map/core/geometry'
 import { importMapImage } from '../../map/image/pyramid'
 import { ARCHIVE_EXT, packArchive, unpackArchive, type ArchiveFiles } from '../archive'
-import type { CampaignDocs } from '../types'
+import type { CampaignSession } from '../session'
+import { mapKey, seatKey, type CampaignDocs, type Change } from '../types'
 import { repo } from './LocalRepo'
 
 const files: ArchiveFiles = {
@@ -39,12 +40,26 @@ export async function downloadArchive(docs: CampaignDocs): Promise<void> {
 }
 
 /**
- * «Импорт»: an archive becomes a new campaign (home screen) or replaces the campaign `into`
- * (editor; close its session first). Players get new codes. Returns the campaign id.
+ * «Импорт» of the editor: the open campaign becomes the campaign of the archive — one step of the
+ * history, so «Отменить» brings the old one back. Players get new codes.
  */
-export async function importArchive(file: Blob, into?: string): Promise<string> {
+export async function importInto(session: CampaignSession, file: Blob): Promise<void> {
   const docs = await unpackArchive(new Uint8Array(await file.arrayBuffer()), files)
-  const id = into ?? newId()
+  const now = session.docs()
+  const changes: Change[] = [{ doc: 'campaign', set: { ...docs.campaign, id: session.id } }]
+  for (const id of Object.keys(now.maps)) if (!docs.maps[id]) changes.push({ doc: mapKey(id), drop: true })
+  for (const [id, scene] of Object.entries(docs.maps)) changes.push({ doc: mapKey(id), set: scene })
+  for (const id of Object.keys(now.seats)) if (!docs.seats[id]) changes.push({ doc: seatKey(id), drop: true })
+  for (const [id, seat] of Object.entries(docs.seats)) changes.push({ doc: seatKey(id), set: seat })
+  // the old codes go first: the players tab asks for codes as soon as the players change
+  await repo.resetCodes(session.id)
+  session.apply(changes)
+}
+
+/** «Импорт» of the home screen: an archive becomes a new campaign; its id. */
+export async function importArchive(file: Blob): Promise<string> {
+  const docs = await unpackArchive(new Uint8Array(await file.arrayBuffer()), files)
+  const id = newId()
   await repo.write({ ...docs, campaign: { ...docs.campaign, id } })
   return id
 }

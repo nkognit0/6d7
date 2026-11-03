@@ -10,7 +10,7 @@ const NAV: [string, [string, string][]][] = [
   ['Основа', [['colors', 'Цвета'], ['text', 'Текст'], ['sheet-text', 'Текст листа'], ['icons', 'Иконки']]],
   ['Элементы управления', [['button', 'Button'], ['icon-button', 'IconButton'], ['switch', 'Switch'], ['checkbox', 'Checkbox'], ['avatar', 'Avatar']]],
   ['Поля и меню', [['text-input', 'TextInput'], ['search-input', 'SearchInput'], ['inline-edit', 'InlineEdit'], ['textarea', 'Textarea'], ['select', 'Select'], ['menu', 'Menu'], ['context-menu', 'ContextMenu'], ['menu-buttons', 'ProjectMenu, UserMenu']]],
-  ['Навигация и панели', [['nav', 'NavTab, NavPage'], ['bars', 'TopPanel, BottomNavigation'], ['sidebar', 'Боковая панель'], ['scroll', 'ScrollArea'], ['confirm', 'ConfirmDialog']]],
+  ['Навигация и панели', [['nav', 'NavTab, NavPage'], ['mode-switch', 'ModeSwitch'], ['bars', 'TopPanel, BottomNavigation'], ['sidebar', 'Боковая панель'], ['scroll', 'ScrollArea'], ['confirm', 'ConfirmDialog']]],
   ['Элементы D&D VTT', [['game-nav', 'Навигация игрока'], ['map-tools', 'Слайдер и координаты'], ['slots', 'InventorySlot'], ['npc-cards', 'Карточки NPC'], ['campaign-card', 'Карточка кампании'], ['rows-game', 'Строки и ячейки'], ['windows', 'Окна']]]
 ]
 

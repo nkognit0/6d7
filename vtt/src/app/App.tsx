@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { repo } from '../campaign'
+import { EditorScreen } from '../editor/EditorScreen'
 import { HomeScreen } from '../home/HomeScreen'
 import { useStrings } from '../i18n'
 import { MapPrototype } from '../preview/map/MapPrototype'
@@ -51,7 +52,7 @@ export function App() {
     case 'home':
       return <HomeScreen />
     case 'editor':
-      return <Stub text={s.editor} />
+      return <EditorScreen key={route.campaign} campaignId={route.campaign} tab={route.tab} />
     case 'play':
       return <Stub text={s.play} />
     case 'join':

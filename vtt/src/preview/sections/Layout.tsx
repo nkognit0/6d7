@@ -1,11 +1,15 @@
 import { useState } from 'react'
 import {
-  BottomNavigation, Button, ConfirmDialog, Icon, Icon28, IconButton, MenuDivider, MenuItem, NavPage, NavTab, ProjectMenu, RowCard, RowField,
+  BottomNavigation, Button, ConfirmDialog, Icon, Icon28, ModeSwitch, IconButton, MenuDivider, MenuItem, NavPage, NavTab, ProjectMenu, RowCard, RowField,
   RowSubtitle, RowSwitch, RowTabs, RowTitle, ScrollArea, SearchInput, Select, SidebarSection, SidebarTitle, Textarea, TextInput, TopPanel, UserMenu
 } from '../../ui'
 import { Cell, Row, Section } from '../kit'
 
 const PAGES = [['map', 'Карты'], ['autointent', 'NPC'], ['person.human.avatar', 'Игроки'], ['settings', 'Параметры']] as const
+const MODES = [
+  { value: 'edit' as const, label: 'Редактирование', icon: <Icon name="edit" /> },
+  { value: 'player' as const, label: 'Глазами игрока', icon: <Icon name="play" /> }
+]
 const MAPS = ['Название локации 1', 'Название локации 2', 'Название локации 3', 'Название локации 4']
 
 export function Layout() {
@@ -14,6 +18,7 @@ export function Layout() {
   const [map, setMap] = useState(MAPS[0])
   const [grid, setGrid] = useState(true)
   const [size, setSize] = useState<'1' | '2'>('1')
+  const [mode, setMode] = useState<'edit' | 'player'>('edit')
   const [asking, setAsking] = useState(false)
   const [answer, setAnswer] = useState('—')
   return (
@@ -71,13 +76,24 @@ export function Layout() {
         </Row>
       </Section>
 
+      <Section id="mode-switch" title="ModeSwitch" figma="top-panel / mode-switch (D&D VTT 6:422)" note="Переключатель режимов редактора: «Редактирование» и «Глазами игрока». Выбранная кнопка — на тёмной плашке.">
+        <Row label="состояния">
+          <Cell caption="обычное"><ModeSwitch value="edit" onChange={() => {}} options={MODES} /></Cell>
+          <Cell caption="наведение на второй"><ModeSwitch value="edit" onChange={() => {}} options={MODES} previewState="hover" /></Cell>
+          <Cell caption="фокус на втором"><ModeSwitch value="edit" onChange={() => {}} options={MODES} previewState="focus" /></Cell>
+          <Cell caption="выбран второй"><ModeSwitch value="player" onChange={() => {}} options={MODES} /></Cell>
+        </Row>
+        <Row label="живой пример">
+          <Cell caption={`режим: ${mode === 'edit' ? 'редактирование' : 'глазами игрока'}`}><ModeSwitch value={mode} onChange={setMode} options={MODES} /></Cell>
+        </Row>
+      </Section>
+
       <Section id="bars" title="TopPanel, BottomNavigation" figma="Top panel (100:3404), Bottom navigation (100:3004)" note="Верхняя панель и навигация редактора; вкладки внизу переключаются.">
         <TopPanel
           left={<ProjectMenu title="<Название кампании>"><MenuItem>Сохранить</MenuItem></ProjectMenu>}
           right={
             <>
-              <IconButton variant="switch" pressed label="Редактирование" icon={<Icon name="edit" />} />
-              <IconButton variant="switch" label="Глазами игрока" icon={<Icon name="play" />} />
+              <ModeSwitch value={mode} onChange={setMode} options={MODES} />
               <UserMenu name="Иван" showName={false} align="end"><MenuItem>Выйти</MenuItem></UserMenu>
             </>
           }

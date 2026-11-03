@@ -128,6 +128,7 @@ export const ru = {
       newPlayer: 'Новый игрок',
       namePlaceholder: 'Введите имя игрока…',
       removePlayer: 'Удалить игрока',
+      removeConfirm: (name: string) => (name ? `Удалить игрока «${name}»? Его лист персонажа пропадёт.` : 'Удалить игрока? Его лист персонажа пропадёт.'),
       inviteCode: 'Код приглашения',
       copyHint: 'Нажмите на код, чтобы скопировать'
     },
@@ -363,7 +364,8 @@ export const ru = {
   // screens of the next steps: until they are made, the address shows a stub with links
   stub: {
     home: 'Главный экран',
-    editor: 'Редактор кампании появится на этапах 3–5 плана.',
+    editorMaps: 'Редактор карт появится на этапе 4 плана.',
+    editorNpc: 'Каталог NPC появится на этапе 5 плана.',
     play: 'Игра мастера появится на этапе 8 плана.',
     join: 'Игра игрока появится на этапе 7 плана.',
     joinSeat: (player: string, campaign: string) => `Код ведёт к месту игрока «${player}» в кампании «${campaign}».`,

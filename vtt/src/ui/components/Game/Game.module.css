@@ -110,12 +110,12 @@
   color: var(--txt-primary);
 }
 
-/* campaign setting (41:4128) */
+/* campaign setting (41:4128); the 1 px line under the row lies below the 8 px gap */
 .setting {
   display: flex;
   align-items: flex-start;
   gap: var(--spacer-m);
-  padding: var(--spacer-m) 0;
+  padding: var(--spacer-m) 0 calc(var(--spacer-m) + 1px);
   box-shadow: inset 0 -1px 0 var(--outline-primary);
   cursor: pointer;
 }
@@ -140,12 +140,12 @@
   color: var(--txt-secondary);
 }
 
-/* player row (14:1568) */
+/* player row (14:1568); the 1 px line under the row lies below the 8 px gap */
 .player {
   display: flex;
   align-items: center;
   gap: var(--spacer-m);
-  padding: var(--spacer-m) 0;
+  padding: var(--spacer-m) 0 calc(var(--spacer-m) + 1px);
   box-shadow: inset 0 -1px 0 var(--outline-primary);
 }
 

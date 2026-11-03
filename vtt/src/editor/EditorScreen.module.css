@@ -1,0 +1,133 @@
+/* D&D VTT / editor (0:1): top panel, the page of the tab, bottom navigation */
+.screen {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  color: var(--txt-primary);
+}
+
+.main {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* the name of the campaign as a field: the width of project-menu (26:749) */
+.rename {
+  width: 216px;
+  font: var(--font-display);
+  color: var(--txt-primary);
+}
+
+/* the import message in the middle of the top panel; a click hides an error */
+.busy,
+.error {
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: var(--font-body);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.busy {
+  color: var(--txt-secondary);
+  cursor: default;
+}
+
+.error {
+  color: var(--txt-danger);
+  cursor: pointer;
+}
+
+/* a page of a tab: the title row (14:1484) and the content */
+.page {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacer-l);
+  padding: var(--spacer-l) var(--spacer-xxl);
+  box-shadow: inset 0 -1px 0 var(--outline-primary);
+}
+
+.pageTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacer-l);
+  min-width: 0;
+  margin: 0;
+  font: var(--font-display);
+  white-space: nowrap;
+}
+
+.count {
+  font: var(--font-navigation);
+  color: var(--txt-secondary);
+}
+
+.pageBody {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--spacer-xxl);
+}
+
+/* «Игроки»: rows of 560 px (14:1568) */
+.newPlayer {
+  flex: 0 0 120px;
+}
+
+.players {
+  max-width: 560px;
+}
+
+/* «Параметры»: rows of 480 px (41:4128) */
+.settings {
+  max-width: 480px;
+}
+
+/* tabs of later steps */
+.stub {
+  margin: auto;
+  padding: var(--spacer-xxl);
+  font: var(--font-body);
+  color: var(--txt-secondary);
+  text-align: center;
+}
+
+/* a missing campaign, a refused storage */
+.message {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacer-xl);
+  padding: var(--spacer-xl);
+  background: var(--bg-primary);
+  color: var(--txt-primary);
+  font: var(--font-navigation);
+  text-align: center;
+}
+
+.message p {
+  margin: 0;
+}
+
+.message a {
+  font: var(--font-body);
+  color: var(--txt-info);
+}

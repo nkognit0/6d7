@@ -24,6 +24,7 @@ export * from './components/MenuButton/MenuButton'
 // navigation and layout
 export * from './components/Nav/Nav'
 export * from './components/Bars/Bars'
+export * from './components/ModeSwitch/ModeSwitch'
 export * from './components/Sidebar/Sidebar'
 export * from './components/Rows/Rows'
 export * from './components/ScrollArea/ScrollArea'

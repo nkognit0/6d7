@@ -55,9 +55,10 @@
 | ContextMenu, useContextMenu — меню в точке щелчка правой кнопкой (не выходит за край окна; закрывается щелчком мимо, Escape, прокруткой, выбором пункта) | `24:1913`, `24:1309` | `components/Menu` |
 | InlineEdit — название, которое становится полем (рамка text-input-line в фокусе, шрифт места; Enter или щелчок мимо — сохранить, Escape — отменить) | нет в макете, `7:779` | `components/TextInput` |
 | ConfirmDialog — вопрос перед тем, что нельзя отменить (окно modal/dice по центру поверх оверлея, фокус на «Отмена») | нет в макете, `34:7794`, `30:4208` | `components/Modal` |
-| ProjectMenu, UserMenu | `26:749`, `26:743` | `components/MenuButton` |
+| ProjectMenu, UserMenu (без пунктов меню ничего не открывает) | `26:749`, `26:743` | `components/MenuButton` |
 | NavTab, NavPage | `27:1960`, `27:1948` | `components/Nav` |
 | TopPanel, BottomNavigation | `100:3404`, `100:3004` | `components/Bars` |
+| ModeSwitch — переключатель режимов редактора («Редактирование», «Глазами игрока»): кнопки на подложке bg/tertiary, выбранная — на icon/button с тенью | top-panel / mode-switch (D&D VTT `6:422`) | `components/ModeSwitch` |
 | SidebarSection, SidebarTitle, RowTitle | `887:4304`, `887:4452`, `32:2409` | `components/Sidebar` |
 | RowSubtitle, RowField (line, dropdown, multiline), RowSwitch, RowCard, RowTabs | `32:2770`, `32:3139`, `32:3950`, `32:3870`, `38:247`, `89:1647`, `329:879` | `components/Rows` |
 | ScrollArea; скроллбар всего приложения (12 px, ползунок bg/scroll, без дорожки и стрелок) | scroll-bar `1:1382`, D&D VTT `14:1470` | `components/ScrollArea`, `ui/scrollbar.css` |
@@ -73,8 +74,8 @@
 | InventorySlot (рамки `equipped`, `attuned`; `selected` — заливка bg/info), SlotGrid (квадратные клетки 80–100 px на всю ширину, число колонок — `slotColumns`) | `33:6735` | `components/InventorySlot` |
 | NpcCard: grid, list, preview | `14:1451`, `13:1179`, `40:3918` | `components/Cards` |
 | CampaignCard (название — текст или поле InlineEdit; принимает обработчики, например правый щелчок) | `17:1630` | `components/Cards` |
-| PlayerRow, InviteCode | `14:1568`, `14:1569` | `components/Game` |
-| SettingRow | `41:4128` | `components/Game` |
+| PlayerRow, InviteCode (строка 45 px: линия под строкой — под отступом 8 px) | `14:1568`, `14:1569` | `components/Game` |
+| SettingRow (строка 63 px, линия — под отступом) | `41:4128` | `components/Game` |
 | CoinValue | `34:6919` | `components/Game` |
 | SpellSlotRow | `34:7386` | `components/Game` |
 | GameWindow, WindowPane | `33:6729`, `33:6800` | `components/Window` |

@@ -187,6 +187,14 @@ export class LocalRepo implements SessionStorage {
     })
   }
 
+  /** Forgets the codes of a campaign: an import gives its players new ones. */
+  resetCodes(campaignId: string): Promise<void> {
+    return transact([S.codes], 'readwrite', async (tx) => {
+      const store = tx.objectStore(S.codes)
+      for (const k of await request(store.index('campaign').getAllKeys(campaignId))) store.delete(k)
+    })
+  }
+
   /** Where a code leads; null for a code this browser does not know or a removed player. */
   async findCode(code: string): Promise<CodeTarget | null> {
     const target = await transact([S.codes], 'readonly', (tx) => request<CodeTarget | undefined>(tx.objectStore(S.codes).get(code)))
