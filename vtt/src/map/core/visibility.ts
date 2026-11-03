@@ -1,6 +1,7 @@
 // Line of sight and movement through walls. Pure functions: the game server will run the same
 // code to decide what each player may receive.
 import { distToSegment, feetToPx, pinToImage, projectT } from './geometry'
+import { rulesOf } from './scene'
 import type { Door, MapScene, Token, Vec } from './types'
 
 /** x1, y1, x2, y2 in pixels of the source image. */
@@ -114,7 +115,8 @@ export function pathBlocked(a: Vec, b: Vec, blockers: Segment[]): boolean {
  * darkvision or an equipped light (0 — nothing).
  */
 export function visionRadius(token: Token, scene: MapScene): number {
-  if (!scene.rules.darkness) return Infinity
+  // darkness is a condition of the map only, the campaign has no such setting
+  if (!rulesOf(scene).darkness) return Infinity
   return feetToPx(Math.max(token.darkvision ?? 0, token.light ?? 0), scene.grid)
 }
 

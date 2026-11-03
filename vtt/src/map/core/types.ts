@@ -30,13 +30,19 @@ export interface GridSettings {
 export interface MapRules {
   /** players move their tokens themselves */
   freeMove: boolean
-  /** players open doors themselves */
+  /** players open doors themselves (only while they move freely) */
   freeDoors: boolean
   /** only darkvision and light reveal fogged areas */
   darkness: boolean
   /** areas players no longer see are fogged again */
   dynamicFog: boolean
 }
+
+/**
+ * What a map changed in the settings of the campaign, like overrides of a Figma instance: a
+ * missing key follows the campaign (QnA, «Как соотносятся настройки кампании и карты»).
+ */
+export type RuleOverrides = Partial<MapRules>
 
 /** A wall hides and blocks; a barrier only blocks movement. */
 export type WallKind = 'wall' | 'barrier'
@@ -82,10 +88,13 @@ export interface Drawing {
   points: number[]
 }
 
-/** A stroke of the master's fog brush; `cover` fills the whole map. */
-export type FogStroke =
+/** The shape of a stroke of the master's fog brush; `cover` fills the whole map. */
+export type FogShape =
   | { mode: 'paint' | 'erase'; radius: number; points: number[] }
   | { mode: 'cover' }
+
+/** A stroke of the scene: the id lets «Отменить» take it back. */
+export type FogStroke = FogShape & { id: string }
 
 /** The uploaded picture: the tiles themselves come from a `TileProvider`. */
 export interface MapImageInfo {
@@ -96,6 +105,10 @@ export interface MapImageInfo {
   tileSize: number
   /** pyramid levels; level n is 2^n times smaller than the source */
   levels: number
+  /** the uploaded file as is (media store, «media:<sha256>»): the archive, cutting the tiles again */
+  original?: string
+  /** the smallest level (media store): the picture of the campaign tile */
+  preview?: string
 }
 
 export interface MapScene {
@@ -103,7 +116,8 @@ export interface MapScene {
   name: string
   image: MapImageInfo | null
   grid: GridSettings
-  rules: MapRules
+  /** only what the map changed in the campaign settings, see `rulesOf` */
+  rules: RuleOverrides
   walls: Wall[]
   doors: Door[]
   spawn: Pin | null
@@ -118,7 +132,8 @@ export type MapOp =
   | { type: 'scene'; scene: MapScene }
   | { type: 'image'; image: MapImageInfo | null }
   | { type: 'grid'; patch: Partial<GridSettings> }
-  | { type: 'rules'; patch: Partial<MapRules> }
+  /** `null` drops the override: the map follows the campaign again */
+  | { type: 'rules'; patch: { [K in keyof MapRules]?: boolean | null } }
   | { type: 'wall.add'; wall: Wall }
   | { type: 'door.add'; door: Door }
   | { type: 'door.open'; id: string; open: boolean }
@@ -131,6 +146,9 @@ export type MapOp =
   | { type: 'draw.add'; drawing: Drawing }
   | { type: 'draw.remove'; ids: string[] }
   | { type: 'fog.add'; stroke: FogStroke }
+  | { type: 'fog.remove'; ids: string[] }
+  /** puts back a whole list of strokes (undoing «cover» and «clear») */
+  | { type: 'fog.set'; strokes: FogStroke[] }
   /** removes every fog stroke */
   | { type: 'fog.clear' }
 

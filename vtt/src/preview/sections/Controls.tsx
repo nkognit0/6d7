@@ -1,5 +1,9 @@
 import { useState } from 'react'
-import { Avatar, Button, Checkbox, Icon, IconButton, Menu, MenuDivider, MenuItem, PLAYER_COLORS, SearchInput, Select, Switch, TextInput, type ButtonVariant, type IconButtonVariant } from '../../ui'
+import { shortcutLabel } from '../../app/shortcuts'
+import {
+  Avatar, Button, Checkbox, ContextMenu, Icon, IconButton, InlineEdit, Menu, MenuDivider, MenuItem, PLAYER_COLORS, SearchInput, Select, Switch, TextInput,
+  useContextMenu, type ButtonVariant, type IconButtonVariant
+} from '../../ui'
 import { Cell, Row, Section, STATES } from '../kit'
 
 const BUTTONS: [ButtonVariant, string][] = [['brand', 'brand'], ['primary', 'primary'], ['secondary', 'secondary'], ['light-accent', 'light-accent']]
@@ -12,6 +16,10 @@ export function Controls() {
   const [pressed, setPressed] = useState(false)
   const [dice, setDice] = useState<(typeof DICE)[number] | null>('d20')
   const [name, setName] = useState('Макар')
+  const [title, setTitle] = useState('Проклятие Страда')
+  const [renaming, setRenaming] = useState(false)
+  const [picked, setPicked] = useState('—')
+  const context = useContextMenu()
   return (
     <>
       <Section id="button" title="Button" figma="Buttons / button-large (4:324)" note="Главная кнопка — brand; обычная — primary; текстовая — secondary; спокойный акцент — light-accent («Присоединиться к игре»).">
@@ -127,6 +135,16 @@ export function Controls() {
         </Row>
       </Section>
 
+      <Section id="inline-edit" title="InlineEdit" figma="нет в макете: text-input-line (7:779) в фокусе" note="Название, которое становится полем: кампания в верхней панели редактора и на плитке. Enter или щелчок мимо — сохранить, Escape — отменить; пустое название не сохраняется. Шрифт — как у места, где стоит название.">
+        <Row label="живой пример">
+          <Cell caption="двойной щелчок — переименовать" width={240}>
+            <div style={{ font: 'var(--font-display)', color: 'var(--txt-primary)', height: 28, display: 'flex', alignItems: 'center' }} onDoubleClick={() => setRenaming(true)}>
+              {renaming ? <InlineEdit value={title} aria-label="Название кампании" onDone={(v) => { if (v) setTitle(v); setRenaming(false) }} /> : <span style={{ padding: '0 8px' }}>{title}</span>}
+            </div>
+          </Cell>
+        </Row>
+      </Section>
+
       <Section id="select" title="Select" figma="Dropdowns / dropdown-text (20:925)">
         <Row label="состояния">
           <Cell caption="пустое" width={160}><Select value={null} options={[]} onChange={() => {}} /></Cell>
@@ -151,6 +169,23 @@ export function Controls() {
             <MenuItem icon={<Icon name="home" />}>На главный экран</MenuItem>
             <MenuItem icon={<Icon name="edit" />} hint="F2">Переименовать</MenuItem>
           </Menu>
+        </Row>
+      </Section>
+
+      <Section id="context-menu" title="ContextMenu" figma="Menu items (24:1913, 24:1309)" note="Меню в точке щелчка правой кнопкой: плитка кампании («Переименовать», «Удалить»). Не выходит за край окна; закрывается щелчком мимо, Escape, прокруткой и выбором пункта. Подсказки горячих клавиш — из общей таблицы команд.">
+        <Row label="живой пример">
+          <Cell caption={`выбрано: ${picked}`} width={240}>
+            <div onContextMenu={context.open} style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, boxShadow: 'inset 0 0 0 1px var(--outline-primary)', color: 'var(--txt-secondary)', font: 'var(--font-body)' }}>
+              Щелчок правой кнопкой
+            </div>
+            <ContextMenu at={context.at} onClose={context.close}>
+              <MenuItem hint={shortcutLabel('undo')} onClick={() => setPicked('Отменить')}>Отменить</MenuItem>
+              <MenuItem hint={shortcutLabel('redo')} disabled>Повторить</MenuItem>
+              <MenuDivider />
+              <MenuItem onClick={() => setPicked('Переименовать')}>Переименовать</MenuItem>
+              <MenuItem onClick={() => setPicked('Удалить')}>Удалить</MenuItem>
+            </ContextMenu>
+          </Cell>
         </Row>
       </Section>
     </>

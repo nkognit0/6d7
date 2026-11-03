@@ -16,7 +16,9 @@ const alias = {
 
 const TYPES: Record<string, string> = { '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg' }
 
-// item and spell icons from app/public on the dev server
+// item and spell icons and NPC tokens from app/public on the dev server
+const APP_PUBLIC = ['/icons/items/', '/icons/spells/', '/tokens/']
+
 function appIcons(): Plugin {
   const root = here('../app/public')
   return {
@@ -24,7 +26,7 @@ function appIcons(): Plugin {
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const path = decodeURIComponent((req.url || '').split('?')[0])
-        if (!path.startsWith('/icons/items/') && !path.startsWith('/icons/spells/')) return next()
+        if (!APP_PUBLIC.some((p) => path.startsWith(p))) return next()
         const file = resolve(root, '.' + path)
         if (!file.startsWith(root) || !existsSync(file) || !statSync(file).isFile()) return next()
         res.setHeader('Content-Type', TYPES[extname(file)] || 'application/octet-stream')

@@ -1,4 +1,5 @@
-import { useEffect, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { cx, stateAttr, type PreviewState } from '../../lib'
 import styles from './Menu.module.css'
 
@@ -75,5 +76,82 @@ export function Popover({ open, onClose, children, align = 'start', className }:
     <div ref={ref} className={cx(styles.popover, align === 'end' && styles.alignEnd, className)}>
       {children}
     </div>
+  )
+}
+
+export interface MenuPoint {
+  x: number
+  y: number
+}
+
+/** State of a context menu: `open` goes to onContextMenu of the element. */
+export function useContextMenu() {
+  const [at, setAt] = useState<MenuPoint | null>(null)
+  const open = useCallback((e: { preventDefault(): void; clientX: number; clientY: number }) => {
+    e.preventDefault()
+    setAt({ x: e.clientX, y: e.clientY })
+  }, [])
+  const close = useCallback(() => setAt(null), [])
+  return { at, open, close }
+}
+
+// the gap between the menu and the edge of the window (spacer-m)
+const EDGE = 8
+
+/**
+ * A context menu at the pointer (right click), Figma: Menu items (24:1913). Stays inside the
+ * window; closes on a click outside, Escape, scrolling or a click on an item.
+ */
+export function ContextMenu({ at, onClose, children, className }: {
+  at: MenuPoint | null
+  onClose: () => void
+  /** MenuItem, MenuDivider */
+  children: ReactNode
+  className?: string
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState<MenuPoint | null>(null)
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!at || !el) return setPos(null)
+    const r = el.getBoundingClientRect()
+    setPos({
+      x: Math.max(EDGE, Math.min(at.x, innerWidth - r.width - EDGE)),
+      y: Math.max(EDGE, Math.min(at.y, innerHeight - r.height - EDGE))
+    })
+  }, [at])
+
+  useEffect(() => {
+    if (!at) return
+    const outside = (e: Event) => {
+      if (!ref.current?.contains(e.target as Node)) onClose()
+    }
+    const key = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    document.addEventListener('pointerdown', outside, true)
+    document.addEventListener('contextmenu', outside, true)
+    document.addEventListener('scroll', onClose, true)
+    document.addEventListener('keydown', key)
+    addEventListener('resize', onClose)
+    addEventListener('blur', onClose)
+    return () => {
+      document.removeEventListener('pointerdown', outside, true)
+      document.removeEventListener('contextmenu', outside, true)
+      document.removeEventListener('scroll', onClose, true)
+      document.removeEventListener('keydown', key)
+      removeEventListener('resize', onClose)
+      removeEventListener('blur', onClose)
+    }
+  }, [at, onClose])
+
+  if (!at) return null
+  const p = pos ?? at
+  return createPortal(
+    <div ref={ref} className={cx(styles.context, className)} style={{ left: p.x, top: p.y }} onContextMenu={(e) => e.preventDefault()}>
+      <Menu>
+        <div className={styles.items} onClick={onClose}>{children}</div>
+      </Menu>
+    </div>,
+    document.body
   )
 }

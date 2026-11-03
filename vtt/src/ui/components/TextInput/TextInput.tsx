@@ -1,4 +1,4 @@
-import { forwardRef, type InputHTMLAttributes, type ReactNode } from 'react'
+import { forwardRef, useRef, useState, type InputHTMLAttributes, type ReactNode } from 'react'
 import { Icon } from '../../icons/Icon'
 import { cx, stateAttr, type PreviewState } from '../../lib'
 import styles from './TextInput.module.css'
@@ -41,3 +41,39 @@ export const SearchInput = forwardRef<HTMLInputElement, Omit<TextInputProps, 'le
 ) {
   return <TextInput ref={ref} type={type} placeholder={placeholder} leading={<Icon name="search" />} {...rest} />
 })
+
+/**
+ * A name that becomes a field to rename it (the campaign in the editor panel, on its tile): the
+ * field in its focus look, with the font of the place. Enter or a click outside saves, Escape
+ * cancels; `onDone(null)` — nothing to save (cancelled, empty or the same name).
+ */
+export function InlineEdit({ value, onDone, className, 'aria-label': label }: {
+  value: string
+  onDone: (value: string | null) => void
+  className?: string
+  'aria-label'?: string
+}) {
+  const [text, setText] = useState(value)
+  const finished = useRef(false)
+  const finish = (save: boolean) => {
+    if (finished.current) return
+    finished.current = true
+    const name = text.trim()
+    onDone(save && name && name !== value ? name : null)
+  }
+  return (
+    <input
+      autoFocus
+      className={cx(styles.inline, className)}
+      aria-label={label}
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+      onFocus={(e) => e.target.select()}
+      onBlur={() => finish(true)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') finish(true)
+        else if (e.key === 'Escape') finish(false)
+      }}
+    />
+  )
+}

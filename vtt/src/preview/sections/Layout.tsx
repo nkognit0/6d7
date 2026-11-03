@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {
-  BottomNavigation, Button, Icon, Icon28, IconButton, MenuDivider, MenuItem, NavPage, NavTab, ProjectMenu, RowCard, RowField,
+  BottomNavigation, Button, ConfirmDialog, Icon, Icon28, IconButton, MenuDivider, MenuItem, NavPage, NavTab, ProjectMenu, RowCard, RowField,
   RowSubtitle, RowSwitch, RowTabs, RowTitle, ScrollArea, SearchInput, Select, SidebarSection, SidebarTitle, Textarea, TextInput, TopPanel, UserMenu
 } from '../../ui'
 import { Cell, Row, Section } from '../kit'
@@ -14,6 +14,8 @@ export function Layout() {
   const [map, setMap] = useState(MAPS[0])
   const [grid, setGrid] = useState(true)
   const [size, setSize] = useState<'1' | '2'>('1')
+  const [asking, setAsking] = useState(false)
+  const [answer, setAnswer] = useState('—')
   return (
     <>
       <Section id="textarea" title="Textarea" figma="Input fields / text-input-multiline (7:1113)" note="Описание NPC и другие многострочные поля.">
@@ -150,6 +152,23 @@ export function Layout() {
               <div key={i} style={{ lineHeight: '28px' }}>Строка {i + 1}</div>
             ))}
           </ScrollArea>
+        </Row>
+      </Section>
+
+      <Section id="confirm" title="ConfirmDialog" figma="нет в макете: окно modal/dice (34:7794) поверх оверлея (30:4208)" note="Вопрос перед тем, что нельзя отменить: удаление кампании. Фокус на «Отмена»; Escape и щелчок мимо окна — тоже отмена.">
+        <Row label="живой пример">
+          <Cell caption={`ответ: ${answer}`}>
+            <Button variant="primary" onClick={() => setAsking(true)}>Удалить кампанию</Button>
+            {asking && (
+              <ConfirmDialog
+                text="Вы уверены, что хотите удалить кампанию?"
+                confirm="Удалить"
+                cancel="Отмена"
+                onConfirm={() => { setAnswer('удалить'); setAsking(false) }}
+                onCancel={() => { setAnswer('отмена'); setAsking(false) }}
+              />
+            )}
+          </Cell>
         </Row>
       </Section>
     </>

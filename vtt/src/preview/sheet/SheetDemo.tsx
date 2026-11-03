@@ -81,7 +81,7 @@ export function SheetDemo() {
   return (
     <div className={styles.screen}>
       <div className={styles.intro}>
-        <a href="#">{s.sheetDemo.back}</a>
+        <a href="#preview">{s.sheetDemo.back}</a>
         <span>{s.sheetDemo.intro}</span>
       </div>
       <Plate edge="left" className={styles.plate}>

@@ -5,7 +5,7 @@ import {
 } from '../../ui'
 import {
   createScene, createTestMap, importMapImage, MAP_IMAGE_ACCEPT, MapImageError, MapStore, MapView, MAX_IMAGE_SIDE, MemoryTileProvider,
-  newId, PX_PER_GRID_UNIT, useMapScene, type FlowColor, type ImportedImage, type ImportProgress, type MapEngine, type MapRole,
+  newId, PX_PER_GRID_UNIT, rulesOf, useMapScene, type FlowColor, type ImportedImage, type ImportProgress, type MapEngine, type MapRole,
   type MapScene, type MapStats, type MapTool, type MapViewState, type TestMapLayout, type Token, type ZoomInfo
 } from '../../map'
 import { useStrings } from '../../i18n'
@@ -58,7 +58,7 @@ function testScene(img: ImportedImage & { layout: TestMapLayout }, name: string)
     walls,
     doors,
     spawn,
-    fog: [{ mode: 'cover' }],
+    fog: [{ id: newId(), mode: 'cover' }],
     tokens: [{ ...playerToken('orange'), pin: spawn, darkvision: 60 }]
   }
 }
@@ -89,6 +89,7 @@ export function MapPrototype() {
   const dispatch = store.dispatch.bind(store)
   const pick = (t: MapTool) => setTool(tool === t ? 'select' : t)
   const token = scene.tokens.find((t) => t.id === selected) ?? null
+  const rules = rulesOf(scene)
 
   const progress: ImportProgress = (stage, f) =>
     setBusy(stage === 'decode' ? text.reading : stage === 'draw' ? text.drawingMap : text.cutting(Math.round(f * 100)))
@@ -159,7 +160,7 @@ export function MapPrototype() {
       <aside className={panel ? `${styles.panel} ${styles.open}` : styles.panel}>
         <ScrollArea className={styles.scroll}>
           <SidebarSection>
-            <a className={styles.back} href="#">{text.back}</a>
+            <a className={styles.back} href="#preview">{text.back}</a>
             <RowTabs stretch>
               <NavTab selected={master} onClick={() => setRole('master')}>{text.master}</NavTab>
               <NavTab selected={!master} onClick={() => setRole('player')}>{text.player}</NavTab>
@@ -244,17 +245,17 @@ export function MapPrototype() {
                   <IconButton variant="switch" pressed={tool === 'fog-erase'} label={text.fogEraser} icon={<Icon name="eraser" />} onClick={() => pick('fog-erase')} />
                 </div>
                 <div className={styles.pair}>
-                  <Button variant="secondary" stretch onClick={() => dispatch({ type: 'fog.add', stroke: { mode: 'cover' } })}>{text.fogCover}</Button>
+                  <Button variant="secondary" stretch onClick={() => dispatch({ type: 'fog.add', stroke: { id: newId(), mode: 'cover' } })}>{text.fogCover}</Button>
                   <Button variant="secondary" stretch onClick={() => dispatch({ type: 'fog.clear' })}>{text.fogClear}</Button>
                 </div>
               </SidebarSection>
 
               <SidebarSection>
                 <RowSubtitle>{text.rules}</RowSubtitle>
-                <RowSwitch label={text.freeMove} checked={scene.rules.freeMove} onChange={(v) => dispatch({ type: 'rules', patch: { freeMove: v } })} />
-                <RowSwitch label={text.freeDoors} checked={scene.rules.freeDoors} onChange={(v) => dispatch({ type: 'rules', patch: { freeDoors: v } })} />
-                <RowSwitch label={text.darkness} checked={scene.rules.darkness} onChange={(v) => dispatch({ type: 'rules', patch: { darkness: v } })} />
-                <RowSwitch label={text.dynamicFog} checked={scene.rules.dynamicFog} onChange={(v) => dispatch({ type: 'rules', patch: { dynamicFog: v } })} />
+                <RowSwitch label={text.freeMove} checked={rules.freeMove} onChange={(v) => dispatch({ type: 'rules', patch: { freeMove: v } })} />
+                {rules.freeMove && <RowSwitch label={text.freeDoors} checked={rules.freeDoors} onChange={(v) => dispatch({ type: 'rules', patch: { freeDoors: v } })} />}
+                <RowSwitch label={text.darkness} checked={rules.darkness} onChange={(v) => dispatch({ type: 'rules', patch: { darkness: v } })} />
+                <RowSwitch label={text.dynamicFog} checked={rules.dynamicFog} onChange={(v) => dispatch({ type: 'rules', patch: { dynamicFog: v } })} />
               </SidebarSection>
             </>
           )}

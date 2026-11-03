@@ -26,8 +26,13 @@ export interface ImportedImage {
   ms: number
 }
 
-/** Tiles kept in memory (the editor before saving). The server will serve them by URL later. */
-export class MemoryTileProvider implements TileProvider {
+/** Where the tiles of a cut picture go: memory (the prototype) or the browser's database (the app). */
+export interface TileSink {
+  add(imageId: string, tiles: TileBlob[]): void | Promise<void>
+}
+
+/** Tiles kept in memory (the map prototype). */
+export class MemoryTileProvider implements TileProvider, TileSink {
   private tiles = new Map<string, Blob>()
 
   add(imageId: string, tiles: TileBlob[]) {
@@ -69,27 +74,30 @@ function run(req: Request, progress?: ImportProgress) {
   })
 }
 
-function imported(r: Extract<WorkerResponse, { type: 'done' }>, provider: MemoryTileProvider, original: Blob | null, format: ImageFormat | null): ImportedImage {
-  const info: MapImageInfo = { id: newId(), width: r.width, height: r.height, tileSize: r.tileSize, levels: r.levels }
-  provider.add(info.id, r.tiles)
+async function imported(r: Extract<WorkerResponse, { type: 'done' }>, sink: TileSink, original: Blob | null, format: ImageFormat | null, id: string): Promise<ImportedImage> {
+  const info: MapImageInfo = { id, width: r.width, height: r.height, tileSize: r.tileSize, levels: r.levels }
+  await sink.add(info.id, r.tiles)
   const bytes = r.tiles.reduce((s, t) => s + t.blob.size, 0)
   return { info, thumbnail: r.thumbnail, original, format, bytes, ms: r.ms }
 }
 
-/** Uploads a map picture (PNG, JPEG, WebP, AVIF): checks the format and builds the tile pyramid. */
-export async function importMapImage(file: Blob, provider: MemoryTileProvider, progress?: ImportProgress): Promise<ImportedImage> {
+/**
+ * Uploads a map picture (PNG, JPEG, WebP, AVIF): checks the format and builds the tile pyramid.
+ * `imageId` — to cut an archived original again under its old id.
+ */
+export async function importMapImage(file: Blob, sink: TileSink, progress?: ImportProgress, imageId = newId()): Promise<ImportedImage> {
   const format = sniffFormat(new Uint8Array(await file.slice(0, 32).arrayBuffer()))
   if (!format) throw new MapImageError('format')
   const r = await run({ type: 'build', source: file, tileSize: TILE_SIZE }, progress)
-  return imported(r, provider, file, format)
+  return imported(r, sink, file, format, imageId)
 }
 
 /** A generated test dungeon of `cols × rows` cells, with its walls and doors. */
 export async function createTestMap(
   opts: { cols: number; rows: number; cellPx: number; seed?: number },
-  provider: MemoryTileProvider,
+  sink: TileSink,
   progress?: ImportProgress
 ): Promise<ImportedImage & { layout: TestMapLayout }> {
   const r = await run({ type: 'test', cols: opts.cols, rows: opts.rows, cellPx: opts.cellPx, seed: opts.seed ?? 7, tileSize: TILE_SIZE }, progress)
-  return { ...imported(r, provider, null, null), layout: r.layout! }
+  return { ...(await imported(r, sink, null, null, newId())), layout: r.layout! }
 }

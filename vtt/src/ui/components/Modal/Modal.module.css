@@ -30,3 +30,28 @@
   -webkit-backdrop-filter: blur(var(--overlay-blur));
   backdrop-filter: blur(var(--overlay-blur));
 }
+
+/* ConfirmDialog: the window of modal/dice in the middle of the screen */
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacer-xl);
+}
+
+.confirm {
+  gap: var(--spacer-l);
+  padding: var(--spacer-l);
+}
+
+.confirmText {
+  margin: 0;
+  font: var(--font-display);
+  color: var(--txt-primary);
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacer-m);
+}

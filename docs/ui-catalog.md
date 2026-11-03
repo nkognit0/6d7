@@ -52,6 +52,9 @@
 | Textarea | text-input-multiline `7:1113` | `components/Textarea` |
 | Select | dropdown-text `20:925` | `components/Select` |
 | Menu, MenuItem, MenuDivider, Popover | `24:1913`, `24:1292`, `24:1305` | `components/Menu` |
+| ContextMenu, useContextMenu — меню в точке щелчка правой кнопкой (не выходит за край окна; закрывается щелчком мимо, Escape, прокруткой, выбором пункта) | `24:1913`, `24:1309` | `components/Menu` |
+| InlineEdit — название, которое становится полем (рамка text-input-line в фокусе, шрифт места; Enter или щелчок мимо — сохранить, Escape — отменить) | нет в макете, `7:779` | `components/TextInput` |
+| ConfirmDialog — вопрос перед тем, что нельзя отменить (окно modal/dice по центру поверх оверлея, фокус на «Отмена») | нет в макете, `34:7794`, `30:4208` | `components/Modal` |
 | ProjectMenu, UserMenu | `26:749`, `26:743` | `components/MenuButton` |
 | NavTab, NavPage | `27:1960`, `27:1948` | `components/Nav` |
 | TopPanel, BottomNavigation | `100:3404`, `100:3004` | `components/Bars` |

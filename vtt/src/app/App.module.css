@@ -1,0 +1,30 @@
+/* a screen of a later step */
+.stub {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacer-xl);
+  padding: var(--spacer-xl);
+  background: var(--bg-secondary);
+  color: var(--txt-primary);
+  font: var(--font-navigation);
+  text-align: center;
+}
+
+.stub p {
+  margin: 0;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacer-xl);
+  font: var(--font-body);
+}
+
+.links a {
+  color: var(--txt-info);
+}

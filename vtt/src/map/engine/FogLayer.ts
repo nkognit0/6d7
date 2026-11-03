@@ -1,5 +1,5 @@
 import { BlurFilter, Container, Graphics, RenderTexture, Sprite, Texture, type Renderer } from 'pixi.js'
-import type { FogStroke, MapImageInfo } from '../core/types'
+import type { FogShape, FogStroke, MapImageInfo } from '../core/types'
 import type { Paint } from './theme'
 
 /**
@@ -104,7 +104,7 @@ export class FogLayer {
   }
 
   /** One stroke into the brush mask; new fog also hides what players had already explored. */
-  stroke(renderer: Renderer, s: FogStroke) {
+  stroke(renderer: Renderer, s: FogShape) {
     if (!this.fogRT || !this.exploredRT) return
     const g = this.brush
     g.clear()

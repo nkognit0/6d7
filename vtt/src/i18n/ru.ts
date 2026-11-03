@@ -43,13 +43,27 @@ export const ru = {
     noCampaigns: 'Кампаний пока нет. Создайте первую.'
   },
   campaignMenu: {
+    undo: 'Отменить',
+    redo: 'Повторить',
     save: 'Сохранить',
     export: 'Экспортировать',
     import: 'Импортировать',
     exportGame: 'Экспортировать состояние игры',
     importGame: 'Импортировать состояние игры',
     toHome: 'Выйти на главный экран',
-    rename: 'Переименовать кампанию'
+    rename: 'Переименовать кампанию',
+    delete: 'Удалить',
+    deleteConfirm: 'Вы уверены, что хотите удалить кампанию?'
+  },
+  // the campaigns of this browser: storage and the .6d7 archive
+  campaign: {
+    newName: 'Новая кампания',
+    nameField: 'Название кампании',
+    storageFailed: 'Браузер не дал открыть хранилище кампаний. Возможно, включён приватный режим или запрещено хранение данных сайта.',
+    notFound: 'Такой кампании нет в этом браузере.',
+    archiveFormat: 'Это не архив кампании 6d7.',
+    archiveVersion: 'Архив сделан более новой версией приложения. Обновите страницу и попробуйте снова.',
+    archiveDamaged: 'Архив повреждён: часть файлов не читается.'
   },
   editor: {
     modeEdit: 'Редактирование',
@@ -342,6 +356,16 @@ export const ru = {
     resetConfirm: 'Вернуть демо-персонажа? Изменения в листе пропадут.',
     importFailed: 'Не удалось прочитать файл листа.',
     restNothing: 'Восстанавливать нечего.'
+  },
+  // screens of the next steps: until they are made, the address shows a stub with links
+  stub: {
+    home: 'Главный экран появится на этапе 2 плана.',
+    editor: 'Редактор кампании появится на этапах 3–5 плана.',
+    play: 'Игра мастера появится на этапе 8 плана.',
+    join: 'Игра игрока появится на этапе 7 плана.',
+    preview: 'Компоненты',
+    map: 'Карта — прототип',
+    sheet: 'Листы и инвентари — демо'
   },
   // the map prototype page (#map): role switch, test maps, speed counters
   mapPrototype: {

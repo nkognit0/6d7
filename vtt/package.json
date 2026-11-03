@@ -12,12 +12,14 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "tokens": "node scripts/tokens.mjs",
     "icons": "node scripts/icons.mjs"
   },
   "dependencies": {
     "@fontsource/inter": "5.1.0",
     "@fontsource/pt-serif-caption": "5.1.0",
+    "fflate": "0.8.2",
     "pixi.js": "8.22.0",
     "react": "18.3.1",
     "react-dom": "18.3.1"
@@ -27,6 +29,7 @@
     "@types/react-dom": "18.3.1",
     "@vitejs/plugin-react": "4.3.4",
     "typescript": "5.6.3",
-    "vite": "5.4.11"
+    "vite": "5.4.11",
+    "vitest": "3.2.7"
   }
 }

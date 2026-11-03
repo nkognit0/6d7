@@ -101,3 +101,13 @@
   right: 0;
   left: auto;
 }
+
+/* a context menu at the pointer: above the windows and their overlay */
+.context {
+  position: fixed;
+  z-index: 100;
+}
+
+.items {
+  display: contents;
+}

@@ -3,7 +3,8 @@ import {
   cellPin, cellPx, dist, distToPolyline, distToSegment, imagePin, imageToGrid, newId, nodePin, pinToImage, projectT, samePin
 } from '../core/geometry'
 import type { MapStore } from '../core/store'
-import type { Door, FlowColor, MapScene, Pin, Token, TileProvider, Vec } from '../core/types'
+import { rulesOf } from '../core/scene'
+import type { Door, FlowColor, MapRules, MapScene, Pin, RuleOverrides, Token, TileProvider, Vec } from '../core/types'
 import { moveBlockers, pathBlocked, sightBlockers, visibilityPolygon, visionRadius } from '../core/visibility'
 import { BuildLayer, strokeWalls } from './BuildLayer'
 import { Camera, CELL_AT_100, type CameraBounds } from './camera'
@@ -29,6 +30,8 @@ export interface MapViewState {
   tool: MapTool
   /** fog brush 1–20: diameter in half cells */
   brush: number
+  /** settings of the campaign: the map follows them where it did not change them itself */
+  campaignRules?: RuleOverrides
 }
 
 export interface MapStats {
@@ -170,6 +173,7 @@ export class MapEngine {
       this.dirty.add('build').add('tokens').add('vision')
       this.selectToken(null)
     }
+    if (JSON.stringify(prev.campaignRules ?? {}) !== JSON.stringify(view.campaignRules ?? {})) this.dirty.add('vision')
     if (prev.tool !== view.tool) {
       this.wallStart = null
       this.erasing = null
@@ -321,7 +325,7 @@ export class MapEngine {
     })
     this.tiles.update(this.camera, this.size.w, this.size.h, this.dpr)
     this.build.updateZoom(this.camera.scale)
-    this.fog.style(scene.rules.darkness ? this.theme.fogDark : this.theme.fog, master ? MASTER_FOG : 1, !!scene.image && scene.fog.length > 0)
+    this.fog.style(this.rules(scene).darkness ? this.theme.fogDark : this.theme.fog, master ? MASTER_FOG : 1, !!scene.image && scene.fog.length > 0)
     this.drawOverlay(scene)
     if (this.ghost) this.tokens.setGhost(this.ghost.token, this.ghost.at, scene.grid, this.theme)
 
@@ -372,7 +376,7 @@ export class MapEngine {
       const poly = visibilityPolygon(p.x, p.y, blockers, visionRadius(t, scene), bounds)
       if (poly.length >= 6) polys.push(poly)
     }
-    this.fog.compose(renderer, polys, scene.rules.dynamicFog)
+    this.fog.compose(renderer, polys, this.rules(scene).dynamicFog)
     this.stats.visionMs = performance.now() - started
   }
 
@@ -649,7 +653,7 @@ export class MapEngine {
         if (dist(s, g.down) >= TAP && this.wallStart) this.finishWall(this.snapWall(w))
         break
       case 'fog':
-        this.opts.store.dispatch({ type: 'fog.add', stroke: { mode: g.erase ? 'erase' : 'paint', radius: g.radius, points: g.points } })
+        this.opts.store.dispatch({ type: 'fog.add', stroke: { id: newId(), mode: g.erase ? 'erase' : 'paint', radius: g.radius, points: g.points } })
         break
       case 'pencil':
         this.draws.drawLive(null, scene.grid, this.theme.master)
@@ -884,11 +888,16 @@ export class MapEngine {
 
   private canMove(t: Token) {
     if (this.view.role === 'master') return true
-    return t.kind === 'player' && t.id === this.view.playerId && this.opts.store.get().rules.freeMove
+    return t.kind === 'player' && t.id === this.view.playerId && this.rules().freeMove
   }
 
   private canOpen() {
-    return this.view.role === 'master' || this.opts.store.get().rules.freeDoors
+    return this.view.role === 'master' || this.rules().freeDoors
+  }
+
+  /** the conditions that work now: the campaign, then what this map changed */
+  private rules(scene = this.opts.store.get()): MapRules {
+    return rulesOf(scene, this.view.campaignRules)
   }
 
   private selectToken(id: string | null) {
