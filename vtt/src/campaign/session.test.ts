@@ -9,10 +9,10 @@ function memoryStorage() {
   const journal: [number, Change][] = []
   const snapshots: { upto: number; writes: DocWrite[]; meta: CampaignMeta }[] = []
   const storage: SessionStorage = {
-    append: async (_id, from, changes) => {
+    append: async (_id, _tab, from, changes) => {
       changes.forEach((c, i) => journal.push([from + i, structuredClone(c)]))
     },
-    compact: async (_id, upto, writes, meta) => {
+    compact: async (_id, _tab, upto, writes, meta) => {
       snapshots.push({ upto, writes, meta })
     }
   }
@@ -28,7 +28,7 @@ const tick = () => new Promise((r) => setTimeout(r, 0))
 
 describe('CampaignSession', () => {
   it('undoes and redoes campaign and map changes', () => {
-    const s = new CampaignSession(docs(), 0, memoryStorage().storage)
+    const s = new CampaignSession(docs(), memoryStorage().storage)
     const start = s.docs()
     s.apply([{ doc: 'campaign', op: { type: 'rename', name: 'Другое имя' } }])
     s.apply([
@@ -57,13 +57,13 @@ describe('CampaignSession', () => {
   it('journals every change in order: replaying it gives the same documents', async () => {
     const { storage, journal } = memoryStorage()
     const initial = docs()
-    const s = new CampaignSession(initial, 7, storage)
+    const s = new CampaignSession(initial, storage)
     s.apply([{ doc: 'campaign', op: { type: 'player.add', player: { id: 'p1', name: 'Арина', color: 'red' } } }])
     s.map('m1')!.dispatch({ type: 'grid', patch: { size: 3 } })
     s.apply([{ doc: 'seat/p1', set: { schema: 1, sheet: {}, spells: [], inventory: [], companion: null } }], { record: false })
     s.undo()
     await tick()
-    expect(journal.map(([n]) => n)).toEqual([8, 9, 10, 11])
+    expect(journal.map(([n]) => n)).toEqual([1, 2, 3, 4])
     const replayed = journal.reduce((d, [, ch]) => applyChange(d, ch), initial)
     expect(replayed).toEqual(s.docs())
     await s.close()
@@ -72,7 +72,7 @@ describe('CampaignSession', () => {
   it('writes the changed documents after a pause', async () => {
     vi.useFakeTimers()
     const { storage, snapshots } = memoryStorage()
-    const s = new CampaignSession(docs(), 0, storage)
+    const s = new CampaignSession(docs(), storage)
     s.apply([{ doc: 'campaign', op: { type: 'rename', name: 'Новое' } }])
     await vi.advanceTimersByTimeAsync(3500)
     expect(snapshots).toHaveLength(1)
@@ -83,7 +83,7 @@ describe('CampaignSession', () => {
   })
 
   it('makes a quick series of grid edits one step', () => {
-    const s = new CampaignSession(docs(), 0, memoryStorage().storage)
+    const s = new CampaignSession(docs(), memoryStorage().storage)
     for (const size of [2.1, 2.2, 2.3]) s.map('m1')!.dispatch({ type: 'grid', patch: { size } })
     s.undo()
     expect(s.map('m1')!.get().grid.size).toBe(2)

@@ -1,0 +1,203 @@
+/* The game of a player (D&D VTT / game / player): the start screen with the sheet, the map with
+   the plates of buttons and the log, the windows over the overlay. */
+
+/* the black screen of the first entry: the top panel and the floating sheet */
+.start {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  color: var(--txt-primary);
+}
+
+/* a sheet floats 48 px under the top panel and 48 px over the bottom when scrolled to the end */
+.scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px var(--spacer-xl);
+}
+
+/* the inventories keep 48 px from the top and bottom and 96 px from the sides */
+.window {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  padding: 48px 96px;
+}
+
+@media (max-width: 840px) {
+  .scroll {
+    padding: var(--spacer-xl) var(--spacer-m);
+  }
+
+  .window {
+    padding: var(--spacer-m);
+  }
+}
+
+@media (max-width: 767px) {
+  .window {
+    padding: 0;
+  }
+}
+
+/* a phone: the buttons on the left take the room the empty middle leaves */
+@media (max-width: 767px) {
+  .top {
+    grid-template-columns: minmax(0, 1fr) 0 auto;
+  }
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* the result of a rest, a file that could not be read */
+.message {
+  padding: var(--spacer-m) var(--spacer-l);
+  background: var(--bg-info);
+  font: var(--font-multiline);
+  color: var(--txt-primary);
+  cursor: pointer;
+}
+
+.messageScreen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacer-xl);
+  padding: var(--spacer-xl);
+  background: var(--bg-secondary);
+  color: var(--txt-primary);
+  font: var(--font-navigation);
+  text-align: center;
+}
+
+.messageScreen p {
+  margin: 0;
+}
+
+.messageScreen a {
+  font: var(--font-body);
+  color: var(--txt-info);
+}
+
+.anchor {
+  position: relative;
+}
+
+/* the map with the plates over it */
+.field {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-secondary);
+  color: var(--txt-primary);
+}
+
+.preparing {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  margin: 0;
+  font: var(--font-body);
+  color: var(--txt-secondary);
+  text-align: center;
+}
+
+.leftPlate,
+.rightPlate {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.leftPlate {
+  left: 0;
+}
+
+.rightPlate {
+  right: 0;
+  padding: var(--spacer-s);
+  gap: var(--spacer-xs);
+}
+
+/* a stand-in icon of the companion token until its own one is drawn */
+.companionIcon {
+  display: grid;
+  place-items: center;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  border-radius: var(--radius-max);
+  box-shadow: inset 0 0 0 2px currentColor;
+  font: var(--font-caption-bold);
+  font-size: var(--font-size-small);
+  line-height: 1;
+}
+
+/* the log: 240×130 in the bottom right corner, only its top left corner rounded */
+.log {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 240px;
+  height: 130px;
+  align-items: stretch;
+  padding: var(--spacer-m) var(--spacer-l);
+}
+
+/* there is no log on a phone yet (QnA) */
+@media (max-width: 767px) {
+  .fieldLog {
+    display: none;
+  }
+}
+
+.logList {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.logEntry {
+  margin: 0;
+  font: var(--font-body);
+  color: var(--txt-primary);
+}
+
+.logName,
+.logTotal {
+  font-weight: var(--font-weight-semibold);
+}
+
+/* the dice window next to its button */
+.dice {
+  position: fixed;
+  z-index: 40;
+}
+
+.result {
+  display: flex;
+  align-items: center;
+}
+
+.resultLabel {
+  flex: 1;
+  font: var(--font-navigation);
+}
+
+.resultValue {
+  font: var(--font-result);
+  color: var(--txt-info);
+}

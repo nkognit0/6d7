@@ -41,6 +41,8 @@ export interface Seat {
   inventory: (ItemCell | null)[]
   /** the companion sheet (its picture in the field «portrait») */
   companion: CompanionFields | null
+  /** the player pressed «Начать игру»: the game opens on the map, not on the sheet */
+  started?: boolean
 }
 
 export const SPELL_LISTS = ['cantrips', 'lvl1Spells', 'lvl2Spells', 'lvl3Spells', 'lvl4Spells', 'lvl5Spells', 'lvl6Spells', 'lvl7Spells', 'lvl8Spells', 'lvl9Spells']

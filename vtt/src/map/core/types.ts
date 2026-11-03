@@ -72,6 +72,8 @@ export interface Token {
   color?: FlowColor
   /** portrait or NPC token image (URL) */
   image?: string
+  /** a token of a player that is not the hero (a companion): the player who moves it */
+  owner?: string
   /** NPC: id of the catalog token (the picture is found again by it) */
   token?: string
   /** NPC: the saved NPC of the campaign it became (its own name and description) */

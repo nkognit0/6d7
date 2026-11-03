@@ -170,7 +170,14 @@ export const ru = {
       pencil: 'Карандаш',
       eraser: 'Ластик',
       eraserHint: 'Двойное нажатие стирает все ваши линии'
-    }
+    },
+    companionToken: 'Фишка спутника',
+    log: 'Броски костей',
+    rollText: (count: number, die: number) => `${count}d${die}`,
+    stubMap: 'Подземелье',
+    preparingMap: 'Готовлю карту…',
+    seatGone: 'Вашего места в этой кампании больше нет. Спросите у мастера новый код.',
+    startHint: 'Сначала заполните класс и уровень — визардом «Создать лист» или вручную.'
   },
   sheet: {
     title: 'ЛИСТ ПЕРСОНАЖА',
@@ -183,6 +190,11 @@ export const ru = {
     import: 'Импорт листа',
     export: 'Экспорт листа',
     print: 'Печать листа',
+    printSoon: 'Печать листа появится позже',
+    importFailed: 'Не удалось прочитать файл листа.',
+    importReplace: 'Заменить лист персонажа листом из файла?',
+    replace: 'Заменить',
+    fileName: 'Персонаж',
     uploadPortrait: 'Загрузить портрет',
     profileTitle: 'ПРОФИЛЬ',
     replacePicture: 'Заменить картинку',
@@ -255,6 +267,9 @@ export const ru = {
     title: 'ЛИСТ СПУТНИКА',
     create: 'Создать спутника',
     levelUp: (n: number) => `Повысить уровень: ${n}`,
+    levelUpCompanion: 'Повысить уровень спутника',
+    replaceConfirm: 'Заменить нынешнего спутника новым?',
+    replace: 'Заменить',
     none: 'Спутника пока нет.',
     uploadPicture: 'Загрузить картинку',
     field: {
@@ -371,16 +386,12 @@ export const ru = {
     demoCharacter: 'Демо-персонаж',
     resetConfirm: 'Вернуть демо-персонажа? Изменения в листе пропадут.',
     importFailed: 'Не удалось прочитать файл листа.',
-    restNothing: 'Восстанавливать нечего.',
-    companionLevel: 'Повысить уровень спутника',
-    replaceCompanion: 'Заменить нынешнего спутника новым?'
+    restNothing: 'Восстанавливать нечего.'
   },
   // screens of the next steps: until they are made, the address shows a stub with links
   stub: {
     home: 'Главный экран',
     play: 'Игра мастера появится на этапе 8 плана.',
-    join: 'Игра игрока появится на этапе 7 плана.',
-    joinSeat: (player: string, campaign: string) => `Код ведёт к месту игрока «${player}» в кампании «${campaign}».`,
     joinUnknown: 'Такого кода нет в этом браузере.',
     preview: 'Компоненты',
     map: 'Карта — прототип',

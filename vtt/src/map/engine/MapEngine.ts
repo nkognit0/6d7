@@ -890,7 +890,7 @@ export class MapEngine {
 
   private canMove(t: Token) {
     if (this.view.role === 'master') return true
-    return t.kind === 'player' && t.id === this.view.playerId && this.rules().freeMove
+    return t.kind === 'player' && (t.owner ?? t.id) === this.view.playerId && this.rules().freeMove
   }
 
   private canOpen() {

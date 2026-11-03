@@ -14,6 +14,7 @@ import { useStrings } from '../../i18n'
 import { addThing, attunable, attunedCount, attunementMax, buyThing, removeCell, setAttuned, setEquipped } from '../seat/actions'
 import { characterOf, itemName, type ItemCell, type Seat } from '../seat/seat'
 import { Card, type Fact } from './Card'
+import { useNarrow } from './narrow'
 import styles from './Inventory.module.css'
 
 // «14 + Лов (не больше 2)», «+2»
@@ -48,12 +49,28 @@ function ItemCard({ seat, cell }: { seat: Seat; cell: ItemCell }) {
   )
 }
 
+/** The header of a pane opened over the grid on a phone: «Назад» and its title. */
+export function BackHead({ title, onBack }: { title: string; onBack: () => void }) {
+  const s = useStrings()
+  return (
+    <div className={styles.head}>
+      <Button variant="secondary" onClick={onBack}>{s.common.back}</Button>
+      <span className={styles.headTitle}>{title}</span>
+    </div>
+  )
+}
+
 export function ItemsWindow({ seat, onChange }: { seat: Seat; onChange: (seat: Seat) => void }) {
   const s = useStrings()
   const [query, setQuery] = useState('')
   const [chosen, setChosen] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  // a phone shows one pane: the grid, or the description of the tapped cell
+  const narrow = useNarrow()
+  const [detail, setDetail] = useState(false)
   const cell = seat.inventory.find((c) => c?.uid === chosen) ?? null
+  const showGrid = !narrow || !detail || !cell
+  const showDetail = !narrow || (detail && !!cell)
   const wallet = walletOf(seat.sheet)
   const results = query.trim() ? searchItems(query) : []
   const get = (id: string) => {
@@ -72,7 +89,7 @@ export function ItemsWindow({ seat, onChange }: { seat: Seat; onChange: (seat: S
   const full = !!cell && !cell.attuned && attuned >= max
   return (
     <GameWindow>
-      <WindowPane
+      {showGrid && <WindowPane
         header={(
           <div className={styles.head}>
             <span className={styles.headTitle}>{s.inventory.title}</span>
@@ -105,15 +122,20 @@ export function ItemsWindow({ seat, onChange }: { seat: Seat; onChange: (seat: S
               {seat.inventory.map((c, i) => (
                 <InventorySlot key={c?.uid ?? `empty-${i}`} label={c ? itemName(c) : undefined} selected={!!c && c.uid === chosen}
                   mark={c ? slotMark({ equipped: c.equipped, attuned: c.attuned }) : undefined}
-                  onClick={() => c && setChosen(c.uid)}>
+                  onClick={() => {
+                    if (!c) return
+                    setChosen(c.uid)
+                    setDetail(true)
+                  }}>
                   {c && (c.item ? <img className={styles.slotPicture} src={iconUrl(c.item)} alt="" /> : <span className={styles.slotText}>{c.name}</span>)}
                 </InventorySlot>
               ))}
             </SlotGrid>
           )}
         </div>
-      </WindowPane>
-      <WindowPane side width={300} header={<span className={styles.headTitle}>{s.inventory.description}</span>}
+      </WindowPane>}
+      {showDetail && <WindowPane side width={narrow ? undefined : 300}
+        header={narrow ? <BackHead title={s.inventory.description} onBack={() => setDetail(false)} /> : <span className={styles.headTitle}>{s.inventory.description}</span>}
         footer={cell && (
           <>
             {(attunable(cell) || attuned > 0) && <span className={styles.note}>{full ? s.inventory.attunementFull(attuned, max) : s.inventory.attuned(attuned, max)}</span>}
@@ -129,7 +151,7 @@ export function ItemsWindow({ seat, onChange }: { seat: Seat; onChange: (seat: S
           </>
         )}>
         {cell ? <ItemCard seat={seat} cell={cell} /> : <p className={styles.empty}>{s.inventory.pick}</p>}
-      </WindowPane>
+      </WindowPane>}
     </GameWindow>
   )
 }

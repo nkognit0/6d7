@@ -24,6 +24,8 @@
 .note { font: var(--font-caption); color: var(--txt-secondary); }
 /* a line alone in a pane footer: body (28 px) + 8 px above and below — 44 px, as the button row */
 .footerNote { font: var(--font-body); color: var(--txt-secondary); }
+/* a phone: «Ячейки заклинаний» after the note */
+.footerRow { display: flex; align-items: center; justify-content: space-between; gap: var(--spacer-m); }
 .buttons { display: flex; gap: var(--spacer-m); }
 /* «Удалить»: a small button with the minus icon after the wide ones */
 .remove { flex: none; margin-left: auto; }

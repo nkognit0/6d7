@@ -14,6 +14,8 @@ import {
 } from '../seat/actions'
 import { spellLevel, spellName, type Seat, type SpellEntry } from '../seat/seat'
 import { Card, type Fact } from './Card'
+import { BackHead } from './ItemsWindow'
+import { useNarrow } from './narrow'
 import styles from './Inventory.module.css'
 
 // `always`: what keeps the spell prepared (a subclass, a species, a class feature), told at the end
@@ -46,7 +48,11 @@ export function SpellsWindow({ seat, onChange }: { seat: Seat; onChange: (seat: 
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<number | null>(null)
   const [chosen, setChosen] = useState<string | null>(null)
+  // a phone shows one pane: the grid, the description of the tapped spell or the spell slots
+  const narrow = useNarrow()
+  const [view, setView] = useState<'grid' | 'detail' | 'slots'>('grid')
   const entry = seat.spells.find((e) => e.id === chosen) ?? null
+  const show = (pane: 'grid' | 'detail' | 'slots') => !narrow || (pane === 'detail' ? view === 'detail' && !!entry : view === pane || (pane === 'grid' && view === 'detail' && !entry))
   const shown = seat.spells.filter((e) => filter == null || spellLevel(e) === filter)
   const results = query.trim() ? searchAvailable(seat, query) : []
   const count = preparedCount(seat)
@@ -60,7 +66,7 @@ export function SpellsWindow({ seat, onChange }: { seat: Seat; onChange: (seat: 
   const canPrepare = !!entry && spellLevel(entry) > 0 && !always
   return (
     <GameWindow>
-      <WindowPane
+      {show('grid') && <WindowPane
         header={(
           <>
             <div className={styles.head}>
@@ -76,7 +82,12 @@ export function SpellsWindow({ seat, onChange }: { seat: Seat; onChange: (seat: 
             </div>
           </>
         )}
-        footer={max > 0 ? <span className={styles.footerNote}>{s.spells.preparedLimit(count, max)}</span> : undefined}>
+        footer={max > 0 || narrow ? (
+          <div className={styles.footerRow}>
+            {max > 0 && <span className={styles.footerNote}>{s.spells.preparedLimit(count, max)}</span>}
+            {narrow && <Button variant="secondary" onClick={() => setView('slots')}>{s.spells.slots}</Button>}
+          </div>
+        ) : undefined}>
         <div className={styles.body}>
           {query.trim() ? (
             <div className={styles.results}>
@@ -94,7 +105,10 @@ export function SpellsWindow({ seat, onChange }: { seat: Seat; onChange: (seat: 
           ) : (
             <SlotGrid>
               {shown.map((e) => (
-                <InventorySlot key={e.id} label={spellName(e)} selected={e.id === chosen} onClick={() => setChosen(e.id)}
+                <InventorySlot key={e.id} label={spellName(e)} selected={e.id === chosen} onClick={() => {
+                  setChosen(e.id)
+                  setView('detail')
+                }}
                   mark={slotMark({ equipped: !!e.prepared || !!e.tag || byFeature.has(e.id) })}>
                   {byId.spell[e.id] ? <img className={styles.slotPicture} src={spellIconUrl(e.id)} alt="" /> : <span className={styles.slotText}>{spellName(e)}</span>}
                 </InventorySlot>
@@ -102,8 +116,9 @@ export function SpellsWindow({ seat, onChange }: { seat: Seat; onChange: (seat: 
             </SlotGrid>
           )}
         </div>
-      </WindowPane>
-      <WindowPane side width={300} header={<span className={styles.headTitle}>{s.spells.description}</span>}
+      </WindowPane>}
+      {show('detail') && <WindowPane side width={narrow ? undefined : 300}
+        header={narrow ? <BackHead title={s.spells.description} onBack={() => setView('grid')} /> : <span className={styles.headTitle}>{s.spells.description}</span>}
         footer={entry && (
           <div className={styles.buttons}>
             {canPrepare && (
@@ -116,8 +131,9 @@ export function SpellsWindow({ seat, onChange }: { seat: Seat; onChange: (seat: 
           </div>
         )}>
         {entry ? <SpellCard entry={entry} always={always} /> : <p className={styles.empty}>{s.spells.pick}</p>}
-      </WindowPane>
-      <WindowPane side width={220} header={<span className={styles.headTitle}>{s.spells.slots}</span>}>
+      </WindowPane>}
+      {show('slots') && <WindowPane side width={narrow ? undefined : 220}
+        header={narrow ? <BackHead title={s.spells.slots} onBack={() => setView('grid')} /> : <span className={styles.headTitle}>{s.spells.slots}</span>}>
         <div className={styles.slots}>
           {!levels.length && !pact && <span className={styles.note}>{s.spells.noSlots}</span>}
           {levels.map((l) => (
@@ -131,7 +147,7 @@ export function SpellsWindow({ seat, onChange }: { seat: Seat; onChange: (seat: 
             </>
           )}
         </div>
-      </WindowPane>
+      </WindowPane>}
     </GameWindow>
   )
 }

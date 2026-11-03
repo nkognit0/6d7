@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
-import { repo } from '../campaign'
 import { EditorScreen } from '../editor/EditorScreen'
+import { PlayerGame } from '../game/player/PlayerGame'
 import { HomeScreen } from '../home/HomeScreen'
 import { useStrings } from '../i18n'
 import { MapPrototype } from '../preview/map/MapPrototype'
@@ -10,12 +9,11 @@ import { routeHash, useRoute } from './route'
 import styles from './App.module.css'
 
 // a screen of a later step: what will be here and the pages that already work
-function Stub({ text, note }: { text: string; note?: string | null }) {
+function Stub({ text }: { text: string }) {
   const s = useStrings().stub
   return (
     <main className={styles.stub}>
       <p>{text}</p>
-      {note && <p>{note}</p>}
       <nav className={styles.links}>
         <a href={routeHash({ page: 'home' })}>{s.home}</a>
         <a href={routeHash({ page: 'preview' })}>{s.preview}</a>
@@ -24,24 +22,6 @@ function Stub({ text, note }: { text: string; note?: string | null }) {
       </nav>
     </main>
   )
-}
-
-// the player's game is step 7; until then the stub says where the code leads
-function JoinStub({ code }: { code: string }) {
-  const s = useStrings().stub
-  const [note, setNote] = useState<string | null>(null)
-  useEffect(() => {
-    let live = true
-    repo.findCode(code).then(async (t) => {
-      const docs = t && (await repo.load(t.campaign))?.docs
-      const player = docs?.campaign.players.find((p) => p.id === t?.player)
-      if (live) setNote(docs && player ? s.joinSeat(player.name, docs.campaign.name) : s.joinUnknown)
-    })
-    return () => {
-      live = false
-    }
-  }, [code, s])
-  return <Stub text={s.join} note={note} />
 }
 
 /** The app: one page, the screen is chosen by the address. */
@@ -56,7 +36,7 @@ export function App() {
     case 'play':
       return <Stub text={s.play} />
     case 'join':
-      return <JoinStub code={route.code} />
+      return <PlayerGame key={route.code} code={route.code} />
     case 'preview':
       return <PreviewPage section={route.section} />
     case 'map':

@@ -9,6 +9,15 @@ import { CampaignSession, type DocWrite, type SessionStorage } from '../session'
 import type { Campaign, CampaignDocs, CampaignMeta, Change, DocKey } from '../types'
 import { prefixRange, request, S, transact } from './idb'
 
+/** A saved change: when it was made (the order across tabs) and the change itself. */
+interface JournalEntry {
+  t: number
+  c: Change
+}
+
+// an entry of the first journal format was the change itself
+const entryOf = (v: JournalEntry | Change): JournalEntry => ('c' in v && 't' in v ? v : { t: 0, c: v as Change })
+
 /** Where a player's code leads. */
 export interface CodeTarget {
   code: string
@@ -75,15 +84,18 @@ export class LocalRepo implements SessionStorage {
     return campaign.id
   }
 
-  /** The documents of a campaign with its journal replayed; null if there is none. */
-  async load(id: string): Promise<{ docs: CampaignDocs; seq: number } | null> {
+  /**
+   * The documents of a campaign with its journal replayed; null if there is none. `journal` — how
+   * many changes were not in the snapshots yet.
+   */
+  async load(id: string): Promise<{ docs: CampaignDocs; journal: number } | null> {
     const { keys, values, journal } = await transact([S.docs, S.journal], 'readonly', async (tx) => {
       const docs = tx.objectStore(S.docs)
       const range = prefixRange(id)
       const [keys, values, journal] = await Promise.all([
         request(docs.getAllKeys(range)),
         request<unknown[]>(docs.getAll(range)),
-        Promise.all([request(tx.objectStore(S.journal).getAllKeys(range)), request<Change[]>(tx.objectStore(S.journal).getAll(range))])
+        request<(JournalEntry | Change)[]>(tx.objectStore(S.journal).getAll(range))
       ])
       return { keys: keys as [string, DocKey][], values, journal }
     })
@@ -93,35 +105,55 @@ export class LocalRepo implements SessionStorage {
     keys.forEach(([, key], i) => {
       if (key !== 'campaign') docs = applyChange(docs, { doc: key, set: values[i] })
     })
-    const [journalKeys, changes] = journal
-    for (const ch of changes) docs = applyChange(docs, ch)
-    const last = journalKeys[journalKeys.length - 1] as [string, number] | undefined
-    return { docs, seq: last ? last[1] : 0 }
+    // the journals of several tabs: in the order the changes were made (a stable sort keeps the order of one tab)
+    const entries = journal.map(entryOf).sort((a, b) => a.t - b.t)
+    for (const e of entries) docs = applyChange(docs, e.c)
+    return { docs, journal: entries.length }
   }
 
-  /** Opens a campaign for the editor or the game. */
+  /**
+   * Opens a campaign for the editor or the game. A journal left by a closed tab (or written by an
+   * open one) is taken into the snapshots first: the documents now hold every change.
+   */
   async open(id: string): Promise<CampaignSession | null> {
     const loaded = await this.load(id)
     if (!loaded) return null
+    if (loaded.journal) await this.snapshot(loaded.docs)
     await this.collectTiles()
-    return new CampaignSession(loaded.docs, loaded.seq, this)
+    return new CampaignSession(loaded.docs, this)
   }
 
-  append(campaignId: string, from: number, changes: Change[]): Promise<void> {
-    return transact([S.journal], 'readwrite', (tx) => {
-      const store = tx.objectStore(S.journal)
-      changes.forEach((ch, i) => store.put(ch, [campaignId, from + i]))
+  // every document of a campaign written whole, its journal cleared; the codes stay
+  private snapshot(docs: CampaignDocs): Promise<void> {
+    const id = docs.campaign.id
+    return transact([S.docs, S.journal, S.meta], 'readwrite', (tx) => {
+      const store = tx.objectStore(S.docs)
+      store.delete(prefixRange(id))
+      store.put(docs.campaign, [id, 'campaign'])
+      for (const [mapId, scene] of Object.entries(docs.maps)) store.put(scene, [id, `map/${mapId}`])
+      for (const [playerId, seat] of Object.entries(docs.seats)) store.put(seat, [id, `seat/${playerId}`])
+      tx.objectStore(S.journal).delete(prefixRange(id))
+      tx.objectStore(S.meta).put(metaOf(docs, Date.now()), id)
     })
   }
 
-  compact(campaignId: string, upto: number, writes: DocWrite[], meta: CampaignMeta): Promise<void> {
+  /** Each tab writes its own journal ([campaign, tab, number]): two tabs never overwrite each other. */
+  append(campaignId: string, tab: string, from: number, changes: Change[]): Promise<void> {
+    const t = Date.now()
+    return transact([S.journal], 'readwrite', (tx) => {
+      const store = tx.objectStore(S.journal)
+      changes.forEach((c, i) => store.put({ t, c } satisfies JournalEntry, [campaignId, tab, from + i]))
+    })
+  }
+
+  compact(campaignId: string, tab: string, upto: number, writes: DocWrite[], meta: CampaignMeta): Promise<void> {
     return transact([S.docs, S.journal, S.meta], 'readwrite', (tx) => {
       const docs = tx.objectStore(S.docs)
       for (const [key, value] of writes) {
         if (value === null || value === undefined) docs.delete([campaignId, key])
         else docs.put(value, [campaignId, key])
       }
-      tx.objectStore(S.journal).delete(IDBKeyRange.bound([campaignId, 0], [campaignId, upto]))
+      tx.objectStore(S.journal).delete(IDBKeyRange.bound([campaignId, tab, 0], [campaignId, tab, upto]))
       tx.objectStore(S.meta).put(meta, campaignId)
     })
   }

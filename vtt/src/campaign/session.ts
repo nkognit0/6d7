@@ -2,6 +2,7 @@
 // a snapshot in pauses — docs/data-model.md, «Автосохранение») and the history of «Отменить».
 // The editor and the master's game work with it; the network will feed it the same changes.
 import type { Seat } from '../game/seat/seat'
+import { newId } from '../map/core/geometry'
 import { invertMapOp } from '../map/core/invert'
 import { MapStore } from '../map/core/store'
 import type { MapOp, MapScene } from '../map/core/types'
@@ -14,10 +15,10 @@ export type DocWrite = [DocKey, unknown]
 
 /** Where a session saves: the browser's database now, the server later. */
 export interface SessionStorage {
-  /** changes numbered from `from` on, in order */
-  append(campaignId: string, from: number, changes: Change[]): Promise<void>
-  /** snapshots of changed documents; the journal up to `upto` is no longer needed */
-  compact(campaignId: string, upto: number, writes: DocWrite[], meta: CampaignMeta): Promise<void>
+  /** changes of one tab numbered from `from` on, in order */
+  append(campaignId: string, tab: string, from: number, changes: Change[]): Promise<void>
+  /** snapshots of changed documents; the journal of the tab up to `upto` is no longer needed */
+  compact(campaignId: string, tab: string, upto: number, writes: DocWrite[], meta: CampaignMeta): Promise<void>
 }
 
 /** A pause after which the documents are written whole. */
@@ -40,6 +41,8 @@ function mergeKey(ch: Change): string | null {
 
 export class CampaignSession {
   readonly id: string
+  /** this tab: its journal is its own */
+  readonly tab = newId()
   readonly history = new History()
   private doc: Campaign
   private maps = new Map<string, MapStore>()
@@ -48,8 +51,8 @@ export class CampaignSession {
   private listeners = new Set<() => void>()
   private version = 0
   // the journal: numbers of changes, what is not sent yet, what the snapshot covers
-  private seq: number
-  private savedSeq: number
+  private seq = 0
+  private savedSeq = 0
   private pending: Change[] = []
   private dirty = new Set<DocKey>()
   private timer: ReturnType<typeof setTimeout> | null = null
@@ -58,10 +61,9 @@ export class CampaignSession {
   private applying = false
   private closed = false
 
-  constructor(docs: CampaignDocs, seq: number, private storage: SessionStorage) {
+  constructor(docs: CampaignDocs, private storage: SessionStorage) {
     this.id = docs.campaign.id
     this.doc = docs.campaign
-    this.seq = this.savedSeq = seq
     for (const [id, scene] of Object.entries(docs.maps)) this.addMap(id, scene)
     for (const [id, seat] of Object.entries(docs.seats)) this.seats.set(id, seat)
   }
@@ -221,7 +223,7 @@ export class CampaignSession {
     const from = this.seq + 1
     this.pending = []
     this.seq += changes.length
-    this.saving = this.saving.then(() => this.storage.append(this.id, from, changes)).catch((e) => console.error('journal', e))
+    this.saving = this.saving.then(() => this.storage.append(this.id, this.tab, from, changes)).catch((e) => console.error('journal', e))
     if (this.timer) clearTimeout(this.timer)
     if (this.seq - this.savedSeq >= MAX_JOURNAL) void this.save()
     else this.timer = setTimeout(() => void this.save(), IDLE_MS)
@@ -239,7 +241,7 @@ export class CampaignSession {
     const meta = this.meta()
     this.dirty.clear()
     this.saving = this.saving
-      .then(() => this.storage.compact(this.id, upto, writes, meta))
+      .then(() => this.storage.compact(this.id, this.tab, upto, writes, meta))
       .then(() => {
         this.savedSeq = Math.max(this.savedSeq, upto)
         this.changed()
