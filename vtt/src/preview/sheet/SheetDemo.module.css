@@ -1,0 +1,65 @@
+/* The sheet demo: the player's game screen without the map — the navigation plate on the left,
+   the windows over the overlay (sheets float 48 px under the top panel, inventories keep 48 px
+   from the top and bottom and 96 px from the sides). */
+.screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-secondary);
+  color: var(--txt-primary);
+}
+.intro {
+  position: absolute;
+  top: var(--spacer-xxl);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 2 * var(--spacer-xxl));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacer-m);
+  font: var(--font-multiline);
+  color: var(--txt-secondary);
+  text-align: center;
+}
+.intro a { color: var(--txt-info); font: var(--font-body); }
+.plate {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+.message {
+  padding: var(--spacer-m) var(--spacer-l);
+  background: var(--bg-info);
+  font: var(--font-multiline);
+  color: var(--txt-primary);
+}
+.scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacer-xxl);
+  padding: 48px var(--spacer-xl);
+}
+.window {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  padding: 48px 96px;
+}
+.file { display: none; }
+
+@media (max-width: 840px) {
+  .scroll { padding: var(--spacer-xl) var(--spacer-m); }
+  .window { padding: var(--spacer-m); }
+}

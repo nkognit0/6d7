@@ -1,0 +1,56 @@
+/* Figma: Buttons / button-icon-primary (1:1325), button-icon-switch (1:1334), button-chat (333:1668) */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: var(--control-height);
+  height: var(--control-height);
+  padding: var(--spacer-s);
+  border: 0;
+  border-radius: var(--radius-default);
+  background: transparent;
+  color: var(--icon-primary);
+  cursor: pointer;
+}
+
+.button:disabled {
+  color: var(--icon-inactive);
+  cursor: default;
+}
+
+.button:focus-visible,
+.button[data-state='focus'] {
+  outline: none;
+  box-shadow: var(--focus-outline);
+}
+
+.stretch {
+  flex: 1 1 0;
+}
+
+.primary:hover:not(:disabled),
+.primary[data-state='hover'] {
+  background: var(--bg-tertiary);
+}
+
+.switch:hover:not(:disabled),
+.switch[data-state='hover'],
+.switch[aria-pressed='true']:not(:disabled) {
+  background: var(--bg-tertiary);
+}
+
+.chat {
+  background: var(--bg-info);
+}
+.chat:hover:not(:disabled),
+.chat[data-state='hover'] {
+  background: var(--bg-tertiary);
+}
+.chat:focus-visible,
+.chat[data-state='focus'] {
+  background: var(--bg-info);
+}
+.chat:disabled {
+  background: transparent;
+}

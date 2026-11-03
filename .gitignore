@@ -1,0 +1,13 @@
+# The 6d7 (VTT) repository: vtt/, docs/, assets/ and the project notes.
+# Neighbors with their own life stay out: the old sheet app and the sheet fork have their own
+# git, the rules database is never published (raw/ above all), design-preview is an old page.
+/app/
+/dnd-sheet/
+/dnd-db/
+/design-preview/
+
+node_modules/
+dist/
+*.log
+.claude/*
+!.claude/launch.json

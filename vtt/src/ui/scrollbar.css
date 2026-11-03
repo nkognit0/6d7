@@ -1,0 +1,40 @@
+/* Figma: D&D VTT scroll-bar (14:1470), UI Library Bars / scroll-bar (1:1382): a 12 px gutter
+   without a track or arrows, a 6 px round thumb in bg/scroll 3 px from the edges, blue while
+   dragged. Every scrolling box of the app gets it instead of the browser's own. */
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+  background: transparent;
+}
+
+::-webkit-scrollbar-track {
+  margin: 3px;
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  min-height: 40px;
+  min-width: 40px;
+  border: 3px solid transparent;
+  border-radius: var(--radius-max);
+  background: var(--bg-scroll) padding-box;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--bg-info);
+}
+
+::-webkit-scrollbar-button,
+::-webkit-scrollbar-corner {
+  display: none;
+  background: transparent;
+}
+
+/* Firefox has no scroll bar parts, only their colours. Chromium would ignore the rules above
+   on an element with scrollbar-color, so it is set only where they are not supported. */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-color: var(--bg-scroll) transparent;
+  }
+}

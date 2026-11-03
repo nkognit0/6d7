@@ -1,0 +1,69 @@
+/* Figma: Checkboxes / checkbox (5:286): 16 px box in a 28 px hit area */
+.checkbox {
+  font: var(--font-body);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacer-m);
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--txt-primary);
+  cursor: pointer;
+}
+
+.checkbox:disabled {
+  color: var(--txt-inactive);
+  cursor: default;
+}
+
+.box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: content-box;
+  width: 16px;
+  height: 16px;
+  margin: var(--spacer-s);
+  border-radius: var(--radius-small);
+  background: var(--bg-primary);
+  box-shadow: inset 0 0 0 1px var(--icon-secondary);
+  color: var(--txt-button);
+}
+
+.checkbox:hover:not(:disabled) .box,
+.checkbox[data-state='hover'] .box {
+  background: var(--bg-tertiary);
+}
+.checkbox:focus-visible,
+.checkbox[data-state='focus'] {
+  outline: none;
+}
+.checkbox:focus-visible .box,
+.checkbox[data-state='focus'] .box {
+  box-shadow: inset 0 0 0 1px var(--icon-info);
+}
+.checkbox:disabled .box {
+  box-shadow: inset 0 0 0 1px var(--icon-inactive);
+}
+
+/* on */
+.checkbox[aria-checked='true'] .box {
+  background: var(--icon-info);
+  box-shadow: none;
+}
+.checkbox[aria-checked='true']:hover:not(:disabled) .box,
+.checkbox[aria-checked='true'][data-state='hover'] .box {
+  background: var(--txt-info);
+}
+.checkbox[aria-checked='true']:focus-visible .box,
+.checkbox[aria-checked='true'][data-state='focus'] .box {
+  box-shadow: var(--focus-outline), inset 0 0 0 3px #ffffff;
+}
+.checkbox[aria-checked='true']:disabled .box {
+  background: var(--icon-inactive);
+}
+
+.label {
+  white-space: nowrap;
+}

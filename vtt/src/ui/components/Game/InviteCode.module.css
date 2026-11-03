@@ -1,0 +1,19 @@
+/* D&D VTT / editor / players: invite code (14:1569) */
+.code {
+  font: var(--font-body);
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--txt-info);
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.code:focus-visible {
+  outline: none;
+  text-decoration: underline;
+}

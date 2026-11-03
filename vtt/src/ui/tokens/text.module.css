@@ -1,0 +1,101 @@
+/* Text styles for screens. The values live in foundation.css (--font-*): components use them
+   directly as `font: var(--font-body)`, screens use these classes or the <Text> component.
+   The library's named styles are body, title, display and multiline; caption and captionStrong
+   are set in the VTT layouts without a token. */
+.body {
+  font: var(--font-body);
+}
+
+.title {
+  font: var(--font-title);
+}
+
+.display {
+  font: var(--font-display);
+}
+
+.multiline {
+  font: var(--font-multiline);
+}
+
+.caption {
+  font: var(--font-caption);
+}
+
+.captionStrong {
+  font: var(--font-caption-strong);
+}
+
+/* Character sheet styles: the user's own rules, not in the library. Colors are part of the style. */
+
+/* «ЛИСТ ПЕРСОНАЖА»: serif, wide letter spacing */
+.sheetTitle {
+  font: var(--font-sheet-label);
+  letter-spacing: var(--letter-spacing-sheet-title);
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--txt-info);
+}
+
+/* section headings: НАВЫКИ, БОЙ, ХИТЫ, КОСТИ ХИТОВ, СПАСБРОСКИ ОТ СМЕРТИ */
+.sheetHeading {
+  font: var(--font-sheet-label);
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--txt-info);
+}
+
+/* field labels: Имя, Уровень, Класс; the strip header «Спасброски» */
+.sheetLabel {
+  font: var(--font-sheet-label);
+  color: var(--txt-info);
+}
+
+/* labels inside boxes: СИЛ, КД, Инициатива, Текущие, Успехи */
+.sheetCaption {
+  font: var(--font-sheet-caption);
+  color: var(--txt-info);
+}
+
+/* small serif hint: «Загрузить портрет» */
+.sheetHint {
+  font: var(--font-sheet-hint);
+  color: var(--txt-inactive);
+}
+
+/* values of fields, scores and skill bonuses */
+.sheetValue {
+  font: var(--font-sheet-value);
+  color: var(--txt-primary);
+}
+
+/* values written in capitals: name, species, class, alignment */
+.sheetValueUpper {
+  font: var(--font-sheet-value);
+  text-transform: uppercase;
+  color: var(--txt-primary);
+}
+
+/* big numbers: ability modifiers, AC, initiative, speed, hit points, hit dice */
+.sheetNumber {
+  font: var(--font-sheet-number);
+  color: var(--txt-primary);
+}
+
+/* running text: skill names, multiline fields */
+.sheetText {
+  font: var(--font-sheet-text);
+  color: var(--txt-primary);
+}
+
+/* secondary part of a line: «(Лов)» after a skill */
+.sheetMuted {
+  font: var(--font-sheet-text);
+  color: var(--txt-secondary);
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

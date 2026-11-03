@@ -1,0 +1,101 @@
+/* Non-color design variables of the Chatsky Team UI Library (Figma variables spacer/*, radius/*,
+   font-size/*, line-height/*). Values are taken from the library components. */
+:root {
+  --spacer-none: 0px;
+  --spacer-xxs: 2px;
+  --spacer-xs: 4px;
+  --spacer-s: 6px;
+  --spacer-m: 8px;
+  --spacer-l: 12px;
+  --spacer-xl: 16px;
+  --spacer-xxl: 24px;
+
+  --radius-small: 4px;
+  --radius-default: 8px;
+  --radius-context: 12px;
+  --radius-modal: 16px;
+  --radius-max: 1000px;
+
+  /* Figma effect styles */
+  --elevation-context: 0 2px 6px rgba(13, 43, 60, 0.08);
+  --elevation-focused: 0 3px 8px rgba(13, 43, 60, 0.08), 0 6px 16px rgba(13, 43, 60, 0.08);
+
+  /* overlay under game windows (sheet, inventory): black 40% with an 8 px background blur */
+  --overlay-color: rgba(0, 0, 0, 0.4);
+  --overlay-blur: 8px;
+
+  --font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* serif of the character sheet: labels, headings, captions */
+  --font-family-serif: 'PT Serif Caption', Georgia, serif;
+  --font-size-small: 10px;
+  --font-size-default: 12px;
+  --font-size-large: 14px;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --line-height-small: 18px;
+  --line-height-default: 28px;
+
+  /* text styles as `font` values: components set `font: var(--font-body)` and may change the
+     weight afterwards in the same rule set (no cross-file cascade) */
+  --font-body: var(--font-weight-regular) var(--font-size-default) / var(--line-height-default) var(--font-family);
+  --font-title: var(--font-weight-semibold) var(--font-size-default) / var(--line-height-default) var(--font-family);
+  --font-display: var(--font-weight-semibold) var(--font-size-large) / var(--line-height-default) var(--font-family);
+  --font-navigation: var(--font-weight-regular) var(--font-size-large) / var(--line-height-default) var(--font-family);
+  --font-multiline: var(--font-weight-regular) var(--font-size-default) / var(--line-height-small) var(--font-family);
+  --font-caption: var(--font-weight-regular) var(--font-size-default) / var(--line-height-small) var(--font-family);
+  --font-caption-strong: var(--font-weight-semibold) var(--font-size-default) / var(--line-height-small) var(--font-family);
+  /* dice result: Inter SemiBold 24/28, set in the layout without a token */
+  --font-result: var(--font-weight-semibold) 24px / var(--line-height-default) var(--font-family);
+  /* NPC card names: Inter Bold 12/18, set in the layouts without a token */
+  --font-caption-bold: var(--font-weight-bold) var(--font-size-default) / var(--line-height-small) var(--font-family);
+
+  /* Character sheet (D&D VTT «Лист персонажа черновик» 41:4939 and the approved sheet app/preview).
+     Its own rules: serif labels in txt/info, Inter Medium values in txt/primary, 28 px lines. */
+  --font-sheet-label: var(--font-weight-regular) var(--font-size-large) / var(--line-height-default) var(--font-family-serif);
+  --font-sheet-caption: var(--font-weight-regular) var(--font-size-large) / normal var(--font-family-serif);
+  --font-sheet-hint: var(--font-weight-regular) var(--font-size-default) / normal var(--font-family-serif);
+  --font-sheet-value: var(--font-weight-medium) var(--font-size-large) / var(--line-height-default) var(--font-family);
+  --font-sheet-number: var(--font-weight-medium) 24px / var(--line-height-default) var(--font-family);
+  --font-sheet-text: var(--font-weight-regular) var(--font-size-large) / var(--line-height-default) var(--font-family);
+  --letter-spacing-sheet-title: 2.8px;
+  /* fields of the sheet: underline and ruled lines of multiline text */
+  --sheet-rule: var(--txt-inactive);
+  --sheet-rule-active: var(--txt-info);
+
+  /* control heights used across the library */
+  --control-height: 28px;
+  --icon-size: 16px;
+
+  /* focus: 1px brand outline inside the control; filled controls add a 2px white inner ring */
+  --focus-outline: inset 0 0 0 1px var(--outline-brand);
+  --focus-inner-ring: inset 0 0 0 2px #ffffff;
+}
+
+/* Rule of the design system: states switch instantly — no transitions or animations between them. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg-secondary);
+  color: var(--txt-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-default);
+  line-height: var(--line-height-default);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}

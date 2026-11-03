@@ -1,0 +1,410 @@
+{
+ "icon.16.color/character.coin.G.svg": {
+  "w": 30,
+  "h": 30,
+  "x": 7,
+  "y": 9
+ },
+ "icon.16.color/character.coin.M.svg": {
+  "w": 30,
+  "h": 30,
+  "x": 7,
+  "y": 9
+ },
+ "icon.16.color/character.coin.P.svg": {
+  "w": 30,
+  "h": 30,
+  "x": 7,
+  "y": 9
+ },
+ "icon.16.color/character.coin.S.svg": {
+  "w": 30,
+  "h": 30,
+  "x": 7,
+  "y": 9
+ },
+ "icon.16.color/character.eraser.svg": {
+  "w": 31,
+  "h": 32,
+  "x": 7.5,
+  "y": 10
+ },
+ "icon.16.player/character.figure.avatar.blue.svg": {
+  "w": 30,
+  "h": 32,
+  "x": 7,
+  "y": 10
+ },
+ "icon.16.player/character.figure.avatar.green.svg": {
+  "w": 30,
+  "h": 32,
+  "x": 7,
+  "y": 10
+ },
+ "icon.16.player/character.figure.avatar.grey.svg": {
+  "w": 30,
+  "h": 32,
+  "x": 7,
+  "y": 10
+ },
+ "icon.16.player/character.figure.avatar.indigo.svg": {
+  "w": 30,
+  "h": 32,
+  "x": 7,
+  "y": 10
+ },
+ "icon.16.player/character.figure.avatar.orange.svg": {
+  "w": 30,
+  "h": 32,
+  "x": 7,
+  "y": 10
+ },
+ "icon.16.player/character.figure.avatar.purple.svg": {
+  "w": 30,
+  "h": 32,
+  "x": 7,
+  "y": 10
+ },
+ "icon.16.player/character.figure.avatar.red.svg": {
+  "w": 30,
+  "h": 32,
+  "x": 7,
+  "y": 10
+ },
+ "icon.16.player/character.figure.avatar.scarlett.svg": {
+  "w": 30,
+  "h": 32,
+  "x": 7,
+  "y": 10
+ },
+ "icon.16.player/character.figure.avatar.yellow.svg": {
+  "w": 30,
+  "h": 32,
+  "x": 7,
+  "y": 10
+ },
+ "icon.16.player/character.pencil.blue.svg": {
+  "w": 32,
+  "h": 32,
+  "x": 8,
+  "y": 10
+ },
+ "icon.16.player/character.pencil.green.svg": {
+  "w": 32,
+  "h": 32,
+  "x": 8,
+  "y": 10
+ },
+ "icon.16.player/character.pencil.grey.svg": {
+  "w": 32,
+  "h": 32,
+  "x": 8,
+  "y": 10
+ },
+ "icon.16.player/character.pencil.indigo.svg": {
+  "w": 32,
+  "h": 32,
+  "x": 8,
+  "y": 10
+ },
+ "icon.16.player/character.pencil.orange.svg": {
+  "w": 32,
+  "h": 32,
+  "x": 8,
+  "y": 10
+ },
+ "icon.16.player/character.pencil.purple.svg": {
+  "w": 32,
+  "h": 32,
+  "x": 8,
+  "y": 10
+ },
+ "icon.16.player/character.pencil.red.svg": {
+  "w": 32,
+  "h": 32,
+  "x": 8,
+  "y": 10
+ },
+ "icon.16.player/character.pencil.scarlett.svg": {
+  "w": 32,
+  "h": 32,
+  "x": 8,
+  "y": 10
+ },
+ "icon.16.player/character.pencil.yellow.svg": {
+  "w": 32,
+  "h": 32,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/dice.blue.svg": {
+  "w": 53,
+  "h": 58,
+  "x": 5.5,
+  "y": 10
+ },
+ "icon.42.player/dice.green.svg": {
+  "w": 53,
+  "h": 58,
+  "x": 5.5,
+  "y": 10
+ },
+ "icon.42.player/dice.grey.svg": {
+  "w": 53,
+  "h": 58,
+  "x": 5.5,
+  "y": 10
+ },
+ "icon.42.player/dice.indigo.svg": {
+  "w": 53,
+  "h": 58,
+  "x": 5.5,
+  "y": 10
+ },
+ "icon.42.player/dice.orange.svg": {
+  "w": 53,
+  "h": 58,
+  "x": 5.5,
+  "y": 10
+ },
+ "icon.42.player/dice.purple.svg": {
+  "w": 53,
+  "h": 58,
+  "x": 5.5,
+  "y": 10
+ },
+ "icon.42.player/dice.red.svg": {
+  "w": 53,
+  "h": 58,
+  "x": 5.5,
+  "y": 10
+ },
+ "icon.42.player/dice.scarlett.svg": {
+  "w": 53,
+  "h": 58,
+  "x": 5.5,
+  "y": 10
+ },
+ "icon.42.player/dice.yellow.svg": {
+  "w": 53,
+  "h": 58,
+  "x": 5.5,
+  "y": 10
+ },
+ "icon.42.player/inventory.blue.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/inventory.green.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/inventory.grey.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/inventory.indigo.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/inventory.orange.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/inventory.purple.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/inventory.red.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/inventory.scarlett.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/inventory.yellow.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.character.blue.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.character.green.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.character.grey.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.character.indigo.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.character.orange.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.character.purple.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.character.red.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.character.scarlett.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.character.yellow.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.sidekick.blue.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.sidekick.green.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.sidekick.grey.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.sidekick.indigo.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.sidekick.orange.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.sidekick.purple.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.sidekick.red.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.sidekick.scarlett.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/sheet.sidekick.yellow.svg": {
+  "w": 58,
+  "h": 58,
+  "x": 8,
+  "y": 10
+ },
+ "icon.42.player/spells.blue.svg": {
+  "w": 57,
+  "h": 57,
+  "x": 7.5,
+  "y": 9.5
+ },
+ "icon.42.player/spells.green.svg": {
+  "w": 57,
+  "h": 57,
+  "x": 7.5,
+  "y": 9.5
+ },
+ "icon.42.player/spells.grey.svg": {
+  "w": 57,
+  "h": 57,
+  "x": 7.5,
+  "y": 9.5
+ },
+ "icon.42.player/spells.indigo.svg": {
+  "w": 57,
+  "h": 57,
+  "x": 7.5,
+  "y": 9.5
+ },
+ "icon.42.player/spells.orange.svg": {
+  "w": 57,
+  "h": 57,
+  "x": 7.5,
+  "y": 9.5
+ },
+ "icon.42.player/spells.purple.svg": {
+  "w": 57,
+  "h": 57,
+  "x": 7.5,
+  "y": 9.5
+ },
+ "icon.42.player/spells.red.svg": {
+  "w": 57,
+  "h": 57,
+  "x": 7.5,
+  "y": 9.5
+ },
+ "icon.42.player/spells.scarlett.svg": {
+  "w": 57,
+  "h": 57,
+  "x": 7.5,
+  "y": 9.5
+ },
+ "icon.42.player/spells.yellow.svg": {
+  "w": 57,
+  "h": 57,
+  "x": 7.5,
+  "y": 9.5
+ }
+}

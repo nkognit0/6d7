@@ -1,0 +1,53 @@
+/* The item and spell inventories: windows of panes (GameWindow), a grid of slots, search results
+   and the description card. */
+
+.head { display: flex; align-items: center; gap: var(--spacer-m); }
+.headTitle { flex: 1; font: var(--font-title); color: var(--txt-primary); }
+.search { width: 240px; }
+.tabs { display: flex; flex-wrap: wrap; gap: var(--spacer-xs); }
+
+.body { padding: var(--spacer-xl) var(--spacer-xxl); }
+.slotPicture { max-width: 100%; max-height: 100%; }
+.slotText { font: var(--font-caption); color: var(--txt-primary); text-align: center; overflow: hidden; }
+
+/* search results: a row per thing with its icon, name, price and buttons */
+.results { display: flex; flex-direction: column; gap: var(--spacer-xs); }
+.result { display: flex; align-items: center; gap: var(--spacer-m); padding: var(--spacer-xs) var(--spacer-m); border-radius: var(--radius-default); background: var(--bg-tertiary); }
+.result > img { width: 32px; height: 32px; flex: none; }
+.resultName { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.resultName > span:first-child { font: var(--font-display); color: var(--txt-primary); }
+.resultName > span + span { font: var(--font-caption); color: var(--txt-secondary); }
+.resultButtons { display: flex; gap: var(--spacer-xs); flex: none; }
+
+.coins { display: flex; flex-wrap: wrap; }
+.message { font: var(--font-caption); color: var(--txt-alert); }
+.note { font: var(--font-caption); color: var(--txt-secondary); }
+/* a line alone in a pane footer: body (28 px) + 8 px above and below — 44 px, as the button row */
+.footerNote { font: var(--font-body); color: var(--txt-secondary); }
+.buttons { display: flex; gap: var(--spacer-m); }
+/* «Удалить»: a small button with the minus icon after the wide ones */
+.remove { flex: none; margin-left: auto; }
+
+/* the description card */
+.card { padding: var(--spacer-l); display: flex; flex-direction: column; gap: var(--spacer-l); }
+.cardHead { display: flex; gap: var(--spacer-m); align-items: center; }
+.cardHead > img { width: 48px; height: 48px; flex: none; }
+.cardTitle { font: var(--font-display); color: var(--txt-primary); }
+.cardSubtitle { font: var(--font-caption); color: var(--txt-secondary); }
+.facts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacer-m) var(--spacer-l); }
+.fact { display: flex; flex-direction: column; min-width: 0; }
+.wide { grid-column: 1 / -1; }
+.factLabel { font: var(--font-caption); color: var(--txt-secondary); }
+.factValue { font: var(--font-multiline); color: var(--txt-primary); }
+.text { font: var(--font-multiline); color: var(--txt-primary); white-space: pre-wrap; margin: 0; }
+.cardNote { font: var(--font-caption); color: var(--txt-info); margin: 0; }
+.empty { padding: var(--spacer-l); font: var(--font-multiline); color: var(--txt-secondary); }
+
+/* spell slots */
+.slots { padding: var(--spacer-l); display: flex; flex-direction: column; gap: var(--spacer-xs); }
+.slotsCaption { font: var(--font-caption); color: var(--txt-secondary); margin-top: var(--spacer-m); }
+
+@media (max-width: 840px) {
+  .body { padding: var(--spacer-l); }
+  .search { width: 160px; }
+}

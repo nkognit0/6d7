@@ -1,0 +1,103 @@
+/* Figma: Menu items (24:1281): context menus, dropdown lists, filter pop-ups */
+.menu {
+  display: flex;
+  flex-direction: column;
+  min-width: 232px;
+  padding: var(--spacer-m);
+  border-radius: var(--radius-context);
+  background: var(--bg-secondary);
+  box-shadow: inset 0 0 0 1px var(--outline-primary), var(--elevation-context);
+}
+
+.item {
+  font: var(--font-body);
+  display: flex;
+  align-items: center;
+  gap: var(--spacer-m);
+  width: 100%;
+  min-height: var(--control-height);
+  padding: 0 var(--spacer-m);
+  border: 0;
+  border-radius: var(--radius-small);
+  background: transparent;
+  color: var(--txt-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.withIcon {
+  gap: 0;
+  padding-left: var(--spacer-xxs);
+}
+
+.item:hover:not(:disabled),
+.item[data-state='hover'],
+.item[data-state='active'],
+.item[aria-current='true'] {
+  background: var(--bg-tertiary);
+}
+
+.item:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-outline);
+}
+
+.item:disabled {
+  color: var(--txt-inactive);
+  cursor: default;
+}
+
+.icon {
+  display: flex;
+  padding: var(--spacer-s);
+  color: var(--icon-primary);
+}
+
+.item:disabled .icon {
+  color: var(--icon-inactive);
+}
+
+.text {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hint {
+  flex-shrink: 0;
+  max-width: 76px;
+  color: var(--txt-secondary);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item:disabled .hint {
+  color: var(--txt-inactive);
+}
+
+.divider {
+  padding: var(--spacer-xs) var(--spacer-m);
+}
+
+.divider::after {
+  content: '';
+  display: block;
+  height: 1px;
+  background: var(--outline-primary);
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + var(--spacer-xs));
+  left: 0;
+  z-index: 100;
+}
+
+.alignEnd {
+  right: 0;
+  left: auto;
+}

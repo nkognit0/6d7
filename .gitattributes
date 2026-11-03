@@ -1,0 +1,3 @@
+# Files stay LF in the working copy too (the global autocrlf would turn them into CRLF, and exact
+# string edits then break).
+* text=auto eol=lf

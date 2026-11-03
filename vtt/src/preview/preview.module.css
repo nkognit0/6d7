@@ -1,0 +1,133 @@
+.page {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--bg-secondary);
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: var(--spacer-xxl) var(--spacer-l);
+  overflow-y: auto;
+  border-right: 1px solid var(--outline-primary);
+  background: var(--bg-primary);
+}
+
+.navTitle {
+  font: var(--font-display);
+  margin: 0 0 var(--spacer-m);
+  padding: 0 var(--spacer-m);
+}
+
+.navGroup {
+  font: var(--font-caption);
+  margin: var(--spacer-l) 0 var(--spacer-xs);
+  padding: 0 var(--spacer-m);
+  color: var(--txt-secondary);
+}
+
+.navLink {
+  font: var(--font-body);
+  padding: 0 var(--spacer-m);
+  border-radius: var(--radius-small);
+  color: var(--txt-primary);
+  text-decoration: none;
+}
+
+.navLink:hover {
+  background: var(--bg-tertiary);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacer-xxl);
+  padding: var(--spacer-xxl);
+  min-width: 0;
+}
+
+.intro {
+  font: var(--font-multiline);
+  max-width: 720px;
+  margin: 0;
+  color: var(--txt-secondary);
+}
+
+.section {
+  padding: var(--spacer-xl) var(--spacer-xxl) var(--spacer-xxl);
+  border-radius: var(--radius-context);
+  background: var(--bg-primary);
+  box-shadow: inset 0 0 0 1px var(--outline-primary);
+  scroll-margin-top: var(--spacer-xxl);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacer-l);
+}
+
+.sectionTitle {
+  font: var(--font-display);
+  margin: 0;
+}
+
+.figma {
+  font: var(--font-caption);
+  color: var(--txt-secondary);
+}
+
+.note {
+  font: var(--font-multiline);
+  margin: 0 0 var(--spacer-m);
+  color: var(--txt-secondary);
+}
+
+.sectionBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacer-l);
+  margin-top: var(--spacer-m);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--spacer-l);
+}
+
+.rowLabel {
+  font: var(--font-caption);
+  padding-top: var(--spacer-xs);
+  color: var(--txt-secondary);
+}
+
+.rowItems {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacer-xl) var(--spacer-xxl);
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacer-xs);
+  min-width: 0;
+}
+
+.cellBody {
+  display: flex;
+  align-items: center;
+  min-height: var(--control-height);
+}
+
+.caption {
+  font: var(--font-caption);
+  color: var(--txt-secondary);
+}

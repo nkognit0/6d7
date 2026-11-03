@@ -1,0 +1,62 @@
+/* D&D VTT / game / inventory-box (33:6735), inventory-slot */
+
+/* square cells of 80–100 px across the whole width; the number of columns comes from SlotGrid
+   (the auto-fill below only holds until the grid has measured itself) */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: var(--spacer-m);
+  align-content: start;
+}
+
+.slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  padding: 10px;
+  border: 0;
+  border-radius: var(--radius-default);
+  background: var(--bg-tertiary);
+  box-shadow: inset 0 0 0 1px var(--outline-primary);
+  cursor: pointer;
+}
+
+.grid > .slot {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+}
+
+.slot:disabled {
+  cursor: default;
+}
+
+.slot:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--outline-brand-30);
+}
+
+.slot > img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* выбрана для просмотра описания: заливка, как у наведения кнопок листов и инвентарей игрока */
+.selected {
+  background: var(--bg-info);
+}
+
+/* экипирована (у заклинаний — подготовлено) */
+.equipped,
+.equipped:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--outline-brand);
+}
+
+/* применена магическая настройка */
+.attuned,
+.attuned:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--outline-alert);
+}

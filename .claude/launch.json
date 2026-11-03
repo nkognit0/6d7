@@ -1,0 +1,88 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dnd-app",
+      "runtimeExecutable": "C:\\Users\\Misha\\tools\\node\\node.exe",
+      "runtimeArgs": [
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\app\\node_modules\\vite\\bin\\vite.js",
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\app",
+        "--config",
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\app\\vite.config.ts",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "5174",
+        "--strictPort"
+      ],
+      "port": 5174,
+      "url": "http://127.0.0.1:5174"
+    },
+    {
+      "name": "dnd-app-build",
+      "runtimeExecutable": "C:\\Users\\Misha\\tools\\node\\node.exe",
+      "runtimeArgs": [
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\app\\node_modules\\vite\\bin\\vite.js",
+        "preview",
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\app",
+        "--config",
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\app\\vite.config.ts",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "4173",
+        "--strictPort"
+      ],
+      "port": 4173,
+      "url": "http://127.0.0.1:4173"
+    },
+    {
+      "name": "dnd-sheet",
+      "runtimeExecutable": "C:\\Users\\Misha\\tools\\node\\node.exe",
+      "runtimeArgs": [
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\dnd-sheet\\node_modules\\vite\\bin\\vite.js",
+        "--config",
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\dnd-sheet\\vite.config.ts",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "5173",
+        "--strictPort"
+      ],
+      "port": 5173,
+      "url": "http://127.0.0.1:5173"
+    },
+    {
+      "name": "design-preview",
+      "runtimeExecutable": "C:\\Users\\Misha\\tools\\node\\node.exe",
+      "runtimeArgs": [
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\app\\node_modules\\vite\\bin\\vite.js",
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\design-preview",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "5175",
+        "--strictPort"
+      ],
+      "port": 5175,
+      "url": "http://127.0.0.1:5175"
+    },
+    {
+      "name": "vtt",
+      "runtimeExecutable": "C:\\Users\\Misha\\tools\\node\\node.exe",
+      "runtimeArgs": [
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\vtt\\node_modules\\vite\\bin\\vite.js",
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\vtt",
+        "--config",
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\vtt\\vite.config.ts",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "5176",
+        "--strictPort"
+      ],
+      "port": 5176,
+      "url": "http://127.0.0.1:5176"
+    }
+  ]
+}

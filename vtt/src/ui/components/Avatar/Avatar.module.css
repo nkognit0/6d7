@@ -1,0 +1,28 @@
+/* Figma: Avatars / avatar (26:711) */
+.avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-max);
+  overflow: hidden;
+}
+
+.ring {
+  box-shadow: 0 0 0 2px var(--bg-primary);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.letter {
+  font: var(--font-display);
+  color: var(--txt-button);
+  text-align: center;
+}

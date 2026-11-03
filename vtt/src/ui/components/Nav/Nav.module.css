@@ -1,0 +1,95 @@
+/* Figma: Navigation / nav-tab (27:1960), nav-page (27:1948) */
+.tab {
+  font: var(--font-body);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacer-xs);
+  height: var(--control-height);
+  padding: 0 var(--spacer-m);
+  border: 0;
+  border-radius: var(--radius-default);
+  background: transparent;
+  color: var(--txt-primary);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tab:hover:not(:disabled),
+.tab[data-state='hover'],
+.tab[aria-selected='true'] {
+  background: var(--bg-tertiary);
+}
+
+.tab:focus-visible,
+.tab[data-state='focus'] {
+  outline: none;
+  box-shadow: var(--focus-outline);
+}
+
+.tab:disabled {
+  color: var(--txt-inactive);
+  cursor: default;
+}
+
+/* indicator: icon.16.dot — a 6 px dot centered in 16 px */
+.dot {
+  display: block;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(circle, var(--icon-info) 3px, transparent 3.5px);
+}
+
+.page {
+  font: var(--font-navigation);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacer-xs);
+  padding: var(--spacer-xs) var(--spacer-l);
+  border: 0;
+  border-radius: var(--radius-default);
+  background: transparent;
+  color: var(--txt-primary);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.named {
+  width: 140px;
+}
+
+.pageIcon {
+  display: flex;
+  color: var(--icon-primary);
+}
+
+.page:hover:not(:disabled),
+.page[data-state='hover'] {
+  background: var(--bg-tertiary);
+}
+
+.page[aria-current='page'],
+.page:focus-visible,
+.page[data-state='focus'] {
+  outline: none;
+  background: var(--bg-primary);
+  box-shadow: inset 0 0 0 1px var(--outline-brand), var(--elevation-context);
+}
+
+.page:disabled {
+  color: var(--txt-inactive);
+  cursor: default;
+}
+
+.page:disabled .pageIcon {
+  color: var(--icon-inactive);
+}
+
+.corner {
+  position: absolute;
+  top: 0;
+  right: 0;
+}

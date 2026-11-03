@@ -1,0 +1,18 @@
+/* Figma: Bars / scroll-bar (1:1382). The bar itself is the app-wide one (ui/scrollbar.css); here it
+   keeps 16 px free at the bottom of a list */
+.scroll {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.horizontal {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.scroll::-webkit-scrollbar-track {
+  margin: 3px 0 16px;
+  background: transparent;
+}
+

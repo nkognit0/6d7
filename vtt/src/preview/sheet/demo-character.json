@@ -1,0 +1,366 @@
+{
+ "name": "Ниари",
+ "playerName": "",
+ "classLevel": "Следопыт 5",
+ "subclass": "Повелитель зверей",
+ "background": "Солдат",
+ "species": "Эльф (Дроу)",
+ "size": "Средний",
+ "alignment": "",
+ "xp": "0",
+ "str": "14",
+ "dex": "17",
+ "con": "14",
+ "int": "10",
+ "wis": "14",
+ "cha": "8",
+ "proficiencyBonus": "+3",
+ "strSave": "+5",
+ "strSaveChecked": true,
+ "dexSave": "+6",
+ "dexSaveChecked": true,
+ "conSave": "+2",
+ "conSaveChecked": false,
+ "intSave": "+0",
+ "intSaveChecked": false,
+ "wisSave": "+2",
+ "wisSaveChecked": false,
+ "chaSave": "-1",
+ "chaSaveChecked": false,
+ "skillAcrobatics": "+3",
+ "skillAcrobaticsChecked": false,
+ "skillAnimalHandling": "+8",
+ "skillAnimalHandlingChecked": true,
+ "skillArcana": "+0",
+ "skillArcanaChecked": false,
+ "skillAthletics": "+5",
+ "skillAthleticsChecked": true,
+ "skillDeception": "-1",
+ "skillDeceptionChecked": false,
+ "skillHistory": "+0",
+ "skillHistoryChecked": false,
+ "skillInsight": "+2",
+ "skillInsightChecked": false,
+ "skillIntimidation": "+2",
+ "skillIntimidationChecked": true,
+ "skillInvestigation": "+0",
+ "skillInvestigationChecked": false,
+ "skillMedicine": "+2",
+ "skillMedicineChecked": false,
+ "skillNature": "+0",
+ "skillNatureChecked": false,
+ "skillPerception": "+5",
+ "skillPerceptionChecked": true,
+ "skillPerformance": "-1",
+ "skillPerformanceChecked": false,
+ "skillPersuasion": "-1",
+ "skillPersuasionChecked": false,
+ "skillReligion": "+0",
+ "skillReligionChecked": false,
+ "skillSlightOfHand": "+3",
+ "skillSlightOfHandChecked": false,
+ "skillStealth": "+6",
+ "skillStealthChecked": true,
+ "skillSurvival": "+5",
+ "skillSurvivalChecked": true,
+ "passivePerception": "15",
+ "armorLight": true,
+ "armorMedium": true,
+ "armorHeavy": false,
+ "armorShields": true,
+ "weaponProficiencies": "Простое и воинское оружие",
+ "toolProficiencies": "Игральные кости",
+ "languages": "Общий, Эльфийский, Сильван, Общий язык жестов, Драконий",
+ "ac": "15",
+ "init": "+3",
+ "speed": "30 фт",
+ "maxHp": "44",
+ "hp": "44",
+ "hitDiceMax": "5к10",
+ "hitDice": "5к10",
+ "gp": "21",
+ "sp": "",
+ "cp": "",
+ "equipment": "Проклёпанный кожаный доспех, Скимитар, Короткий меч, Длинный лук, Стрелы ×40, Колчан ×2, Веточка омелы, Набор путешественника, Копьё, Короткий лук, Игральные кости, Комплект целителя, Дорожная одежда",
+ "inventory": [
+  {
+   "id": "torch"
+  },
+  {
+   "id": "ring-of-protection"
+  },
+  {
+   "id": "goggles-of-night"
+  },
+  {
+   "id": "potion-of-healing"
+  },
+  {
+   "id": "arrows"
+  },
+  {
+   "id": "arrows"
+  },
+  {
+   "id": "quiver"
+  },
+  {
+   "id": "quiver"
+  },
+  {
+   "id": "sprig-of-mistletoe"
+  },
+  {
+   "id": "explorers-pack"
+  },
+  {
+   "id": "spear"
+  },
+  {
+   "id": "shortbow"
+  },
+  {
+   "id": "dice"
+  },
+  {
+   "id": "healers-kit"
+  },
+  {
+   "id": "longsword-plus-1"
+  },
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "worn": {
+  "armor": {
+   "id": "studded-leather-armor"
+  },
+  "clothes": {
+   "id": "clothes-travelers"
+  },
+  "main1": {
+   "id": "scimitar"
+  },
+  "off1": {
+   "id": "shortsword"
+  },
+  "main2": {
+   "id": "longbow"
+  },
+  "off2": null
+ },
+ "attacks": [
+  {
+   "name": "Скимитар",
+   "bonus": "+6",
+   "damage": "1к6+3 рубящий",
+   "notes": "фехтовальное, лёгкое"
+  },
+  {
+   "name": "Короткий меч",
+   "bonus": "+6",
+   "damage": "1к6+3 колющий",
+   "notes": "фехтовальное, лёгкое; мастерство: раздражение"
+  },
+  {
+   "name": "Длинный лук",
+   "bonus": "+6",
+   "damage": "1к8+3 колющий",
+   "notes": "боеприпас (150/600), тяжёлое, двуручное; мастерство: замедление"
+  }
+ ],
+ "attacksText": "",
+ "personalityTraits": "",
+ "ideals": "",
+ "bonds": "",
+ "flaws": "",
+ "classFeatures": "Использование заклинаний (Мудрость): подготовленных заклинаний 6, ячеек 1 круга 4, 2 круга 2\nИзбранный враг: «Метка охотника» всегда подготовлено, 3 раза без ячейки за долгий отдых\nМастерство оружия: Длинный лук (замедление), Короткий меч (раздражение)\nИскусный исследователь (2-й ур.): Уход за животными; Общий язык жестов, Драконий\nБоевой стиль (2-й ур.): Стрельба\nПервичный спутник (Повелитель зверей, 3-й ур.)\nДополнительная атака (5-й ур.)\nТаблица класса (5-й ур.): избранный враг 3",
+ "speciesTraits": "Тёмное зрение 120 фт\nЭльфийская родословная: Дроу — «Пляшущие огоньки», «Огонь фей» (с 3-го ур.), «Тьма» (с 5-го ур.) (Мудрость)\nНаследие фей: преимущество на спасброски от очарования\nОбострённые чувства: Восприятие\nТранс: долгий отдых за 4 часа медитации\nЗаклинание родословной (3-й ур.): Огонь фей\nЗаклинание родословной (5-й ур.): Тьма",
+ "feats": "«Свирепый атакующий» (предыстория): раз в ход бросать урон оружия дважды и выбирать\n«Стрельба» (боевой стиль, 2-й ур.)\n«Увеличение характеристик» (черта, 4-й ур.): СИЛ +2",
+ "age": "",
+ "height": "",
+ "weight": "",
+ "eyes": "",
+ "skin": "",
+ "hair": "",
+ "backstory": "",
+ "spellcastingClass": "Следопыт (МДР)",
+ "spellSaveDC": "13",
+ "spellAttackBonus": "+5",
+ "preparedSpellsTotal": "6",
+ "cantrips": [
+  {
+   "name": "Пляшущие огоньки (вид)"
+  }
+ ],
+ "lvl1Spells": [
+  {
+   "name": "Лечение ран",
+   "prepared": true
+  },
+  {
+   "name": "Опутывающий удар",
+   "prepared": true
+  },
+  {
+   "name": "Метка охотника",
+   "prepared": true
+  },
+  {
+   "name": "Град шипов",
+   "prepared": true
+  },
+  {
+   "name": "Добряника",
+   "prepared": true
+  },
+  {
+   "name": "Огонь фей (вид)",
+   "prepared": true
+  },
+  {
+   "name": "Дружба с животными",
+   "prepared": true
+  },
+  {
+   "name": "Обнаружение болезней и ядов",
+   "prepared": true
+  }
+ ],
+ "lvl1SpellSlotsTotal": "4",
+ "resources": [
+  {
+   "id": "ranger-favored-enemy",
+   "name": "Избранный враг",
+   "max": 3,
+   "used": 0,
+   "recharge": "long"
+  }
+ ],
+ "lvl2Spells": [
+  {
+   "name": "Тьма (вид)",
+   "prepared": true
+  }
+ ],
+ "lvl3Spells": [],
+ "lvl4Spells": [],
+ "lvl5Spells": [],
+ "lvl6Spells": [],
+ "lvl7Spells": [],
+ "lvl8Spells": [],
+ "lvl9Spells": [],
+ "lvl2SpellSlotsTotal": "2",
+ "lvl3SpellSlotsTotal": "",
+ "lvl4SpellSlotsTotal": "",
+ "lvl5SpellSlotsTotal": "",
+ "lvl6SpellSlotsTotal": "",
+ "lvl7SpellSlotsTotal": "",
+ "lvl8SpellSlotsTotal": "",
+ "lvl9SpellSlotsTotal": "",
+ "companion": {
+  "kind": "primal-companion",
+  "creature": "beast-of-the-land",
+  "typeChoice": "",
+  "scale": "5",
+  "name": "Тень",
+  "kindName": "Первичный спутник",
+  "form": "Земной зверь",
+  "size": "Средний",
+  "creatureType": "Зверь",
+  "alignment": "Нейтральный",
+  "ac": "15",
+  "maxHp": "30",
+  "hp": "30",
+  "hitDice": "5к8",
+  "speed": "40 фт, лазание 40 фт",
+  "init": "+2",
+  "proficiencyBonus": "+3",
+  "cr": "",
+  "senses": "тёмное зрение 60 фт",
+  "passivePerception": "12",
+  "languages": "понимает языки, которые знаете вы",
+  "skillsText": "",
+  "defenses": "",
+  "initiativeRule": "ходит в инициативу хозяина",
+  "rules": "Дружелюбен к вам и вашим союзникам и слушается вас. Если вы умираете, исчезает.\nХодит в ваш ход: перемещается и тратит Реакцию сам, а из действий совершает только Уклонение, если вы Бонусным действием не прикажете другое.\nСовершая действие Атака, можно отказаться от одной своей атаки, чтобы зверь сделал Удар зверя.\nЕсли вы Недееспособны, зверь действует сам и может совершать любые действия.\nЕсли зверь погиб не больше часа назад, действием Магия и тратой ячейки заклинаний вы возвращаете его: через минуту он оживает с полными хитами.\nПосле Долгого отдыха можно призвать другого зверя; прежний исчезает.",
+  "str": "14",
+  "strSave": "+5",
+  "strSaveChecked": false,
+  "dex": "14",
+  "dexSave": "+5",
+  "dexSaveChecked": false,
+  "con": "15",
+  "conSave": "+5",
+  "conSaveChecked": false,
+  "int": "8",
+  "intSave": "+2",
+  "intSaveChecked": false,
+  "wis": "14",
+  "wisSave": "+5",
+  "wisSaveChecked": false,
+  "cha": "11",
+  "chaSave": "+3",
+  "chaSaveChecked": false,
+  "traits": "Первичная связь. К своим проверкам характеристик и спасброскам зверь прибавляет ваш бонус мастерства.",
+  "actions": "Удар зверя. Рукопашная атака: +5, досягаемость 5 фт. Попадание: урон 8 (1к8 + 4) . Тип урона выбирается при призыве. Если перед попаданием зверь пробежал к цели по прямой не меньше 20 футов, цель получает ещё 1к6 урона того же типа, а существо размера Большой и меньше падает (Лежащий ничком).",
+  "bonusActions": "",
+  "reactions": ""
+ },
+ "lvl1SpellSlotsUsed": 1
+}

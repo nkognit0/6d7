@@ -1,0 +1,32 @@
+{
+  "name": "dnd-vtt",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Virtual tabletop для D&D 2024: главный экран, редактор кампании, игра мастера и игрока.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "tokens": "node scripts/tokens.mjs",
+    "icons": "node scripts/icons.mjs"
+  },
+  "dependencies": {
+    "@fontsource/inter": "5.1.0",
+    "@fontsource/pt-serif-caption": "5.1.0",
+    "pixi.js": "8.22.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "4.3.4",
+    "typescript": "5.6.3",
+    "vite": "5.4.11"
+  }
+}

@@ -1,0 +1,34 @@
+/* Figma: Sidebar sections / section-general (887:4304), section-title (887:4452); row-title (32:2409) */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacer-m);
+  padding: var(--spacer-m) var(--spacer-l);
+  box-shadow: inset 0 -1px 0 var(--outline-primary);
+}
+
+.fill {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.rowTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacer-m);
+  min-height: var(--control-height);
+  color: var(--txt-primary);
+}
+
+.titleText {
+  font: var(--font-title);
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inactive {
+  color: var(--txt-inactive);
+}
