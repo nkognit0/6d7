@@ -40,7 +40,10 @@ export const ru = {
     import: 'Импорт кампании',
     play: 'Играть',
     edit: 'Редактировать',
-    noCampaigns: 'Кампаний пока нет. Создайте первую.'
+    noCampaigns: 'Кампаний пока нет. Создайте первую.',
+    // there is no sign-in yet: the user menu shows this name
+    userName: 'Мастер',
+    importing: 'Читаю архив…'
   },
   campaignMenu: {
     undo: 'Отменить',
@@ -359,10 +362,12 @@ export const ru = {
   },
   // screens of the next steps: until they are made, the address shows a stub with links
   stub: {
-    home: 'Главный экран появится на этапе 2 плана.',
+    home: 'Главный экран',
     editor: 'Редактор кампании появится на этапах 3–5 плана.',
     play: 'Игра мастера появится на этапе 8 плана.',
     join: 'Игра игрока появится на этапе 7 плана.',
+    joinSeat: (player: string, campaign: string) => `Код ведёт к месту игрока «${player}» в кампании «${campaign}».`,
+    joinUnknown: 'Такого кода нет в этом браузере.',
     preview: 'Компоненты',
     map: 'Карта — прототип',
     sheet: 'Листы и инвентари — демо'

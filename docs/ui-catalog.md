@@ -48,7 +48,7 @@
 | Switch | switch `1:1261` | `components/Switch` |
 | Checkbox | checkbox `5:286` | `components/Checkbox` |
 | Avatar | avatar `26:711` | `components/Avatar` |
-| TextInput, SearchInput | `7:779`, `7:805` | `components/TextInput` |
+| TextInput, SearchInput (рамка alert и error видна и в фокусе) | `7:779`, `7:805` | `components/TextInput` |
 | Textarea | text-input-multiline `7:1113` | `components/Textarea` |
 | Select | dropdown-text `20:925` | `components/Select` |
 | Menu, MenuItem, MenuDivider, Popover | `24:1913`, `24:1292`, `24:1305` | `components/Menu` |
@@ -72,7 +72,7 @@
 | Slider, NumberField (X, Y, размер сетки; значение меняется перетаскиванием подписи, как в Figma: `scrub` x/y, `step`, `min`/`max`) | `9:686`, `9:749` | `components/Slider` |
 | InventorySlot (рамки `equipped`, `attuned`; `selected` — заливка bg/info), SlotGrid (квадратные клетки 80–100 px на всю ширину, число колонок — `slotColumns`) | `33:6735` | `components/InventorySlot` |
 | NpcCard: grid, list, preview | `14:1451`, `13:1179`, `40:3918` | `components/Cards` |
-| CampaignCard | `17:1630` | `components/Cards` |
+| CampaignCard (название — текст или поле InlineEdit; принимает обработчики, например правый щелчок) | `17:1630` | `components/Cards` |
 | PlayerRow, InviteCode | `14:1568`, `14:1569` | `components/Game` |
 | SettingRow | `41:4128` | `components/Game` |
 | CoinValue | `34:6919` | `components/Game` |

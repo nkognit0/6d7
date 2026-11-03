@@ -142,6 +142,14 @@ export class LocalRepo implements SessionStorage {
     })
   }
 
+  /** Renames a campaign that is not open (the home screen). */
+  async rename(id: string, name: string): Promise<void> {
+    const session = await this.open(id)
+    if (!session) return
+    session.apply([{ doc: 'campaign', op: { type: 'rename', name } }], { record: false })
+    await session.close()
+  }
+
   /** Deletes a campaign with its journal and codes; tiles no other campaign uses go too. */
   async remove(id: string): Promise<void> {
     await transact([S.docs, S.journal, S.meta, S.codes], 'readwrite', (tx) => this.clear(tx, id))

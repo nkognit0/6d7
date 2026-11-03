@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react'
 import { cx } from '../../lib'
 import { Avatar, type AvatarProps } from '../Avatar/Avatar'
 import styles from './Cards.module.css'
@@ -38,17 +38,17 @@ export function NpcCard({ image, name, note, layout = 'grid', selected, classNam
  * D&D VTT / home (17:1630): campaign tile — first map, name, players' avatars and the
  * Играть / Редактировать buttons.
  */
-export function CampaignCard({ name, preview, players, actions, className }: {
-  name: string
+export function CampaignCard({ name, preview, players, actions, className, ...rest }: Omit<HTMLAttributes<HTMLElement>, 'children'> & {
+  /** the name, or a field to rename it (InlineEdit) */
+  name: ReactNode
   /** picture of the first map; without it a dark placeholder */
   preview?: string
   players: Pick<AvatarProps, 'name' | 'color'>[]
   /** buttons row */
   actions: ReactNode
-  className?: string
 }) {
   return (
-    <article className={cx(styles.campaign, className)}>
+    <article className={cx(styles.campaign, className)} {...rest}>
       <div className={styles.campaignPreview}>{preview && <img src={preview} alt="" />}</div>
       <div className={styles.campaignTitle}>
         <span className={styles.campaignName}>{name}</span>
