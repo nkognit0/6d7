@@ -72,6 +72,10 @@ export interface Token {
   color?: FlowColor
   /** portrait or NPC token image (URL) */
   image?: string
+  /** NPC: id of the catalog token (the picture is found again by it) */
+  token?: string
+  /** NPC: the saved NPC of the campaign it became (its own name and description) */
+  saved?: string
   /** vision in feet */
   darkvision?: number
   /** radius of an equipped light in feet */
@@ -130,6 +134,7 @@ export interface MapScene {
 /** Every change of a map. Local edits and (later) the network go through the same operations. */
 export type MapOp =
   | { type: 'scene'; scene: MapScene }
+  | { type: 'name'; name: string }
   | { type: 'image'; image: MapImageInfo | null }
   | { type: 'grid'; patch: Partial<GridSettings> }
   /** `null` drops the override: the map follows the campaign again */

@@ -8,6 +8,8 @@ export function invertMapOp(scene: MapScene, op: MapOp): MapOp[] {
   switch (op.type) {
     case 'scene':
       return [{ type: 'scene', scene }]
+    case 'name':
+      return [{ type: 'name', name: scene.name }]
     case 'image':
       return [{ type: 'image', image: scene.image }]
     case 'grid': {

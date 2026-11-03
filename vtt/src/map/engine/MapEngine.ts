@@ -23,7 +23,10 @@ export type MapTool = 'select' | 'wall' | 'barrier' | 'door' | 'spawn' | 'build-
 const PLAYER_TOOLS: MapTool[] = ['select', 'pencil', 'draw-erase']
 
 export interface MapViewState {
+  /** what the user may do */
   role: MapRole
+  /** how the map looks (the editor's «Глазами игрока»: a master who sees what players see); `role` by default */
+  look?: MapRole
   /** who draws and whose token is "own" */
   playerId: string
   drawColor: FlowColor | 'master'
@@ -169,10 +172,8 @@ export class MapEngine {
   setView(view: MapViewState) {
     const prev = this.view
     this.view = view
-    if (prev.role !== view.role) {
-      this.dirty.add('build').add('tokens').add('vision')
-      this.selectToken(null)
-    }
+    if (prev.role !== view.role) this.selectToken(null)
+    if (prev.role !== view.role || prev.look !== view.look) this.dirty.add('build').add('tokens').add('vision')
     if (JSON.stringify(prev.campaignRules ?? {}) !== JSON.stringify(view.campaignRules ?? {})) this.dirty.add('vision')
     if (prev.tool !== view.tool) {
       this.wallStart = null
@@ -277,7 +278,8 @@ export class MapEngine {
     const started = performance.now()
     const scene = this.opts.store.get()
     const prev = this.shown
-    const master = this.view.role === 'master'
+    // the look, not the rights: «Глазами игрока» shows the master the players' map
+    const master = (this.view.look ?? this.view.role) === 'master'
     const cell = cellPx(scene.grid)
 
     if (!prev || prev.image !== scene.image) {
@@ -304,7 +306,7 @@ export class MapEngine {
     }
     this.camera.clamp(this.bounds())
 
-    if (this.dirty.has('build')) this.build.draw(scene, this.theme, { role: this.view.role, hoverDoor: this.hoverDoor, erasing: this.erasing })
+    if (this.dirty.has('build')) this.build.draw(scene, this.theme, { role: this.view.look ?? this.view.role, hoverDoor: this.hoverDoor, erasing: this.erasing })
     if (this.dirty.has('tokens')) {
       // players cannot see NPCs under the fog; the server will not even send them later
       this.tokens.sync(scene.tokens, scene.grid, this.theme, this.selected, () => false)

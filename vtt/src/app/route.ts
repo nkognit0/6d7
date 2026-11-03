@@ -7,7 +7,8 @@ export type EditorTab = (typeof EDITOR_TABS)[number]
 
 export type Route =
   | { page: 'home' }
-  | { page: 'editor'; campaign: string; tab: EditorTab }
+  /** `map` — the map open on the maps tab */
+  | { page: 'editor'; campaign: string; tab: EditorTab; map?: string }
   | { page: 'play'; campaign: string }
   | { page: 'join'; code: string }
   // pages for development: the component preview, the map prototype, the sheet demo
@@ -17,10 +18,11 @@ export type Route =
 
 export function parseRoute(hash: string): Route {
   const parts = hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent)
-  const [head, a, b] = parts
+  const [head, a, b, c] = parts
   if (head === 'c' && a) {
     if (b === 'play') return { page: 'play', campaign: a }
-    return { page: 'editor', campaign: a, tab: (EDITOR_TABS as readonly string[]).includes(b) ? (b as EditorTab) : 'maps' }
+    const tab = (EDITOR_TABS as readonly string[]).includes(b) ? (b as EditorTab) : 'maps'
+    return tab === 'maps' && c ? { page: 'editor', campaign: a, tab, map: c } : { page: 'editor', campaign: a, tab }
   }
   if (head === 'join' && a) return { page: 'join', code: a }
   if (head === 'preview') return a ? { page: 'preview', section: a } : { page: 'preview' }
@@ -35,7 +37,7 @@ export function routeHash(r: Route): string {
     case 'home':
       return '#/'
     case 'editor':
-      return `#/c/${e(r.campaign)}/${r.tab}`
+      return `#/c/${e(r.campaign)}/${r.tab}${r.tab === 'maps' && r.map ? `/${e(r.map)}` : ''}`
     case 'play':
       return `#/c/${e(r.campaign)}/play`
     case 'join':

@@ -44,6 +44,8 @@ export function applyOp(scene: MapScene, op: MapOp): MapScene {
   switch (op.type) {
     case 'scene':
       return op.scene
+    case 'name':
+      return { ...scene, name: op.name }
     case 'image':
       return { ...scene, image: op.image }
     case 'grid':

@@ -23,6 +23,7 @@ function base(): MapScene {
 }
 
 const OPS: MapOp[] = [
+  { type: 'name', name: 'Склеп' },
   { type: 'image', image: { id: 'img', width: 1000, height: 800, tileSize: 512, levels: 2 } },
   { type: 'grid', patch: { size: 3.5, offsetX: 12 } },
   { type: 'rules', patch: { darkness: true, freeMove: false } },

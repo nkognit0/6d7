@@ -54,3 +54,9 @@
 .chat:disabled {
   background: transparent;
 }
+/* a chosen tool (the editor's objects and fog brush): button-chat has no such state, the outline of its focus marks it */
+.chat[aria-pressed='true'],
+.chat[aria-pressed='true']:hover {
+  background: var(--bg-info);
+  box-shadow: var(--focus-outline);
+}

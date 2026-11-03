@@ -35,7 +35,8 @@ function mergeKey(ch: Change): string | null {
     if (op.type === 'npc.put') return `npc:${op.npc.id}`
     return null
   }
-  return (ch.op as MapOp).type === 'grid' ? `${ch.doc}:grid` : null
+  const type = (ch.op as MapOp).type
+  return type === 'grid' || type === 'name' ? `${ch.doc}:${type}` : null
 }
 
 export class CampaignSession {

@@ -111,7 +111,16 @@ export const ru = {
       dynamicFog: 'Динамический туман войны',
       npc: 'NPC',
       showCatalog: 'Показать каталог',
-      deleteMapConfirm: (name: string) => `Удалить карту «${name}»?`
+      deleteMapConfirm: (name: string) => `Удалить карту «${name}»?`,
+      mapActions: 'Действия с картой',
+      noMaps: 'Карт пока нет. Создайте первую кнопкой «+» слева.',
+      onlyThisMap: 'Только для этой карты',
+      revert: 'Вернуть',
+      revertHint: 'Вернуть как в настройках кампании',
+      removeFromMap: 'Убрать с карты',
+      npcName: 'Имя',
+      npcDescription: 'Описание',
+      noNpc: 'Ничего не найдено. Сохранённые NPC появятся здесь после «Сохранить» в окне NPC на карте.'
     },
     npc: {
       catalog: 'Каталог',

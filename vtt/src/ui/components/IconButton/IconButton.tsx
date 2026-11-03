@@ -26,7 +26,7 @@ export function IconButton({ icon, label, variant = 'primary', pressed, stretch,
       type={type}
       aria-label={label}
       title={label}
-      aria-pressed={variant === 'switch' ? !!pressed : undefined}
+      aria-pressed={variant === 'switch' || (variant === 'chat' && pressed !== undefined) ? !!pressed : undefined}
       className={cx(styles.button, styles[variant], stretch && styles.stretch, className)}
       {...stateAttr(previewState)}
       {...rest}

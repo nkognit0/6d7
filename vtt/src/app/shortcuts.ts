@@ -8,7 +8,9 @@ export type ShortcutScope = 'editor' | 'game'
 
 export const COMMANDS = {
   undo: { keys: 'Mod+Z', scopes: ['editor'] },
-  redo: { keys: 'Mod+Shift+Z', scopes: ['editor'] }
+  redo: { keys: 'Mod+Shift+Z', scopes: ['editor'] },
+  /** removes what is chosen (an NPC on the map) */
+  remove: { keys: 'Delete', scopes: ['editor'] }
 } satisfies Record<string, { keys: string; scopes: ShortcutScope[] }>
 
 export type CommandId = keyof typeof COMMANDS
