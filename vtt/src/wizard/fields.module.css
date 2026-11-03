@@ -1,0 +1,201 @@
+/* The fields of the wizards: the frames of text-input-line (7:779), the list of Menu items (24:1913) */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacer-xs);
+  min-width: 0;
+}
+
+.label {
+  font: var(--font-caption-strong);
+  color: var(--txt-primary);
+}
+
+.description {
+  font: var(--font-caption);
+  color: var(--txt-secondary);
+}
+
+.anchor {
+  position: relative;
+}
+
+.chevron {
+  position: absolute;
+  top: var(--spacer-s);
+  right: var(--spacer-m);
+  display: flex;
+  color: var(--icon-primary);
+  pointer-events: none;
+}
+
+.anchor input {
+  padding-right: var(--spacer-xl);
+}
+
+.clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-height);
+  height: var(--control-height);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-default);
+  background: transparent;
+  color: var(--icon-primary);
+  cursor: pointer;
+}
+
+.clear:hover {
+  background: var(--bg-tertiary);
+}
+
+/* the list: above the wizard and its overlay */
+.dropdown {
+  position: fixed;
+  z-index: 110;
+}
+
+.menu {
+  min-width: 0;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.option {
+  display: contents;
+}
+
+.group,
+.nothing {
+  padding: var(--spacer-xs) var(--spacer-m);
+  font: var(--font-caption);
+  color: var(--txt-secondary);
+}
+
+/* several values: chips and the search in one frame */
+.many {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacer-xs);
+  min-height: var(--control-height);
+  padding: var(--spacer-xs) var(--spacer-m);
+  border-radius: var(--radius-default);
+  background: var(--bg-primary);
+  box-shadow: inset 0 0 0 1px var(--outline-primary);
+  cursor: text;
+}
+
+.many:hover,
+.many:focus-within {
+  box-shadow: inset 0 0 0 1px var(--outline-brand);
+}
+
+.many.disabled,
+.many.disabled:hover {
+  background: var(--bg-secondary);
+  box-shadow: inset 0 0 0 1px var(--outline-primary);
+  cursor: default;
+}
+
+.manyInput {
+  flex: 1 1 80px;
+  min-width: 80px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: var(--font-body);
+  color: var(--txt-primary);
+  outline: none;
+}
+
+.manyInput::placeholder {
+  color: var(--txt-secondary);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: 20px;
+  padding: 0 var(--spacer-xxs) 0 var(--spacer-s);
+  border-radius: var(--radius-small);
+  background: var(--bg-tertiary);
+  font: var(--font-caption);
+  color: var(--txt-primary);
+}
+
+.chipText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: var(--spacer-xs);
+}
+
+.chipRemove {
+  display: flex;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-small);
+  background: transparent;
+  color: var(--icon-primary);
+  cursor: pointer;
+}
+
+.chipRemove:hover {
+  background: var(--bg-tertiary);
+}
+
+/* a value that follows from earlier choices */
+.fixed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacer-xs);
+  min-height: var(--control-height);
+  padding: var(--spacer-xs) var(--spacer-m);
+  border-radius: var(--radius-default);
+  background: var(--bg-secondary);
+  box-shadow: inset 0 0 0 1px var(--outline-primary);
+}
+
+.fixedText {
+  font: var(--font-body);
+  line-height: 20px;
+  color: var(--txt-primary);
+}
+
+.area {
+  resize: vertical;
+}
+
+/* features gained without a choice */
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacer-s);
+}
+
+.featuresLabel {
+  font: var(--font-caption-strong);
+  color: var(--txt-primary);
+}
+
+.featureItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.featureName {
+  font: var(--font-multiline);
+  color: var(--txt-primary);
+}
+
+.featureNote,
+.featureText {
+  font: var(--font-caption);
+  color: var(--txt-secondary);
+}

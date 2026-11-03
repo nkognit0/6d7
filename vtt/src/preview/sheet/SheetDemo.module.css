@@ -22,6 +22,12 @@
   text-align: center;
 }
 .intro a { color: var(--txt-info); font: var(--font-body); }
+.wizards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacer-m);
+}
 .plate {
   position: absolute;
   left: 0;
