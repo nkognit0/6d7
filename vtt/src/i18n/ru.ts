@@ -129,7 +129,10 @@ export const ru = {
       editNpc: 'Изменить NPC',
       name: 'Имя',
       description: 'Описание',
-      searchHint: 'Раса, редкость или имя — на русском или английском'
+      searchHint: 'Раса, редкость или имя — на русском или английском',
+      deleteNpc: 'Удалить NPC',
+      deleteConfirm: (name: string) => `Удалить NPC «${name}»? Те, что уже стоят на картах, останутся.`,
+      noSaved: 'Сохранённых NPC пока нет. Выберите NPC в каталоге и нажмите «Сохранить».'
     },
     players: {
       title: 'Игроки',
@@ -373,7 +376,6 @@ export const ru = {
   // screens of the next steps: until they are made, the address shows a stub with links
   stub: {
     home: 'Главный экран',
-    editorNpc: 'Каталог NPC появится на этапе 5 плана.',
     play: 'Игра мастера появится на этапе 8 плана.',
     join: 'Игра игрока появится на этапе 7 плана.',
     joinSeat: (player: string, campaign: string) => `Код ведёт к месту игрока «${player}» в кампании «${campaign}».`,

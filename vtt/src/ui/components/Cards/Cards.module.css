@@ -77,12 +77,14 @@
   font: var(--font-caption-bold);
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .npcNote {
   font: var(--font-multiline);
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* D&D VTT / home: campaign card (17:1630) */

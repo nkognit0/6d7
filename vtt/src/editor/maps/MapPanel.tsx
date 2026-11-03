@@ -104,7 +104,7 @@ export function MapPanel({ session, scene, dispatch, engine, zoom, tool, onTool,
           const c = npcToken(n.token)
           return matches(query, [...(c ? tokenTexts(c) : []), n.name, n.description])
         })
-        .map((n) => ({ key: n.id, image: npcToken(n.token)?.url ?? '', name: n.name, note: n.description || rarityText(n.token), token: (): Omit<Token, 'pin'> => ({ id: newId(), kind: 'npc', name: n.name, image: npcToken(n.token)?.url, token: n.token, saved: n.id }) }))
+        .map((n) => ({ key: n.id, image: npcToken(n.token)?.url ?? '', name: n.name, note: n.description.split('\n')[0] || rarityText(n.token), token: (): Omit<Token, 'pin'> => ({ id: newId(), kind: 'npc', name: n.name, image: npcToken(n.token)?.url, token: n.token, saved: n.id }) }))
 
   const dragIn = (make: () => Omit<Token, 'pin'>) => (e: ReactPointerEvent) => {
     e.preventDefault()

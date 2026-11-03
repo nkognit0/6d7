@@ -8,6 +8,7 @@ import {
   type Icon28Name
 } from '../ui'
 import { MapsTab } from './maps/MapsTab'
+import { NpcTab } from './NpcTab'
 import { PlayersTab } from './PlayersTab'
 import { SettingsTab } from './SettingsTab'
 import styles from './EditorScreen.module.css'
@@ -83,7 +84,7 @@ function Editor({ session, tab, map }: { session: CampaignSession; tab: EditorTa
 
   const pages: Record<EditorTab, ReactNode> = {
     maps: <MapsTab session={session} mode={mode} mapId={map} />,
-    npc: <p className={styles.stub}>{s.stub.editorNpc}</p>,
+    npc: <NpcTab session={session} />,
     players: <PlayersTab session={session} />,
     settings: <SettingsTab session={session} />
   }

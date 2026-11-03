@@ -32,7 +32,6 @@ function mergeKey(ch: Change): string | null {
     const op = ch.op as CampaignOp
     if (op.type === 'rename') return 'rename'
     if (op.type === 'player.update') return `player:${op.id}:${Object.keys(op.patch).join()}`
-    if (op.type === 'npc.put') return `npc:${op.npc.id}`
     return null
   }
   const type = (ch.op as MapOp).type

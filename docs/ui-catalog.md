@@ -72,7 +72,7 @@
 | Plate — плашки кластеров кнопок; линия outline/primary со всех сторон, кроме краёв экрана из `edge` (одна сторона или две — угол) | `43:7044`, `41:5994`; обводки `61:4259`, `61:3985`, `61:4464` | `components/Game` |
 | Slider, NumberField (X, Y, размер сетки; значение меняется перетаскиванием подписи, как в Figma: `scrub` x/y, `step`, `min`/`max`) | `9:686`, `9:749` | `components/Slider` |
 | InventorySlot (рамки `equipped`, `attuned`; `selected` — заливка bg/info), SlotGrid (квадратные клетки 80–100 px на всю ширину, число колонок — `slotColumns`) | `33:6735` | `components/InventorySlot` |
-| NpcCard: grid, list, preview | `14:1451`, `13:1179`, `40:3918` | `components/Cards` |
+| NpcCard: grid, list, preview (имя и подпись — в одну строку с многоточием) | `14:1451`, `13:1179`, `40:3918` | `components/Cards` |
 | CampaignCard (название — текст или поле InlineEdit; принимает обработчики, например правый щелчок) | `17:1630` | `components/Cards` |
 | PlayerRow, InviteCode (строка 45 px: линия под строкой — под отступом 8 px) | `14:1568`, `14:1569` | `components/Game` |
 | SettingRow (строка 63 px, линия — под отступом) | `41:4128` | `components/Game` |

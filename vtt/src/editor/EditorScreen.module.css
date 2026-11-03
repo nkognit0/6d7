@@ -98,15 +98,6 @@
   max-width: 480px;
 }
 
-/* tabs of later steps */
-.stub {
-  margin: auto;
-  padding: var(--spacer-xxl);
-  font: var(--font-body);
-  color: var(--txt-secondary);
-  text-align: center;
-}
-
 /* a missing campaign, a refused storage */
 .message {
   height: 100vh;
