@@ -373,7 +373,6 @@ export const ru = {
   // screens of the next steps: until they are made, the address shows a stub with links
   stub: {
     home: 'Главный экран',
-    editorMaps: 'Редактор карт появится на этапе 4 плана.',
     editorNpc: 'Каталог NPC появится на этапе 5 плана.',
     play: 'Игра мастера появится на этапе 8 плана.',
     join: 'Игра игрока появится на этапе 7 плана.',

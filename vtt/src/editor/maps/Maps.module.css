@@ -1,0 +1,192 @@
+/* D&D VTT / editor / maps (6:421): 241 px panels with a line towards the map, the map between them */
+.layout {
+  flex: 1 1 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 241px minmax(0, 1fr) 241px;
+}
+
+.left,
+.right {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+}
+
+/* the 1 px line is outside the 240 px of the sections */
+.left {
+  padding-right: 1px;
+  box-shadow: inset -1px 0 0 var(--outline-primary);
+  overflow-y: auto;
+}
+
+.right {
+  padding-left: 1px;
+  box-shadow: inset 1px 0 0 var(--outline-primary);
+}
+
+/* the frames of the panel (9:680 and others): the 1 px line lies below their 8 px */
+.frame {
+  padding-bottom: calc(var(--spacer-m) + 1px);
+}
+
+/* the sections scroll; «Сохранить» stays at the bottom (9:821) */
+.rightBody {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.save {
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 var(--outline-primary);
+}
+
+.stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.noMaps {
+  align-self: center;
+  justify-self: center;
+  margin: 0;
+  padding: var(--spacer-xxl);
+  font: var(--font-body);
+  color: var(--txt-secondary);
+  text-align: center;
+}
+
+/* the list of maps (6:426) */
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--spacer-m);
+}
+
+.mapList {
+  gap: var(--spacer-m);
+}
+
+/* zoom in the title row (9:766) */
+.zoom {
+  display: flex;
+  align-items: center;
+}
+
+.zoomInput {
+  width: 40px;
+  height: var(--control-height);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-small);
+  background: transparent;
+  font: var(--font-body);
+  color: var(--txt-primary);
+  text-align: center;
+  outline: none;
+}
+
+.zoomInput:focus-visible {
+  box-shadow: var(--focus-outline);
+}
+
+.pair {
+  display: flex;
+  gap: var(--spacer-xs);
+}
+
+/* objects: five buttons of 40 px, 4 px apart (9:764) */
+.tools {
+  display: flex;
+  gap: var(--spacer-xs);
+}
+
+/* fog: brush, thickness, eraser (9:796) */
+.brush {
+  display: flex;
+  align-items: center;
+  gap: var(--spacer-xs);
+}
+
+.brush > label {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* a condition the map changed: «Только для этой карты · Вернуть» under the switch */
+.rule {
+  display: flex;
+  flex-direction: column;
+}
+
+.override {
+  margin-top: calc(var(--spacer-xs) * -1);
+  font: var(--font-caption);
+  color: var(--txt-secondary);
+}
+
+.revert {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--txt-info);
+  cursor: pointer;
+}
+
+.revert:focus-visible {
+  outline: none;
+  text-decoration: underline;
+}
+
+/* NPCs (9:829): the list fills the rest of the panel; on a low screen the whole panel scrolls */
+.npcSection {
+  min-height: 230px;
+}
+
+/* cards of 216 px, the scrollbar in the right padding of the section (13:1260) */
+.npcList {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacer-m);
+  margin-right: calc(var(--spacer-l) * -1);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.dragCard {
+  flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
+}
+
+.note,
+.error {
+  margin: 0;
+  font: var(--font-caption);
+  color: var(--txt-secondary);
+}
+
+.error {
+  color: var(--txt-danger);
+}
+
+/* the window of an NPC on the map (40:2994) */
+.npcDialog {
+  position: fixed;
+  z-index: 60;
+}
+
+.npcForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacer-m);
+  margin: 0;
+}

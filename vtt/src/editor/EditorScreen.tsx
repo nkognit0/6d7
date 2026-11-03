@@ -7,6 +7,7 @@ import {
   BottomNavigation, ConfirmDialog, Icon, Icon28, InlineEdit, MenuDivider, MenuItem, ModeSwitch, NavPage, ProjectMenu, TopPanel, UserMenu,
   type Icon28Name
 } from '../ui'
+import { MapsTab } from './maps/MapsTab'
 import { PlayersTab } from './PlayersTab'
 import { SettingsTab } from './SettingsTab'
 import styles from './EditorScreen.module.css'
@@ -38,16 +39,16 @@ function Message({ text }: { text: string }) {
  * D&D VTT / editor (0:1): the campaign menu and the mode switch on top, the page of the tab in
  * the middle, the tabs «Карты», «NPC», «Игроки», «Параметры» at the bottom.
  */
-export function EditorScreen({ campaignId, tab }: { campaignId: string; tab: EditorTab }) {
+export function EditorScreen({ campaignId, tab, map }: { campaignId: string; tab: EditorTab; map?: string }) {
   const s = useStrings()
   const state = useSession(campaignId)
   if (state.status === 'loading') return <div className={styles.screen} />
   if (state.status === 'missing') return <Message text={s.campaign.notFound} />
   if (state.status === 'failed') return <Message text={s.campaign.storageFailed} />
-  return <Editor session={state.session} tab={tab} />
+  return <Editor session={state.session} tab={tab} map={map} />
 }
 
-function Editor({ session, tab }: { session: CampaignSession; tab: EditorTab }) {
+function Editor({ session, tab, map }: { session: CampaignSession; tab: EditorTab; map?: string }) {
   const s = useStrings()
   const [mode, setMode] = useState<EditorMode>('edit')
   const [renaming, setRenaming] = useState(false)
@@ -81,7 +82,7 @@ function Editor({ session, tab }: { session: CampaignSession; tab: EditorTab }) 
   }
 
   const pages: Record<EditorTab, ReactNode> = {
-    maps: <p className={styles.stub}>{s.stub.editorMaps}</p>,
+    maps: <MapsTab session={session} mode={mode} mapId={map} />,
     npc: <p className={styles.stub}>{s.stub.editorNpc}</p>,
     players: <PlayersTab session={session} />,
     settings: <SettingsTab session={session} />

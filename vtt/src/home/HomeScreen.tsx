@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { go } from '../app/route'
-import { ARCHIVE_EXT, ArchiveError, importArchive, repo, type CampaignMeta } from '../campaign'
+import { ARCHIVE_EXT, ArchiveError, freeName, importArchive, repo, type CampaignMeta } from '../campaign'
 import { useStrings, type Catalog } from '../i18n'
 import { Button, ConfirmDialog, Icon, IconButton, MenuItem, TopPanel, UserMenu } from '../ui'
 import { CampaignTile } from './CampaignTile'
@@ -8,13 +8,6 @@ import { JoinDialog } from './JoinDialog'
 import styles from './HomeScreen.module.css'
 
 type Notice = { kind: 'busy' | 'error'; text: string } | null
-
-/** «Новая кампания», «Новая кампания 2»… — the first name not taken yet. */
-function freeName(base: string, taken: string[]): string {
-  const names = new Set(taken)
-  if (!names.has(base)) return base
-  for (let n = 2; ; n++) if (!names.has(`${base} ${n}`)) return `${base} ${n}`
-}
 
 function archiveMessage(e: unknown, s: Catalog): string {
   if (e instanceof ArchiveError) return e.code === 'version' ? s.campaign.archiveVersion : e.code === 'damaged' ? s.campaign.archiveDamaged : s.campaign.archiveFormat

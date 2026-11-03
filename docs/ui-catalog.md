@@ -44,7 +44,7 @@
 | Компонент | Figma | Где |
 |---|---|---|
 | Button: brand, primary, secondary, light-accent | button-large `4:324` | `components/Button` |
-| IconButton: primary, switch, chat | `1:1325`, `1:1334`, `333:1668` | `components/IconButton` |
+| IconButton: primary, switch, chat (у chat с `pressed` — выбранный инструмент: рамка фокуса на подложке bg/info) | `1:1325`, `1:1334`, `333:1668` | `components/IconButton` |
 | Switch | switch `1:1261` | `components/Switch` |
 | Checkbox | checkbox `5:286` | `components/Checkbox` |
 | Avatar | avatar `26:711` | `components/Avatar` |

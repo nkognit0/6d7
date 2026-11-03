@@ -52,7 +52,7 @@ export function App() {
     case 'home':
       return <HomeScreen />
     case 'editor':
-      return <EditorScreen key={route.campaign} campaignId={route.campaign} tab={route.tab} />
+      return <EditorScreen key={route.campaign} campaignId={route.campaign} tab={route.tab} map={route.map} />
     case 'play':
       return <Stub text={s.play} />
     case 'join':

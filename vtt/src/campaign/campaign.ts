@@ -135,6 +135,13 @@ export function applyChange(docs: CampaignDocs, ch: Change): CampaignDocs {
   return docs
 }
 
+/** «Новая кампания», «Новая кампания 2»… — the first name not taken yet. */
+export function freeName(base: string, taken: string[]): string {
+  const names = new Set(taken)
+  if (!names.has(base)) return base
+  for (let n = 2; ; n++) if (!names.has(`${base} ${n}`)) return `${base} ${n}`
+}
+
 /** The home screen summary of a set of documents. */
 export function metaOf(docs: CampaignDocs, updated: number): CampaignMeta {
   const first = docs.campaign.maps.map((id) => docs.maps[id]).find(Boolean)
