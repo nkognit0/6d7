@@ -2,8 +2,10 @@
 // players. Pure functions: the server will run the same code.
 import { newId } from '../map/core/geometry'
 import { applyOp } from '../map/core/scene'
-import type { FlowColor } from '../map/core/types'
-import type { Campaign, CampaignDocs, CampaignMeta, CampaignOp, CampaignSettings, Change, PlayerSlot } from './types'
+import type { ExploredData } from '../map/core/explored'
+import type { FlowColor, MapOp } from '../map/core/types'
+import type { GameDoc, GameMap } from './game'
+import type { Campaign, CampaignDocs, CampaignMeta, CampaignOp, CampaignSettings, Change, DocKey, PlayerSlot } from './types'
 
 /** The order in which new players get their colors (Figma flow/*). */
 export const FLOW_ORDER: FlowColor[] = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'purple', 'scarlett']
@@ -131,8 +133,34 @@ export function applyChange(docs: CampaignDocs, ch: Change): CampaignDocs {
     else if ('drop' in ch) delete seats[id]
     return { ...docs, seats }
   }
-  // the game documents come with the game screens
+  if (kind === 'game') return { ...docs, game: 'set' in ch ? (ch.set as GameDoc) : undefined }
+  if (kind === 'game/map') {
+    const gameMaps = { ...docs.gameMaps }
+    if ('op' in ch) {
+      const gm = gameMaps[id]
+      if (gm) gameMaps[id] = { ...gm, scene: applyOp(gm.scene, ch.op as MapOp) }
+    } else if ('set' in ch) gameMaps[id] = ch.set as GameMap
+    else delete gameMaps[id]
+    return { ...docs, gameMaps }
+  }
+  if (kind === 'game/explored') {
+    const explored = { ...docs.explored }
+    if ('set' in ch) explored[id] = ch.set as ExploredData
+    else delete explored[id]
+    return { ...docs, explored }
+  }
   return docs
+}
+
+/** Every document of a campaign by its key: what a snapshot and an import write. */
+export function docEntries(docs: CampaignDocs): [DocKey, unknown][] {
+  const out: [DocKey, unknown][] = [['campaign', docs.campaign]]
+  for (const [id, scene] of Object.entries(docs.maps)) out.push([`map/${id}`, scene])
+  for (const [id, seat] of Object.entries(docs.seats)) out.push([`seat/${id}`, seat])
+  if (docs.game) out.push(['game', docs.game])
+  for (const [id, gm] of Object.entries(docs.gameMaps ?? {})) out.push([`game/map/${id}`, gm])
+  for (const [id, ex] of Object.entries(docs.explored ?? {})) out.push([`game/explored/${id}`, ex])
+  return out
 }
 
 /** «Новая кампания», «Новая кампания 2»… — the first name not taken yet. */
@@ -158,6 +186,7 @@ export function metaOf(docs: CampaignDocs, updated: number): CampaignMeta {
 /** `map/<id>` → ['map', id]; `campaign` → ['campaign', '']. */
 export function splitKey(key: string): [string, string] {
   if (key.startsWith('game/map/')) return ['game/map', key.slice(9)]
+  if (key.startsWith('game/explored/')) return ['game/explored', key.slice(14)]
   const i = key.indexOf('/')
   return i < 0 ? [key, ''] : [key.slice(0, i), key.slice(i + 1)]
 }

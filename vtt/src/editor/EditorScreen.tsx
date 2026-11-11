@@ -1,8 +1,9 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { go, type EditorTab } from '../app/route'
 import { shortcutLabel, useShortcuts } from '../app/shortcuts'
-import { ARCHIVE_EXT, ArchiveError, downloadArchive, importInto, repo, useSession, type CampaignSession } from '../campaign'
-import { useStrings, type Catalog } from '../i18n'
+import { archiveMessage } from '../app/archiveMessage'
+import { ARCHIVE_EXT, downloadArchive, importInto, repo, useSession, type CampaignSession } from '../campaign'
+import { useStrings } from '../i18n'
 import {
   BottomNavigation, ConfirmDialog, Icon, Icon28, InlineEdit, MenuDivider, MenuItem, ModeSwitch, NavPage, ProjectMenu, TopPanel, UserMenu,
   type Icon28Name
@@ -19,11 +20,6 @@ const TABS: [EditorTab, Icon28Name][] = [['maps', 'map'], ['npc', 'autointent'],
 export type EditorMode = 'edit' | 'player'
 
 type Notice = { kind: 'busy' | 'error'; text: string } | null
-
-function archiveMessage(e: unknown, s: Catalog): string {
-  if (e instanceof ArchiveError) return e.code === 'version' ? s.campaign.archiveVersion : e.code === 'damaged' ? s.campaign.archiveDamaged : s.campaign.archiveFormat
-  return s.campaign.storageFailed
-}
 
 /** A message in place of the editor: a missing campaign, a refused storage. */
 function Message({ text }: { text: string }) {

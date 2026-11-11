@@ -4,7 +4,7 @@
 import type { MapImageInfo, TileProvider } from '../../map/core/types'
 import type { TileSink } from '../../map/image/pyramid'
 import type { TileBlob } from '../../map/image/protocol'
-import { applyChange, createCampaign, metaOf, newCode } from '../campaign'
+import { applyChange, createCampaign, docEntries, metaOf, newCode } from '../campaign'
 import { CampaignSession, type DocWrite, type SessionStorage } from '../session'
 import type { Campaign, CampaignDocs, CampaignMeta, Change, DocKey } from '../types'
 import { prefixRange, request, S, transact } from './idb'
@@ -129,9 +129,7 @@ export class LocalRepo implements SessionStorage {
     return transact([S.docs, S.journal, S.meta], 'readwrite', (tx) => {
       const store = tx.objectStore(S.docs)
       store.delete(prefixRange(id))
-      store.put(docs.campaign, [id, 'campaign'])
-      for (const [mapId, scene] of Object.entries(docs.maps)) store.put(scene, [id, `map/${mapId}`])
-      for (const [playerId, seat] of Object.entries(docs.seats)) store.put(seat, [id, `seat/${playerId}`])
+      for (const [key, value] of docEntries(docs)) store.put(value, [id, key])
       tx.objectStore(S.journal).delete(prefixRange(id))
       tx.objectStore(S.meta).put(metaOf(docs, Date.now()), id)
     })
@@ -167,9 +165,7 @@ export class LocalRepo implements SessionStorage {
     return transact([S.docs, S.journal, S.meta, S.codes], 'readwrite', async (tx) => {
       await this.clear(tx, id)
       const store = tx.objectStore(S.docs)
-      store.put(docs.campaign, [id, 'campaign'])
-      for (const [mapId, scene] of Object.entries(docs.maps)) store.put(scene, [id, `map/${mapId}`])
-      for (const [playerId, seat] of Object.entries(docs.seats)) store.put(seat, [id, `seat/${playerId}`])
+      for (const [key, value] of docEntries(docs)) store.put(value, [id, key])
       tx.objectStore(S.meta).put(metaOf(docs, Date.now()), id)
     })
   }

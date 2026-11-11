@@ -22,9 +22,11 @@ export interface RollEntry {
   total: number
 }
 
-export function DiceWindow({ anchor, onClose, onRoll }: {
+export function DiceWindow({ anchor, above, onClose, onRoll }: {
   /** the dice button: the window opens on its right, at its height */
   anchor: HTMLElement | null
+  /** the master: the window opens above the anchor (the plate of the dice and tokens), at its left edge */
+  above?: boolean
   onClose: () => void
   onRoll: (roll: { count: number; die: number; total: number }) => void
 }) {
@@ -38,8 +40,9 @@ export function DiceWindow({ anchor, onClose, onRoll }: {
   useLayoutEffect(() => {
     const a = anchor?.getBoundingClientRect()
     const h = ref.current?.offsetHeight ?? 0
-    if (a) setPos({ left: a.right + GAP, top: Math.max(GAP, Math.min(a.top, innerHeight - h - GAP)) })
-  }, [anchor])
+    if (a && above) setPos({ left: a.left + GAP, top: Math.max(GAP, a.top - GAP - h) })
+    else if (a) setPos({ left: a.right + GAP, top: Math.max(GAP, Math.min(a.top, innerHeight - h - GAP)) })
+  }, [anchor, above])
 
   const roll = () => {
     const n = Math.max(1, Math.min(MAX_DICE, parseInt(count, 10) || 1))
@@ -72,23 +75,35 @@ export function DiceWindow({ anchor, onClose, onRoll }: {
   )
 }
 
-/** The log of rolls: «Макар: 2d20 → 32», new ones at the bottom; it scrolls to the old ones. */
-export function LogPanel({ entries, className }: { entries: RollEntry[]; className?: string }) {
+/** The entries of the log: «Макар: 2d20 → 32», new ones at the bottom; it scrolls to the old ones. */
+export function LogList({ entries, className }: { entries: RollEntry[]; className?: string }) {
   const s = useStrings()
   const list = useRef<HTMLDivElement>(null)
   useEffect(() => {
     list.current?.scrollTo({ top: list.current.scrollHeight })
   }, [entries])
   return (
+    <div ref={list} className={cx(styles.logList, className)} role="log" aria-label={s.player.log}>
+      {entries.map((e) => (
+        <p key={e.id} className={styles.logEntry}>
+          <span className={styles.logName} style={{ color: e.color === 'master' ? 'var(--txt-secondary)' : `var(--flow-${e.color})` }}>{e.name}:</span>{' '}
+          {s.player.rollText(e.count, e.die)} → <span className={styles.logTotal}>{e.total}</span>
+        </p>
+      ))}
+    </div>
+  )
+}
+
+/** The log of a player: 240×130 in the bottom right corner of the map. */
+export function LogPanel({ entries, className }: { entries: RollEntry[]; className?: string }) {
+  return (
     <Plate edge={['right', 'bottom']} className={cx(styles.log, className)}>
-      <div ref={list} className={styles.logList} role="log" aria-label={s.player.log}>
-        {entries.map((e) => (
-          <p key={e.id} className={styles.logEntry}>
-            <span className={styles.logName} style={{ color: e.color === 'master' ? 'var(--txt-secondary)' : `var(--flow-${e.color})` }}>{e.name}:</span>{' '}
-            {s.player.rollText(e.count, e.die)} → <span className={styles.logTotal}>{e.total}</span>
-          </p>
-        ))}
-      </div>
+      <LogList entries={entries} />
     </Plate>
   )
 }
+
+/** A roll of the dice window as an entry of the log. */
+export const rollEntry = (name: string, color: RollEntry['color'], r: { count: number; die: number; total: number }): RollEntry => ({
+  id: Date.now() + Math.random(), name, color, ...r
+})

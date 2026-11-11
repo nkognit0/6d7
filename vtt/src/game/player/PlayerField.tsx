@@ -2,25 +2,22 @@
 // the inventories and the dice on the left, the token and the drawing tools on the right, the log
 // of rolls in the corner. No top panel.
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
-import { visionOf } from '@app/rules/vision'
 import type { PlayerSlot, CampaignSettings } from '../../campaign'
 import { useStrings } from '../../i18n'
 import {
   MapStore, MapView, MemoryTileProvider, useMapScene, type MapEngine, type MapTool, type MapViewState, type Token
 } from '../../map'
 import { ColorIcon, GameMenuButton, IconButton, Plate, PlayerIcon, type PlayerIcon42Name } from '../../ui'
-import { useMediaUrl } from '../media/media'
-import { characterOf, type MediaRef, type Seat } from '../seat/seat'
-import { DiceWindow, LogPanel, type RollEntry } from './Dice'
+import type { Seat } from '../seat/seat'
+import { DiceWindow, LogPanel, rollEntry, type RollEntry } from './Dice'
 import { SeatWindow, type SeatPage } from './SeatWindow'
 import { stubScene } from './stubMap'
+import { companionToken, companionTokenId, followSheet, heroToken } from './tokens'
 import { useSeatWizards } from './useSeatWizards'
 import styles from './Player.module.css'
 
 type Page = SeatPage | 'dice'
 const PAGES: [Page, PlayerIcon42Name][] = [['sheet', 'sheet.character'], ['companion', 'sheet.sidekick'], ['items', 'inventory'], ['spells', 'spells'], ['dice', 'dice']]
-
-const asRef = (v: unknown) => (typeof v === 'string' && v.startsWith('media:') ? (v as MediaRef) : null)
 
 export function PlayerField({ player, seat, onChange, settings }: {
   player: PlayerSlot
@@ -53,6 +50,7 @@ function Field({ player, seat, onChange, settings, store, tiles }: {
   const s = useStrings()
   const scene = useMapScene(store)
   const wizards = useSeatWizards(seat, onChange)
+  const companionId = companionTokenId(player.id)
   const [page, setPage] = useState<Page | null>(null)
   const [tool, setTool] = useState<MapTool>('select')
   const [log, setLog] = useState<RollEntry[]>([])
@@ -60,37 +58,26 @@ function Field({ player, seat, onChange, settings, store, tiles }: {
   const [diceAnchor, setDiceAnchor] = useState<HTMLElement | null>(null)
   const placed = useRef(false)
 
-  // the token: the portrait of the sheet in the player's ring; darkvision and light by the rules
-  const portrait = useMediaUrl(asRef(seat.sheet.appearance))
-  const companionPicture = useMediaUrl(asRef(seat.companion?.portrait))
-  const vision = useMemo(() => visionOf(characterOf(seat)), [seat])
-  const hero: Omit<Token, 'pin'> = {
-    id: player.id, kind: 'player', name: String(seat.sheet.name || player.name), color: player.color,
-    image: portrait ?? undefined, darkvision: vision.darkness
-  }
-  const companionId = `${player.id}:companion`
-  const companion: Omit<Token, 'pin'> | null = seat.companion ? {
-    id: companionId, kind: 'player', owner: player.id, name: String(seat.companion.name || ''), color: player.color, image: companionPicture ?? undefined
-  } : null
+  // the tokens follow the sheet: the portrait in the player's ring, darkvision and light by the rules
+  const hero = useMemo(() => heroToken(player, seat), [player, seat])
+  const companion = useMemo(() => companionToken(player, seat), [player, seat])
 
   // the hero stands on the spawn point when the game opens; later its token follows the sheet
   useEffect(() => {
     const now = store.get()
     const t = now.tokens.find((x) => x.id === hero.id)
+    const patch = t && followSheet(t, hero)
     if (!t && !placed.current && now.spawn) {
       placed.current = true
       store.dispatch({ type: 'token.add', token: { ...hero, pin: now.spawn } })
-    } else if (t && (t.name !== hero.name || t.image !== hero.image || t.darkvision !== hero.darkvision || t.color !== hero.color)) {
-      store.dispatch({ type: 'token.update', id: t.id, patch: { name: hero.name, image: hero.image, darkvision: hero.darkvision, color: hero.color } })
-    }
-  })
+    } else if (t && patch) store.dispatch({ type: 'token.update', id: t.id, patch })
+  }, [store, hero])
   useEffect(() => {
     const t = store.get().tokens.find((x) => x.id === companionId)
+    const patch = t && companion && followSheet(t, companion)
     if (t && !companion) store.dispatch({ type: 'token.remove', id: companionId })
-    else if (t && companion && (t.name !== companion.name || t.image !== companion.image)) {
-      store.dispatch({ type: 'token.update', id: companionId, patch: { name: companion.name, image: companion.image } })
-    }
-  })
+    else if (t && patch) store.dispatch({ type: 'token.update', id: companionId, patch })
+  }, [store, companion, companionId])
 
   const view = useMemo<MapViewState>(
     () => ({ role: 'player', playerId: player.id, drawColor: player.color, tool, brush: 4, campaignRules: settings }),
@@ -136,7 +123,7 @@ function Field({ player, seat, onChange, settings, store, tiles }: {
 
       {page === 'dice' && (
         <DiceWindow anchor={diceAnchor} onClose={() => setPage(null)}
-          onRoll={(r) => setLog((l) => [...l, { id: Date.now() + Math.random(), name: player.name || String(seat.sheet.name || ''), color: player.color, ...r }])} />
+          onRoll={(r) => setLog((l) => [...l, rollEntry(player.name || String(seat.sheet.name || ''), player.color, r)])} />
       )}
       {page && page !== 'dice' && <SeatWindow page={page} seat={seat} onChange={onChange} wizards={wizards} onClose={() => setPage(null)} />}
       {wizards.element}

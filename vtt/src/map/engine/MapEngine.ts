@@ -6,6 +6,7 @@ import type { MapStore } from '../core/store'
 import { rulesOf } from '../core/scene'
 import type { Door, FlowColor, MapRules, MapScene, Pin, RuleOverrides, Token, TileProvider, Vec } from '../core/types'
 import { moveBlockers, pathBlocked, sightBlockers, visibilityPolygon, visionRadius } from '../core/visibility'
+import { ExploredMask } from '../core/explored'
 import { BuildLayer, strokeWalls } from './BuildLayer'
 import { Camera, CELL_AT_100, type CameraBounds } from './camera'
 import { DrawLayer, drawingPaint, PENCIL } from './DrawLayer'
@@ -64,6 +65,11 @@ export interface MapEngineOptions {
   onZoom?: (zoom: ZoomInfo) => void
   onStats?: (stats: MapStats) => void
   onSelect?: (tokenId: string | null) => void
+  /**
+   * What players have seen on this map (the game keeps and saves it); without it the engine keeps
+   * its own while it lives.
+   */
+  explored?: ExploredMask
 }
 
 type Gesture =
@@ -124,13 +130,16 @@ export class MapEngine {
   private lastStats = 0
   private lastZoom = ''
   private cleanup: (() => void)[] = []
+  private explored: ExploredMask | null = null
+  private exploredOff: (() => void) | null = null
 
   constructor(private host: HTMLElement, private opts: MapEngineOptions) {
     this.view = opts.view
     this.theme = readTheme(host)
     this.tiles = new TileLayer(opts.tiles, () => this.requestRender(), this.touch ? 64 : 192)
     this.tokens = new TokenLayer(() => this.requestRender())
-    this.fog = new FogLayer(this.touch ? 1024 : 2048)
+    // new fog closes what players had explored
+    this.fog = new FogLayer(this.touch ? 1024 : 2048, (s) => this.explored?.hide(s))
     this.above.addChild(this.draws.container, this.build.container, this.tokens.npc, this.fog.sprite, this.tokens.players, this.overlay)
     this.below.addChild(this.tiles.container)
     this.stage.addChild(this.below, this.grid.mesh, this.above)
@@ -245,6 +254,7 @@ export class MapEngine {
   destroy() {
     this.destroyed = true
     cancelAnimationFrame(this.frame)
+    this.exploredOff?.()
     for (const fn of this.cleanup) fn()
     this.tiles.destroy()
     this.grid.destroy()
@@ -285,12 +295,13 @@ export class MapEngine {
     if (!prev || prev.image !== scene.image) {
       this.tiles.setImage(scene.image)
       this.fog.setup(renderer, scene.image, cell)
+      this.useExplored(scene.image)
       this.fog.syncStrokes(renderer, scene.fog, true)
       this.fit = true
       this.dirty.add('vision')
     } else if (prev.fog !== scene.fog) {
       this.fog.syncStrokes(renderer, scene.fog)
-      if (!scene.fog.length) this.fog.resetExplored(renderer)
+      if (!scene.fog.length) this.explored?.clear()
       this.dirty.add('vision')
     }
     const gridChanged = !prev || prev.grid !== scene.grid
@@ -378,8 +389,25 @@ export class MapEngine {
       const poly = visibilityPolygon(p.x, p.y, blockers, visionRadius(t, scene), bounds)
       if (poly.length >= 6) polys.push(poly)
     }
-    this.fog.compose(renderer, polys, this.rules(scene).dynamicFog)
+    const dynamic = this.rules(scene).dynamicFog
+    if (this.explored) {
+      if (!dynamic) this.explored.reveal(polys)
+      this.fog.setExplored(this.explored)
+    }
+    this.fog.compose(renderer, polys, dynamic)
     this.stats.visionMs = performance.now() - started
+  }
+
+  // the explored mask of the game for its picture, or a mask of the engine's own
+  private useExplored(image: MapScene['image']) {
+    this.exploredOff?.()
+    this.exploredOff = null
+    const given = this.opts.explored
+    this.explored = !image ? null : given && given.image.width === image.width && given.image.height === image.height ? given : new ExploredMask(image)
+    this.exploredOff = this.explored?.subscribe(() => {
+      this.dirty.add('vision')
+      this.requestRender()
+    }) ?? null
   }
 
   private drawOverlay(scene: MapScene) {

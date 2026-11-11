@@ -6,7 +6,7 @@ import { matches, npcToken, searchTokens, tokenTexts, type NpcToken } from '../n
 import {
   Button, ConfirmDialog, Icon, IconButton, NavTab, NpcCard, RowField, RowTabs, RowTitle, SearchInput, SidebarSection, Textarea, TextInput
 } from '../ui'
-import { rarityText } from './maps/MapPanel'
+import { rarityText } from '../npc/catalog'
 import styles from './NpcTab.module.css'
 
 type Tab = 'catalog' | 'saved'

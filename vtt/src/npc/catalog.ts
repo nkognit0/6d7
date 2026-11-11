@@ -2,6 +2,9 @@
 // The list and the Russian names live in the old app's token catalog (app/src/tokens/tokens.json),
 // the pictures in app/public/tokens; the dev server serves them at /tokens/.
 import tokens from '@app/tokens/tokens.json'
+import type { SavedNpc } from '../campaign/types'
+import { newId } from '../map/core/geometry'
+import type { Token } from '../map/core/types'
 
 export type Rarity = 'common' | 'rare' | 'legendary'
 
@@ -69,4 +72,37 @@ export const tokenTexts = (t: NpcToken): string[] => [t.name, t.nameEn, t.rarity
 
 export function searchTokens(query: string, list: NpcToken[] = NPC_TOKENS): NpcToken[] {
   return list.filter((t) => matches(query, tokenTexts(t)))
+}
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
+/** The rarity of a catalog token as the panels write it: «Простой». */
+export const rarityText = (tokenId: string) => cap(npcToken(tokenId)?.rarityRu ?? '')
+
+/** A card of the NPC list of a panel and the token it puts on the map. */
+export interface NpcCardData {
+  key: string
+  image: string
+  name: string
+  note: string
+  token: () => Omit<Token, 'pin'>
+}
+
+/** The NPCs to drag onto a map: the catalog, or (catalog off) the master's saved NPCs. */
+export function npcCards(saved: SavedNpc[], catalog: boolean, query: string): NpcCardData[] {
+  if (catalog) {
+    return searchTokens(query).map((c) => ({
+      key: c.id, image: c.url, name: c.name, note: cap(c.rarityRu),
+      token: () => ({ id: newId(), kind: 'npc', name: c.name, image: c.url, token: c.id })
+    }))
+  }
+  return saved
+    .filter((n) => {
+      const c = npcToken(n.token)
+      return matches(query, [...(c ? tokenTexts(c) : []), n.name, n.description])
+    })
+    .map((n) => ({
+      key: n.id, image: npcToken(n.token)?.url ?? '', name: n.name, note: n.description.split('\n')[0] || rarityText(n.token),
+      token: () => ({ id: newId(), kind: 'npc', name: n.name, image: npcToken(n.token)?.url, token: n.token, saved: n.id })
+    }))
 }

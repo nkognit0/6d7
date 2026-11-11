@@ -2,7 +2,7 @@ import { zipSync, strToU8 } from 'fflate'
 import { describe, expect, it } from 'vitest'
 import { createScene } from '../map/core/scene'
 import type { TileBlob } from '../map/image/protocol'
-import { ArchiveError, packArchive, TILES_LIMIT, unpackArchive, type ArchiveFiles } from './archive'
+import { ArchiveError, packArchive, packGame, TILES_LIMIT, unpackArchive, unpackGame, type ArchiveFiles } from './archive'
 import { createCampaign } from './campaign'
 import type { CampaignDocs } from './types'
 
@@ -70,5 +70,35 @@ describe('archive .6d7', () => {
     await expect(unpackArchive(zipSync({ 'a.txt': strToU8('a') }), files)).rejects.toBeInstanceOf(ArchiveError)
     const newer = zipSync({ 'manifest.json': strToU8(JSON.stringify({ format: '6d7', schema: 99 })) })
     await expect(unpackArchive(newer, files)).rejects.toMatchObject({ code: 'version' })
+  })
+})
+
+// a campaign with a started game: the map as played and a mask of what was explored
+async function withGame(files: ArchiveFiles): Promise<CampaignDocs> {
+  const docs = await campaign(files)
+  const scene = { ...docs.maps.m1, tokens: [{ id: 'p1', kind: 'player' as const, name: 'Арина', image: docs.seats.p1.sheet.appearance as string, pin: { space: 'grid' as const, u: 1.5, v: 1.5 } }] }
+  const data = new Uint8Array(4 * 3)
+  data[5] = 255
+  return { ...docs, game: { schema: 1, active: 'm1' }, gameMaps: { m1: { schema: 1, scene, base: docs.maps.m1 } }, explored: { m1: { w: 4, h: 3, data } } }
+}
+
+describe('the game in archives', () => {
+  it('a campaign archive keeps its game', async () => {
+    const from = memoryFiles()
+    const docs = await withGame(from.files)
+    expect(await unpackArchive(await packArchive(docs, from.files), memoryFiles().files)).toEqual(docs)
+  })
+
+  it('the state of a game goes alone and comes back into its campaign', async () => {
+    const from = memoryFiles()
+    const docs = await withGame(from.files)
+    const bytes = await packGame(docs, from.files)
+    const to = memoryFiles()
+    const state = await unpackGame(bytes, to.files)
+    expect(state).toEqual({ campaign: 'c1', game: docs.game, gameMaps: docs.gameMaps, explored: docs.explored, seats: docs.seats })
+    // only the portrait travels: the map pictures stay in the campaign
+    expect(to.media.size).toBe(1)
+    await expect(unpackArchive(bytes, memoryFiles().files)).rejects.toMatchObject({ code: 'game' })
+    await expect(unpackGame(await packArchive(docs, from.files), memoryFiles().files)).rejects.toMatchObject({ code: 'notGame' })
   })
 })

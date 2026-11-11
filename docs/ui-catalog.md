@@ -107,6 +107,17 @@
 | Окна листа, спутника и инвентарей на оверлее с TopPanel: «Повысить уровень», «Отдых» (меню короткий / долгий), «Создать спутника», файлы листа (`SheetFiles`); на телефоне — меню «Ещё» (`MoreMenu`, IconButton `more.three.dots` + Popover) и «Закрыть» | `game/player/SeatWindow.tsx` |
 | Визарды листа для экрана и окон: создание, уровень, спутник, его уровень | `game/player/useSeatWizards.tsx` |
 
+## Игра мастера (`vtt/src/game/master/`)
+
+Экраны `D&D VTT / game / master` (44:1629, 44:2135, 45:5549, 46:10178); собраны из компонентов выше. Адрес — `#/c/<id>/play`.
+
+| Что | Где |
+|---|---|
+| Верхняя панель: ProjectMenu (сохранить, экспорт и импорт состояния игры, выйти), кнопки игроков — Button `light-accent`, у открытой фон `flow/*` игрока (45:5553); под ней Plate из четырёх GameMenuButton в цвете игрока (45:5608); «Отдых» — Button `primary` с Popover | `game/master/MasterGame.tsx` |
+| Левая панель: RowTabs «Карты / NPC», SearchInput, строки карт RowCard с «…» и значком активной карты; NPC — RowSwitch «Показать каталог» и NpcCard `list` для перетаскивания | `game/master/MasterMaps.tsx` |
+| Поле: MapView, полоса предпросмотра и сообщений, кластер в левом нижнем углу — Plate `left+bottom` с GameMenuButton костей (`grey`) и IconButton `switch` фишек игроков (`character.figure.avatar` в их цветах) и спутников (временная буква); окно костей над кластером | `game/master/MasterField.tsx` |
+| Правая панель (57:3450): туман (button-chat, Slider, ластик), рисование (две button-chat: `character.pencil` серым, `character.eraser`), условия RowSwitch, лог 240×128 внизу (LogList) | `game/master/MasterTools.tsx` |
+
 ## Визарды (`vtt/src/wizard/`)
 
 Не в макете — собраны из компонентов библиотеки. Демо — http://127.0.0.1:5176/#sheet.

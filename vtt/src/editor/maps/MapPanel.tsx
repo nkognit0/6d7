@@ -6,16 +6,11 @@ import {
   importMapImage, MAP_IMAGE_ACCEPT, MapImageError, MAX_IMAGE_SIDE, newId, rulesOf, type ImportProgress, type MapEngine, type MapOp, type MapRules,
   type MapScene, type MapTool, type Token, type ZoomInfo
 } from '../../map'
-import { matches, npcToken, searchTokens, tokenTexts } from '../../npc/catalog'
+import { npcCards } from '../../npc/catalog'
 import {
   Button, cx, Icon, IconButton, NpcCard, NumberField, RowSubtitle, RowSwitch, SearchInput, SidebarSection, SidebarTitle, Slider
 } from '../../ui'
 import styles from './Maps.module.css'
-
-const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
-
-/** The rarity of a catalog token as the panel writes it: «Простой». */
-export const rarityText = (tokenId: string) => cap(npcToken(tokenId)?.rarityRu ?? '')
 
 /**
  * A condition of the map that follows the campaign until the map changes it (QnA): switching it
@@ -96,15 +91,7 @@ export function MapPanel({ session, scene, dispatch, engine, zoom, tool, onTool,
     }
   }
 
-  // NPCs: the catalog, or (catalog off) the saved NPCs of the master
-  const npcs = catalog
-    ? searchTokens(query).map((c) => ({ key: c.id, image: c.url, name: c.name, note: cap(c.rarityRu), token: (): Omit<Token, 'pin'> => ({ id: newId(), kind: 'npc', name: c.name, image: c.url, token: c.id }) }))
-    : session.campaign.npcs
-        .filter((n) => {
-          const c = npcToken(n.token)
-          return matches(query, [...(c ? tokenTexts(c) : []), n.name, n.description])
-        })
-        .map((n) => ({ key: n.id, image: npcToken(n.token)?.url ?? '', name: n.name, note: n.description.split('\n')[0] || rarityText(n.token), token: (): Omit<Token, 'pin'> => ({ id: newId(), kind: 'npc', name: n.name, image: npcToken(n.token)?.url, token: n.token, saved: n.id }) }))
+  const npcs = npcCards(session.campaign.npcs, catalog, query)
 
   const dragIn = (make: () => Omit<Token, 'pin'>) => (e: ReactPointerEvent) => {
     e.preventDefault()

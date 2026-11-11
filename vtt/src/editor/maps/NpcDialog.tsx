@@ -3,7 +3,7 @@ import { mapKey, type CampaignSession } from '../../campaign'
 import { useStrings } from '../../i18n'
 import { newId, type Token } from '../../map'
 import { Button, Modal, RowField, Textarea, TextInput } from '../../ui'
-import { rarityText } from './MapPanel'
+import { rarityText } from '../../npc/catalog'
 import styles from './Maps.module.css'
 
 // the gap between the window and what it stands next to (spacer-xl)

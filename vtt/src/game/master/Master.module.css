@@ -1,0 +1,255 @@
+/* D&D VTT / game / master (44:1629): the top panel; 241 px panels with a line towards the map, the
+   map between them */
+.screen {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  color: var(--txt-primary);
+}
+
+.message {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacer-xl);
+  padding: var(--spacer-xl);
+  background: var(--bg-secondary);
+  color: var(--txt-primary);
+  font: var(--font-navigation);
+  text-align: center;
+}
+
+.message p {
+  margin: 0;
+}
+
+.message a {
+  font: var(--font-body);
+  color: var(--txt-info);
+}
+
+.anchor {
+  position: relative;
+}
+
+/* the players in the middle of the top panel, 8 px apart (45:5553) */
+.players {
+  display: flex;
+  align-items: center;
+  gap: var(--spacer-m);
+}
+
+.playerAnchor {
+  position: relative;
+}
+
+/* the menu of a player's pages: under the top panel, centered on the player's button (45:5608) */
+.pages {
+  position: absolute;
+  top: calc(100% + var(--spacer-xs));
+  left: 50%;
+  z-index: 20;
+  transform: translateX(-50%);
+}
+
+.layout {
+  flex: 1 1 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 241px minmax(0, 1fr) 241px;
+}
+
+.left,
+.right {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+}
+
+/* the 1 px line is outside the 240 px of the sections */
+.left {
+  padding-right: 1px;
+  box-shadow: inset -1px 0 0 var(--outline-primary);
+  overflow-y: auto;
+}
+
+.right {
+  padding-left: 1px;
+  box-shadow: inset 1px 0 0 var(--outline-primary);
+}
+
+/* the frames of the panel: the 1 px line lies below their 8 px */
+.frame {
+  padding-bottom: calc(var(--spacer-m) + 1px);
+}
+
+/* maps (44:2023): rows 8 px apart */
+.list {
+  gap: var(--spacer-m);
+}
+
+/* the map the game is on: a mark before «…» */
+.activeMark {
+  display: inline-flex;
+  color: var(--icon-info);
+}
+
+.note {
+  margin: 0;
+  font: var(--font-caption);
+  color: var(--txt-secondary);
+}
+
+/* NPCs (44:2135): the cards fill the rest of the panel */
+.npcSection {
+  min-height: 230px;
+}
+
+.npcList {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacer-m);
+  margin-right: calc(var(--spacer-l) * -1);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.dragCard {
+  flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
+}
+
+/* no map of the game: the cards can not be dragged */
+.inactive {
+  cursor: default;
+}
+
+/* the map */
+.stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.empty {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0 var(--spacer-xxl);
+  font: var(--font-body);
+  color: var(--txt-secondary);
+  text-align: center;
+  transform: translateY(-50%);
+}
+
+/* a line over the map: looking at a map, a rest, an import */
+.notice,
+.noticeError {
+  position: absolute;
+  top: var(--spacer-m);
+  left: 50%;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--spacer-m);
+  max-width: calc(100% - 2 * var(--spacer-xl));
+  padding: var(--spacer-xs) var(--spacer-l);
+  border: 0;
+  border-radius: var(--radius-default);
+  background: var(--bg-secondary);
+  box-shadow: inset 0 0 0 1px var(--outline-primary), var(--elevation-focused);
+  font: var(--font-body);
+  color: var(--txt-primary);
+  text-align: left;
+  transform: translateX(-50%);
+}
+
+.noticeButton {
+  flex: none;
+}
+
+button.notice,
+.noticeError {
+  cursor: pointer;
+}
+
+.noticeError {
+  color: var(--txt-danger);
+}
+
+/* the dice and the tokens of the players in the bottom left corner (61:4464) */
+.cluster {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+
+.clusterPlate {
+  align-items: flex-end;
+}
+
+.playerTokens {
+  display: flex;
+}
+
+/* a stand-in icon of a companion token until its own one is drawn */
+.companionIcon {
+  display: grid;
+  place-items: center;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  border-radius: var(--radius-max);
+  box-shadow: inset 0 0 0 2px currentColor;
+  font: var(--font-caption-bold);
+  font-size: var(--font-size-small);
+  line-height: 1;
+}
+
+/* the tools (57:3450): the sections, then the log at the bottom */
+.toolsBody {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* fog: brush, thickness, eraser (57:3453) */
+.brush {
+  display: flex;
+  align-items: center;
+  gap: var(--spacer-xs);
+}
+
+.brush > label {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* pencil and eraser, half the width each (57:3463) */
+.drawing {
+  display: flex;
+  gap: var(--spacer-xs);
+}
+
+/* the log (57:3471): 128 px at the bottom, in the panel's background */
+.log {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 128px;
+  padding: var(--spacer-m) var(--spacer-l);
+  background: var(--bg-secondary);
+  box-shadow: var(--elevation-focused);
+}

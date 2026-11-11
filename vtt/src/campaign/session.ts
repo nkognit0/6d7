@@ -5,8 +5,10 @@ import type { Seat } from '../game/seat/seat'
 import { newId } from '../map/core/geometry'
 import { invertMapOp } from '../map/core/invert'
 import { MapStore } from '../map/core/store'
+import type { ExploredData } from '../map/core/explored'
 import type { MapOp, MapScene } from '../map/core/types'
 import { applyCampaignOp, invertCampaignOp, metaOf, splitKey } from './campaign'
+import type { GameDoc, GameMap } from './game'
 import { History } from './history'
 import type { Campaign, CampaignDocs, CampaignMeta, CampaignOp, Change, DocKey } from './types'
 
@@ -48,6 +50,10 @@ export class CampaignSession {
   private maps = new Map<string, MapStore>()
   private unsubscribe = new Map<string, () => void>()
   private seats = new Map<string, Seat>()
+  // the game: the active map, its maps (a store and the editor's map it was merged with), explored masks
+  private game: GameDoc | null = null
+  private gameMaps = new Map<string, { store: MapStore; base: MapScene; off: () => void }>()
+  private explored = new Map<string, ExploredData>()
   private listeners = new Set<() => void>()
   private version = 0
   // the journal: numbers of changes, what is not sent yet, what the snapshot covers
@@ -66,6 +72,9 @@ export class CampaignSession {
     this.doc = docs.campaign
     for (const [id, scene] of Object.entries(docs.maps)) this.addMap(id, scene)
     for (const [id, seat] of Object.entries(docs.seats)) this.seats.set(id, seat)
+    this.game = docs.game ?? null
+    for (const [id, gm] of Object.entries(docs.gameMaps ?? {})) this.addGameMap(id, gm)
+    for (const [id, ex] of Object.entries(docs.explored ?? {})) this.explored.set(id, ex)
   }
 
   // ——— reading ———
@@ -83,11 +92,33 @@ export class CampaignSession {
     return this.seats.get(playerId)
   }
 
+  /** The game: the active map; null before the master first starts it. */
+  get gameDoc(): GameDoc | null {
+    return this.game
+  }
+
+  /** A map of the game: its store (the game's map view changes it, nothing is undone) and its base. */
+  gameMap(id: string): { store: MapStore; base: MapScene } | undefined {
+    return this.gameMaps.get(id)
+  }
+
+  /** What players have seen on a map of the game, as saved. */
+  exploredOf(id: string): ExploredData | undefined {
+    return this.explored.get(id)
+  }
+
   /** All documents as they are now (the archive takes them). */
   docs(): CampaignDocs {
     const maps: Record<string, MapScene> = {}
     for (const [id, store] of this.maps) maps[id] = store.get()
-    return { campaign: this.doc, maps, seats: Object.fromEntries(this.seats) }
+    const gameMaps: Record<string, GameMap> = {}
+    for (const [id, gm] of this.gameMaps) gameMaps[id] = { schema: 1, scene: gm.store.get(), base: gm.base }
+    return {
+      campaign: this.doc,
+      maps,
+      seats: Object.fromEntries(this.seats),
+      ...(this.game ? { game: this.game, gameMaps, explored: Object.fromEntries(this.explored) } : {})
+    }
   }
 
   /** What the home screen shows. */
@@ -151,6 +182,7 @@ export class CampaignSession {
       if (prev) return [{ doc: ch.doc, set: prev }]
       return 'set' in ch ? [{ doc: ch.doc, drop: true }] : []
     }
+    // the game is not undone
     return []
   }
 
@@ -191,6 +223,37 @@ export class CampaignSession {
     } else if (kind === 'seat') {
       if ('set' in ch) this.seats.set(id, ch.set as Seat)
       else this.seats.delete(id)
+    } else if (kind === 'game') {
+      this.game = 'set' in ch ? (ch.set as GameDoc) : null
+    } else if (kind === 'game/map') {
+      const gm = this.gameMaps.get(id)
+      if ('op' in ch || ('set' in ch && gm)) {
+        if (!gm) return
+        this.applying = true
+        try {
+          if ('op' in ch) gm.store.dispatch(ch.op as MapOp)
+          else {
+            gm.base = (ch.set as GameMap).base
+            gm.store.dispatch({ type: 'scene', scene: (ch.set as GameMap).scene })
+          }
+        } finally {
+          this.applying = false
+        }
+        // an operation is journaled by the map listener; a whole map — here, base and all
+        if ('op' in ch) return
+        this.dirty.add(ch.doc)
+        this.pending.push({ doc: ch.doc, set: { schema: 1, scene: gm.store.get(), base: gm.base } satisfies GameMap })
+        if (this.pending.length === 1) queueMicrotask(() => this.flushJournal())
+        return
+      }
+      if ('set' in ch) this.addGameMap(id, ch.set as GameMap)
+      else {
+        gm?.off()
+        this.gameMaps.delete(id)
+      }
+    } else if (kind === 'game/explored') {
+      if ('set' in ch) this.explored.set(id, ch.set as ExploredData)
+      else this.explored.delete(id)
     } else return
     this.journal(ch)
   }
@@ -207,6 +270,17 @@ export class CampaignSession {
       this.history.record([step], invertMapOp(prev, op).map((o) => ({ doc, op: o })), mergeKey(step))
       this.changed()
     }))
+  }
+
+  private addGameMap(id: string, gm: GameMap) {
+    const store = new MapStore(gm.scene)
+    const doc = `game/map/${id}` as const
+    // the game's map view changes the store itself: every operation is saved, none is undone
+    const off = store.subscribe((_, op) => {
+      this.journal({ doc, op })
+      if (!this.applying) this.changed()
+    })
+    this.gameMaps.set(id, { store, base: gm.base, off })
   }
 
   // ——— saving ———
@@ -255,6 +329,12 @@ export class CampaignSession {
     if (kind === 'campaign') return this.doc
     if (kind === 'map') return this.maps.get(id)?.get() ?? null
     if (kind === 'seat') return this.seats.get(id) ?? null
+    if (kind === 'game') return this.game
+    if (kind === 'game/map') {
+      const gm = this.gameMaps.get(id)
+      return gm ? ({ schema: 1, scene: gm.store.get(), base: gm.base } satisfies GameMap) : null
+    }
+    if (kind === 'game/explored') return this.explored.get(id) ?? null
     return null
   }
 
@@ -282,6 +362,7 @@ export class CampaignSession {
     this.closed = true
     for (const off of this.unsubscribe.values()) off()
     this.unsubscribe.clear()
+    for (const gm of this.gameMaps.values()) gm.off()
     this.listeners.clear()
   }
 

@@ -1,11 +1,13 @@
-import { BlurFilter, Container, Graphics, RenderTexture, Sprite, Texture, type Renderer } from 'pixi.js'
+import { BlurFilter, BufferImageSource, Container, Graphics, RenderTexture, Sprite, Texture, type Renderer } from 'pixi.js'
+import type { ExploredMask } from '../core/explored'
 import type { FogShape, FogStroke, MapImageInfo } from '../core/types'
 import type { Paint } from './theme'
 
 /**
  * Fog of war as masks on the GPU, in a lower resolution than the picture:
  * - `fog`: the master's brush strokes;
- * - `explored`: everything players have seen (static fog only);
+ * - `explored`: everything players have seen (static fog only) — `ExploredMask` of the core,
+ *   uploaded as a small texture;
  * - the players' current view is cut out of both, then a blur gives soft edges.
  * The result is redrawn only when something changes; moving the camera costs nothing.
  * The masks are one cell bigger than the picture on every side, so the blur never thins the
@@ -16,16 +18,15 @@ export class FogLayer {
   private rect = { x: 0, y: 0, w: 0, h: 0 }
   private s = 1
   private fogRT: RenderTexture | null = null
-  private exploredRT: RenderTexture | null = null
   private composeRT: RenderTexture | null = null
   private softRT: RenderTexture | null = null
   private drawn: FogStroke[] = []
+  private exploredSource: BufferImageSource | null = null
+  private exploredVersion = -1
   private empty = new Container()
 
   private brushRoot = new Container()
   private brush = new Graphics()
-  private exploredRoot = new Container()
-  private exploredPolys = new Graphics()
   private composeRoot = new Container()
   private fogSprite = new Sprite()
   private exploredSprite = new Sprite()
@@ -34,9 +35,9 @@ export class FogLayer {
   private blurSprite = new Sprite()
   private blur = new BlurFilter({ strength: 8, quality: 3 })
 
-  constructor(private maxMask: number) {
+  /** `onNewStroke`: a stroke added to the scene after the first replay (new fog hides what was explored) */
+  constructor(private maxMask: number, private onNewStroke: (s: FogStroke) => void) {
     this.brushRoot.addChild(this.brush)
-    this.exploredRoot.addChild(this.exploredPolys)
     this.exploredSprite.blendMode = 'erase'
     this.polys.blendMode = 'erase'
     this.composeRoot.addChild(this.fogSprite, this.exploredSprite, this.polys)
@@ -48,8 +49,11 @@ export class FogLayer {
   // the sprites let go of the masks before they are destroyed
   private release() {
     for (const s of [this.sprite, this.fogSprite, this.exploredSprite, this.blurSprite]) s.texture = Texture.EMPTY
-    for (const rt of [this.fogRT, this.exploredRT, this.composeRT, this.softRT]) rt?.destroy(true)
-    this.fogRT = this.exploredRT = this.composeRT = this.softRT = null
+    for (const rt of [this.fogRT, this.composeRT, this.softRT]) rt?.destroy(true)
+    this.exploredSource?.destroy()
+    this.exploredSource = null
+    this.exploredVersion = -1
+    this.fogRT = this.composeRT = this.softRT = null
   }
 
   /** New picture: masks sized to it. */
@@ -65,22 +69,42 @@ export class FogLayer {
     const h = Math.ceil(this.rect.h * this.s)
     const make = () => RenderTexture.create({ width: w, height: h, resolution: 1, scaleMode: 'linear' })
     this.fogRT = make()
-    this.exploredRT = make()
     this.composeRT = make()
     this.softRT = make()
     this.fogSprite.texture = this.fogRT
-    this.exploredSprite.texture = this.exploredRT
     this.blurSprite.texture = this.composeRT
     this.sprite.texture = this.softRT
     this.sprite.position.set(this.rect.x, this.rect.y)
     this.sprite.scale.set(1 / this.s)
     // world → mask pixels
-    for (const g of [this.brush, this.exploredPolys, this.polys]) {
+    for (const g of [this.brush, this.polys]) {
       g.scale.set(this.s)
       g.position.set(-this.rect.x * this.s, -this.rect.y * this.s)
     }
     this.blur.strength = Math.max(2, (cell * this.s) / 4)
-    for (const rt of [this.fogRT, this.exploredRT, this.composeRT, this.softRT]) this.clearRT(renderer, rt)
+    for (const rt of [this.fogRT, this.composeRT, this.softRT]) this.clearRT(renderer, rt)
+  }
+
+  /** The explored mask over the picture (`m` cells of margin before it); uploaded again when it changed. */
+  setExplored(mask: ExploredMask) {
+    if (!this.fogRT || mask.version === this.exploredVersion && this.exploredSource) return
+    // white with the mask as alpha: the sprite erases by alpha
+    const rgba = new Uint8Array(mask.w * mask.h * 4)
+    for (let i = 0; i < mask.data.length; i++) {
+      const a = mask.data[i]
+      if (a) rgba.fill(a, i * 4, i * 4 + 4)
+    }
+    if (this.exploredSource && this.exploredSource.width === mask.w && this.exploredSource.height === mask.h) {
+      this.exploredSource.resource = rgba
+      this.exploredSource.update()
+    } else {
+      this.exploredSource?.destroy()
+      this.exploredSource = new BufferImageSource({ resource: rgba, width: mask.w, height: mask.h, scaleMode: 'linear' })
+      this.exploredSprite.texture = new Texture({ source: this.exploredSource })
+    }
+    this.exploredSprite.position.set(-this.rect.x * this.s, -this.rect.y * this.s)
+    this.exploredSprite.scale.set((mask.image.width * this.s) / mask.w, (mask.image.height * this.s) / mask.h)
+    this.exploredVersion = mask.version
   }
 
   get ready() {
@@ -99,20 +123,22 @@ export class FogLayer {
       this.clearRT(renderer, this.fogRT)
       this.drawn = []
     }
-    for (const s of strokes.slice(this.drawn.length)) this.stroke(renderer, s)
+    for (const s of strokes.slice(this.drawn.length)) {
+      this.stroke(renderer, s)
+      if (prefix) this.onNewStroke(s)
+    }
     this.drawn = strokes.slice()
   }
 
-  /** One stroke into the brush mask; new fog also hides what players had already explored. */
+  /** One stroke into the brush mask. */
   stroke(renderer: Renderer, s: FogShape) {
-    if (!this.fogRT || !this.exploredRT) return
+    if (!this.fogRT) return
     const g = this.brush
     g.clear()
     if (s.mode === 'cover') {
       g.rect(this.rect.x, this.rect.y, this.rect.w, this.rect.h).fill(0xffffff)
       g.blendMode = 'normal'
       renderer.render({ container: this.brushRoot, target: this.fogRT, clear: false })
-      this.clearRT(renderer, this.exploredRT)
       return
     }
     const p = s.points
@@ -124,29 +150,16 @@ export class FogLayer {
     }
     g.blendMode = s.mode === 'erase' ? 'erase' : 'normal'
     renderer.render({ container: this.brushRoot, target: this.fogRT, clear: false })
-    if (s.mode === 'paint') {
-      g.blendMode = 'erase'
-      renderer.render({ container: this.brushRoot, target: this.exploredRT, clear: false })
-    }
   }
 
-  /** What players see now is cut out of the fog; with static fog it is also remembered. */
+  /** What players see now is cut out of the fog; with static fog — what they have seen too. */
   compose(renderer: Renderer, visible: number[][], dynamic: boolean) {
-    if (!this.composeRT || !this.softRT || !this.exploredRT) return
-    if (!dynamic && visible.length) {
-      this.exploredPolys.clear()
-      for (const poly of visible) this.exploredPolys.poly(poly).fill(0xffffff)
-      renderer.render({ container: this.exploredRoot, target: this.exploredRT, clear: false })
-    }
+    if (!this.composeRT || !this.softRT) return
     this.polys.clear()
     for (const poly of visible) this.polys.poly(poly).fill(0xffffff)
-    this.exploredSprite.visible = !dynamic
+    this.exploredSprite.visible = !dynamic && !!this.exploredSource
     renderer.render({ container: this.composeRoot, target: this.composeRT, clear: true, clearColor: [0, 0, 0, 0] })
     renderer.render({ container: this.blurRoot, target: this.softRT, clear: true, clearColor: [0, 0, 0, 0] })
-  }
-
-  resetExplored(renderer: Renderer) {
-    if (this.exploredRT) this.clearRT(renderer, this.exploredRT)
   }
 
   style(paint: Paint, alpha: number, visible: boolean) {
@@ -157,7 +170,7 @@ export class FogLayer {
 
   destroy() {
     this.release()
-    for (const c of [this.brushRoot, this.exploredRoot, this.composeRoot, this.blurRoot]) c.destroy({ children: true })
+    for (const c of [this.brushRoot, this.composeRoot, this.blurRoot]) c.destroy({ children: true })
     this.blur.destroy()
     this.sprite.destroy()
   }

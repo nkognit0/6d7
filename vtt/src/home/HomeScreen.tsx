@@ -1,18 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { go } from '../app/route'
-import { ARCHIVE_EXT, ArchiveError, freeName, importArchive, repo, type CampaignMeta } from '../campaign'
-import { useStrings, type Catalog } from '../i18n'
+import { archiveMessage } from '../app/archiveMessage'
+import { ARCHIVE_EXT, freeName, importArchive, repo, type CampaignMeta } from '../campaign'
+import { useStrings } from '../i18n'
 import { Button, ConfirmDialog, Icon, IconButton, MenuItem, TopPanel, UserMenu } from '../ui'
 import { CampaignTile } from './CampaignTile'
 import { JoinDialog } from './JoinDialog'
 import styles from './HomeScreen.module.css'
 
 type Notice = { kind: 'busy' | 'error'; text: string } | null
-
-function archiveMessage(e: unknown, s: Catalog): string {
-  if (e instanceof ArchiveError) return e.code === 'version' ? s.campaign.archiveVersion : e.code === 'damaged' ? s.campaign.archiveDamaged : s.campaign.archiveFormat
-  return s.campaign.storageFailed
-}
 
 /**
  * D&D VTT / home (17:1613): the user menu and «Присоединиться к игре» on top; the campaigns of

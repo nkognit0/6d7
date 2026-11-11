@@ -66,7 +66,10 @@ export const ru = {
     notFound: 'Такой кампании нет в этом браузере.',
     archiveFormat: 'Это не архив кампании 6d7.',
     archiveVersion: 'Архив сделан более новой версией приложения. Обновите страницу и попробуйте снова.',
-    archiveDamaged: 'Архив повреждён: часть файлов не читается.'
+    archiveDamaged: 'Архив повреждён: часть файлов не читается.',
+    archiveIsGame: 'Это состояние игры, а не кампания. Его загружает игра мастера: меню кампании → «Импортировать состояние игры».',
+    archiveNotGame: 'Это архив кампании, а не состояние игры. Кампанию загружают на главном экране или в редакторе.',
+    archiveOtherCampaign: 'Это состояние игры другой кампании.'
   },
   editor: {
     modeEdit: 'Редактирование',
@@ -377,7 +380,25 @@ export const ru = {
     pencil: 'Карандаш',
     eraser: 'Ластик',
     fog: 'Туман войны',
-    conditions: 'Условия на карте'
+    conditions: 'Условия на карте',
+    name: 'Мастер',
+    gameFile: 'игра',
+    previewOf: (map: string) => `Предпросмотр: «${map}». Щёлкните по ней в списке ещё раз, чтобы перенести игру на эту карту.`,
+    backToGame: 'Вернуться к игре',
+    activeMap: 'Игра идёт на этой карте',
+    mapActions: 'Действия с картой',
+    look: 'Посмотреть',
+    playHere: 'Играть на этой карте',
+    noMaps: 'В кампании нет карт. Добавьте их в редакторе.',
+    chooseMap: 'Выберите карту слева: первый щелчок — предпросмотр, второй — игра на ней.',
+    noImage: 'У этой карты нет картинки — загрузите её в редакторе.',
+    pagesOf: (player: string) => `Страницы игрока ${player}`,
+    tokenOf: (name: string) => `Фишка: ${name}`,
+    companionOf: (name: string) => `Фишка спутника: ${name}`,
+    restOf: (player: string, text: string) => `${player}: ${text}`,
+    restNothing: 'восстанавливать нечего',
+    restNobody: 'Ни у кого из игроков ещё нет листа.',
+    importing: 'Загружаю состояние игры…'
   },
   // the sheet demo page (#sheet): the sheets and the inventories of one player, kept in this browser
   sheetDemo: {
@@ -388,14 +409,10 @@ export const ru = {
     importFailed: 'Не удалось прочитать файл листа.',
     restNothing: 'Восстанавливать нечего.'
   },
-  // screens of the next steps: until they are made, the address shows a stub with links
+  // messages in place of a screen: a missing campaign, an unknown code
   stub: {
     home: 'Главный экран',
-    play: 'Игра мастера появится на этапе 8 плана.',
-    joinUnknown: 'Такого кода нет в этом браузере.',
-    preview: 'Компоненты',
-    map: 'Карта — прототип',
-    sheet: 'Листы и инвентари — демо'
+    joinUnknown: 'Такого кода нет в этом браузере.'
   },
   // the map prototype page (#map): role switch, test maps, speed counters
   mapPrototype: {

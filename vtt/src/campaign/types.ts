@@ -1,7 +1,9 @@
 // The documents of a campaign (docs/data-model.md): plain serializable objects shared by the
 // editor, the game, the archive and (later) the server. No browser or React code here.
 import type { Seat } from '../game/seat/seat'
+import type { ExploredData } from '../map/core/explored'
 import type { FlowColor, MapOp, MapRules, MapScene } from '../map/core/types'
+import type { GameDoc, GameMap } from './game'
 
 /** Settings of the campaign («Параметры»); maps override them one by one. */
 export type CampaignSettings = Pick<MapRules, 'freeMove' | 'freeDoors' | 'dynamicFog'>
@@ -51,10 +53,11 @@ export type CampaignOp =
   | { type: 'npc.remove'; id: string }
 
 /**
- * Names of the documents: `campaign`, `map/<id>`, `seat/<player id>`; the game adds `game` and
- * `game/map/<id>` later.
+ * Names of the documents: `campaign`, `map/<id>`, `seat/<player id>`; the game — `game` (the active
+ * map), `game/map/<id>` (a map as it is in the game) and `game/explored/<id>` (what players have
+ * seen there).
  */
-export type DocKey = 'campaign' | `map/${string}` | `seat/${string}` | 'game' | `game/map/${string}`
+export type DocKey = 'campaign' | `map/${string}` | `seat/${string}` | 'game' | `game/map/${string}` | `game/explored/${string}`
 
 export const mapKey = (id: string) => `map/${id}` as const
 export const seatKey = (id: string) => `seat/${id}` as const
@@ -66,6 +69,8 @@ export const seatKey = (id: string) => `seat/${id}` as const
 export type Change =
   | { doc: 'campaign'; op: CampaignOp }
   | { doc: `map/${string}`; op: MapOp }
+  /** an operation on the scene of a map of the game */
+  | { doc: `game/map/${string}`; op: MapOp }
   | { doc: DocKey; set: unknown }
   | { doc: DocKey; drop: true }
 
@@ -88,4 +93,10 @@ export interface CampaignDocs {
   maps: Record<string, MapScene>
   /** seats by player id (the sheet of a player who has not started yet is missing) */
   seats: Record<string, Seat>
+  /** the game: missing until the master starts it */
+  game?: GameDoc
+  /** maps of the game by map id (only those the game has played) */
+  gameMaps?: Record<string, GameMap>
+  /** what players have seen on each map of the game */
+  explored?: Record<string, ExploredData>
 }

@@ -89,4 +89,21 @@ describe('CampaignSession', () => {
     expect(s.map('m1')!.get().grid.size).toBe(2)
     expect(s.history.canUndo).toBe(false)
   })
+
+  it('keeps the game: saved like the rest, never undone', async () => {
+    const { storage, journal } = memoryStorage()
+    const s = new CampaignSession(docs(), storage)
+    const scene = s.map('m1')!.get()
+    s.apply([{ doc: 'game/map/m1', set: { schema: 1, scene, base: scene } }, { doc: 'game', set: { schema: 1, active: 'm1' } }], { record: false })
+    s.gameMap('m1')!.store.dispatch({ type: 'token.add', token: { id: 'p1', kind: 'player', name: 'Арина', pin: { space: 'grid', u: 0.5, v: 0.5 } } })
+    s.apply([{ doc: 'game/explored/m1', set: { w: 1, h: 1, data: new Uint8Array([255]) } }], { record: false })
+    expect(s.history.canUndo).toBe(false)
+    expect(s.map('m1')!.get().tokens).toHaveLength(0)
+    await tick()
+    // the journal replays into the same documents
+    let replayed = docs()
+    for (const [, ch] of journal) replayed = applyChange(replayed, ch)
+    expect(replayed.gameMaps?.m1.scene.tokens.map((t) => t.id)).toEqual(['p1'])
+    expect(replayed).toEqual(s.docs())
+  })
 })
