@@ -18,7 +18,7 @@ export function App() {
     case 'play':
       return <MasterGame key={route.campaign} campaignId={route.campaign} />
     case 'join':
-      return <PlayerGame key={route.code} code={route.code} />
+      return <PlayerGame key={route.code + (route.stub ? '/stub' : '')} code={route.code} stub={route.stub} />
     case 'preview':
       return <PreviewPage section={route.section} />
     case 'map':

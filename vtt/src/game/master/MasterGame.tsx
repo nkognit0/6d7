@@ -8,16 +8,17 @@ import { archiveMessage } from '../../app/archiveMessage'
 import { go } from '../../app/route'
 import { ARCHIVE_EXT, downloadGame, importGameInto, seatKey, useSession, type CampaignSession, type Change, type PlayerSlot } from '../../campaign'
 import { useStrings } from '../../i18n'
-import type { MapEngine, MapTool } from '../../map'
+import type { ExploredMask, MapEngine, MapTool } from '../../map'
 import { Button, GameMenuButton, Menu, MenuDivider, MenuItem, Plate, Popover, ProjectMenu, TopPanel, type PlayerIcon42Name } from '../../ui'
 import { characterOf, emptySeat, withCharacter, type Seat } from '../seat/seat'
-import type { RollEntry } from '../player/Dice'
+import { rollEntry, type RollEntry } from '../player/Dice'
 import { SeatWindow, type SeatPage } from '../player/SeatWindow'
 import { useSeatWizards } from '../player/useSeatWizards'
 import { MasterField } from './MasterField'
 import { MasterMaps } from './MasterMaps'
 import { MasterTools } from './MasterTools'
 import { activateMap, startGame } from './start'
+import { useHost } from './useHost'
 import styles from './Master.module.css'
 
 const PAGES: [SeatPage, PlayerIcon42Name][] = [['sheet', 'sheet.character'], ['companion', 'sheet.sidekick'], ['items', 'inventory'], ['spells', 'spells']]
@@ -67,12 +68,22 @@ function Master({ session, onRestart }: { session: CampaignSession; onRestart: (
   const [brush, setBrush] = useState(4)
   // the engine of the map of the game: NPCs are dragged onto it
   const [engine, setEngine] = useState<MapEngine | null>(null)
+  // what players have seen on the map of the game, as its field shows it now
+  const explored = useRef<ExploredMask | null>(null)
   const file = useRef<HTMLInputElement>(null)
   const campaign = session.campaign
   const active = session.gameDoc?.active ?? null
   // a map the editor deleted while previewed
   const previewing = preview && preview !== active && campaign.maps.includes(preview) ? preview : null
   const shown = previewing ?? active
+
+  // the players' tabs play in this game; their rolls come into the log
+  useHost(session, explored, {
+    onRoll: (id, roll) => {
+      const p = session.campaign.players.find((x) => x.id === id)
+      if (p) setLog((l) => [...l, rollEntry(p.name || String(session.seat(id)?.sheet.name || ''), p.color, roll)])
+    }
+  })
 
   // first click — a look at the map, second — the game goes there; a click on the active map ends the look
   const pick = (id: string) => {
@@ -146,6 +157,7 @@ function Master({ session, onRestart }: { session: CampaignSession; onRestart: (
           onBack={active ? () => setPreview(null) : undefined}
           onRoll={(entry) => setLog((l) => [...l, entry])}
           onEngine={setEngine}
+          explored={explored}
         />
         <MasterTools session={session} mapId={previewing ? null : active} tool={tool} onTool={setTool} brush={brush} onBrush={setBrush} log={log} />
       </main>

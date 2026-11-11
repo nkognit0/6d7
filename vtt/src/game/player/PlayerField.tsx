@@ -5,13 +5,13 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointer
 import type { PlayerSlot, CampaignSettings } from '../../campaign'
 import { useStrings } from '../../i18n'
 import {
-  MapStore, MapView, MemoryTileProvider, useMapScene, type MapEngine, type MapTool, type MapViewState, type Token
+  createScene, MapStore, MapView, rulesOf, useMapScene, type ExploredMask, type MapEngine, type MapTool, type MapViewState, type TileProvider, type Token
 } from '../../map'
 import { ColorIcon, GameMenuButton, IconButton, Plate, PlayerIcon, type PlayerIcon42Name } from '../../ui'
+import type { Roll } from '../net/protocol'
 import type { Seat } from '../seat/seat'
 import { DiceWindow, LogPanel, rollEntry, type RollEntry } from './Dice'
 import { SeatWindow, type SeatPage } from './SeatWindow'
-import { stubScene } from './stubMap'
 import { companionToken, companionTokenId, followSheet, heroToken } from './tokens'
 import { useSeatWizards } from './useSeatWizards'
 import styles from './Player.module.css'
@@ -19,35 +19,33 @@ import styles from './Player.module.css'
 type Page = SeatPage | 'dice'
 const PAGES: [Page, PlayerIcon42Name][] = [['sheet', 'sheet.character'], ['companion', 'sheet.sidekick'], ['items', 'inventory'], ['spells', 'spells'], ['dice', 'dice']]
 
-export function PlayerField({ player, seat, onChange, settings }: {
-  player: PlayerSlot
-  seat: Seat
-  onChange: (seat: Seat) => void
-  settings: CampaignSettings
-}) {
-  const s = useStrings()
-  const tiles = useMemo(() => new MemoryTileProvider(), [])
-  const [store, setStore] = useState<MapStore | null>(null)
-  useEffect(() => {
-    let live = true
-    stubScene(tiles, s.player.stubMap).then((scene) => live && setStore(new MapStore(scene)))
-    return () => {
-      live = false
-    }
-  }, [tiles, s])
-  if (!store) return <div className={styles.field}><p className={styles.preparing}>{s.player.preparingMap}</p></div>
-  return <Field player={player} seat={seat} onChange={onChange} settings={settings} store={store} tiles={tiles} />
+/** The map on the field: the master's (kept up to date by the master's tab) or the development one. */
+export interface FieldMap {
+  store: MapStore
+  tiles: TileProvider
+  explored?: ExploredMask
 }
 
-function Field({ player, seat, onChange, settings, store, tiles }: {
+// no map yet: the plates stay, the map is empty
+const NO_MAP = new MapStore(createScene())
+
+export function PlayerField({ player, seat, onChange, settings, map, onRoll, own }: {
   player: PlayerSlot
   seat: Seat
   onChange: (seat: Seat) => void
   settings: CampaignSettings
-  store: MapStore
-  tiles: MemoryTileProvider
+  /** null — the master has not chosen a map yet */
+  map: FieldMap | null
+  /** a roll goes to the master's log too */
+  onRoll?: (roll: Roll) => void
+  /**
+   * the development map: this tab puts the hero on the spawn point and keeps the tokens following
+   * the sheet (in the game the master's tab does it)
+   */
+  own?: boolean
 }) {
   const s = useStrings()
+  const store = map?.store ?? NO_MAP
   const scene = useMapScene(store)
   const wizards = useSeatWizards(seat, onChange)
   const companionId = companionTokenId(player.id)
@@ -62,8 +60,9 @@ function Field({ player, seat, onChange, settings, store, tiles }: {
   const hero = useMemo(() => heroToken(player, seat), [player, seat])
   const companion = useMemo(() => companionToken(player, seat), [player, seat])
 
-  // the hero stands on the spawn point when the game opens; later its token follows the sheet
+  // the development map: the hero stands on the spawn point when the game opens
   useEffect(() => {
+    if (!own) return
     const now = store.get()
     const t = now.tokens.find((x) => x.id === hero.id)
     const patch = t && followSheet(t, hero)
@@ -71,18 +70,21 @@ function Field({ player, seat, onChange, settings, store, tiles }: {
       placed.current = true
       store.dispatch({ type: 'token.add', token: { ...hero, pin: now.spawn } })
     } else if (t && patch) store.dispatch({ type: 'token.update', id: t.id, patch })
-  }, [store, hero])
+  }, [own, store, hero])
   useEffect(() => {
+    if (!own) return
     const t = store.get().tokens.find((x) => x.id === companionId)
     const patch = t && companion && followSheet(t, companion)
     if (t && !companion) store.dispatch({ type: 'token.remove', id: companionId })
     else if (t && patch) store.dispatch({ type: 'token.update', id: companionId, patch })
-  }, [store, companion, companionId])
+  }, [own, store, companion, companionId])
 
   const view = useMemo<MapViewState>(
     () => ({ role: 'player', playerId: player.id, drawColor: player.color, tool, brush: 4, campaignRules: settings }),
     [player.id, player.color, tool, settings]
   )
+  // a token goes onto the map while players move freely
+  const free = !!map && rulesOf(scene, settings).freeMove
   const onMap = (id: string) => scene.tokens.some((t) => t.id === id)
   const dragIn = (token: Omit<Token, 'pin'>) => (e: ReactPointerEvent) => {
     e.preventDefault()
@@ -94,7 +96,11 @@ function Field({ player, seat, onChange, settings, store, tiles }: {
 
   return (
     <div className={styles.field}>
-      <MapView store={store} tiles={tiles} view={view} onEngine={(e) => (engine.current = e)} />
+      {map ? (
+        <MapView store={map.store} tiles={map.tiles} view={view} explored={map.explored} onEngine={(e) => (engine.current = e)} />
+      ) : (
+        <p className={styles.preparing}>{s.player.noMap}</p>
+      )}
 
       <Plate edge="left" className={styles.leftPlate}>
         {PAGES.map(([p, icon]) => (
@@ -107,15 +113,15 @@ function Field({ player, seat, onChange, settings, store, tiles }: {
       </Plate>
 
       <Plate edge="right" className={styles.rightPlate}>
-        <IconButton label={s.player.tools.token} disabled={onMap(hero.id)} icon={<PlayerIcon name="character.figure.avatar" color={player.color} />}
+        <IconButton label={s.player.tools.token} disabled={!free || onMap(hero.id)} icon={<PlayerIcon name="character.figure.avatar" color={player.color} />}
           onPointerDown={dragIn(hero)} />
         {companion && (
-          <IconButton label={s.player.companionToken} disabled={onMap(companionId)} onPointerDown={dragIn(companion)}
+          <IconButton label={s.player.companionToken} disabled={!free || onMap(companionId)} onPointerDown={dragIn(companion)}
             icon={<span className={styles.companionIcon} style={{ color: `var(--flow-${player.color})` }}>{(companion.name || s.player.companionToken).charAt(0).toUpperCase()}</span>} />
         )}
-        <IconButton variant="switch" pressed={tool === 'pencil'} label={s.player.tools.pencil} icon={<PlayerIcon name="character.pencil" color={player.color} />}
+        <IconButton variant="switch" disabled={!map} pressed={!!map && tool === 'pencil'} label={s.player.tools.pencil} icon={<PlayerIcon name="character.pencil" color={player.color} />}
           onClick={() => pick('pencil')} />
-        <IconButton variant="switch" pressed={tool === 'draw-erase'} label={`${s.player.tools.eraser}. ${s.player.tools.eraserHint}`} icon={<ColorIcon name="character.eraser" />}
+        <IconButton variant="switch" disabled={!map} pressed={!!map && tool === 'draw-erase'} label={`${s.player.tools.eraser}. ${s.player.tools.eraserHint}`} icon={<ColorIcon name="character.eraser" />}
           onClick={() => pick('draw-erase')} onDoubleClick={eraseMine} />
       </Plate>
 
@@ -123,7 +129,10 @@ function Field({ player, seat, onChange, settings, store, tiles }: {
 
       {page === 'dice' && (
         <DiceWindow anchor={diceAnchor} onClose={() => setPage(null)}
-          onRoll={(r) => setLog((l) => [...l, rollEntry(player.name || String(seat.sheet.name || ''), player.color, r)])} />
+          onRoll={(r) => {
+            setLog((l) => [...l, rollEntry(player.name || String(seat.sheet.name || ''), player.color, r)])
+            onRoll?.(r)
+          }} />
       )}
       {page && page !== 'dice' && <SeatWindow page={page} seat={seat} onChange={onChange} wizards={wizards} onClose={() => setPage(null)} />}
       {wizards.element}

@@ -10,7 +10,8 @@ export type Route =
   /** `map` — the map open on the maps tab */
   | { page: 'editor'; campaign: string; tab: EditorTab; map?: string }
   | { page: 'play'; campaign: string }
-  | { page: 'join'; code: string }
+  /** `stub` — the development map without the master */
+  | { page: 'join'; code: string; stub?: boolean }
   // pages for development: the component preview, the map prototype, the sheet demo
   | { page: 'preview'; section?: string }
   | { page: 'map' }
@@ -24,7 +25,7 @@ export function parseRoute(hash: string): Route {
     const tab = (EDITOR_TABS as readonly string[]).includes(b) ? (b as EditorTab) : 'maps'
     return tab === 'maps' && c ? { page: 'editor', campaign: a, tab, map: c } : { page: 'editor', campaign: a, tab }
   }
-  if (head === 'join' && a) return { page: 'join', code: a }
+  if (head === 'join' && a) return b === 'stub' ? { page: 'join', code: a, stub: true } : { page: 'join', code: a }
   if (head === 'preview') return a ? { page: 'preview', section: a } : { page: 'preview' }
   if (head === 'map') return { page: 'map' }
   if (head === 'sheet') return { page: 'sheet' }
@@ -41,7 +42,7 @@ export function routeHash(r: Route): string {
     case 'play':
       return `#/c/${e(r.campaign)}/play`
     case 'join':
-      return `#/join/${e(r.code)}`
+      return `#/join/${e(r.code)}${r.stub ? '/stub' : ''}`
     case 'preview':
       return r.section ? `#preview/${e(r.section)}` : '#preview'
     case 'map':

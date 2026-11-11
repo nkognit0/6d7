@@ -1,6 +1,8 @@
 // The game of a player, opened by the code of a place (#/join/<code>, a new tab). Without the server
-// the code is looked up among the campaigns of this browser; the seat of the place is kept in its
-// campaign. The first time the player makes the sheet («Начать игру»), then plays on the map.
+// the code is looked up among the campaigns of this browser, and the game is the master's game in
+// another tab of the same browser: the master's tab keeps the sheet and the map. The first time the
+// player makes the sheet («Начать игру»), then plays on the map. `#/join/<code>/stub` — the
+// development map without the master (the sheet is written into the campaign directly).
 import { useEffect, useMemo, useState } from 'react'
 import { MAX_LEVEL } from '@app/levelup/read'
 import { repo, seatKey, useSession, type CampaignSession, type CodeTarget } from '../../campaign'
@@ -9,6 +11,8 @@ import { Button, ConfirmDialog, TopPanel } from '../../ui'
 import { emptySeat, type Seat } from '../seat/seat'
 import { CharacterSheet } from '../sheet/CharacterSheet'
 import { PlayerField } from './PlayerField'
+import { useStubMap } from './stubMap'
+import { useGuest } from './useGuest'
 import { useNarrow } from '../inventory/narrow'
 import { MoreMenu, SheetFiles } from './SeatWindow'
 import { useSeatWizards } from './useSeatWizards'
@@ -24,7 +28,7 @@ function Message({ text }: { text: string }) {
   )
 }
 
-export function PlayerGame({ code }: { code: string }) {
+export function PlayerGame({ code, stub }: { code: string; stub?: boolean }) {
   const s = useStrings()
   const [target, setTarget] = useState<CodeTarget | null | undefined>(undefined)
   useEffect(() => {
@@ -37,18 +41,39 @@ export function PlayerGame({ code }: { code: string }) {
   }, [code])
   if (target === undefined) return <div className={styles.start} />
   if (target === null) return <Message text={s.stub.joinUnknown} />
-  return <PlayerSession key={target.campaign + target.player} campaignId={target.campaign} playerId={target.player} />
+  return stub
+    ? <StubSession key={target.campaign + target.player} campaignId={target.campaign} playerId={target.player} />
+    : <Guest key={target.campaign + target.player} campaignId={target.campaign} playerId={target.player} />
 }
 
-function PlayerSession({ campaignId, playerId }: { campaignId: string; playerId: string }) {
+/** In the master's game: the sheet and the map come from the master's tab. */
+function Guest({ campaignId, playerId }: { campaignId: string; playerId: string }) {
+  const s = useStrings()
+  const { state, changeSeat, roll } = useGuest(campaignId, playerId)
+  const joined = state.status === 'joined' ? state : null
+  const seat = useMemo(() => joined?.seat ?? emptySeat(), [joined?.seat])
+  if (state.status === 'connecting') return <div className={styles.start} />
+  if (state.status === 'waiting') return <Message text={s.player.noMaster} />
+  if (state.status === 'ended') return <Message text={s.player.masterLeft} />
+  if (!joined) return <Message text={s.player.seatGone} />
+  const player = joined.campaign.players.find((p) => p.id === playerId)
+  if (!player) return <Message text={s.player.seatGone} />
+  const map = joined.map && { store: joined.map.store, tiles: repo.tiles, explored: joined.map.explored }
+  return seat.started
+    ? <PlayerField player={player} seat={seat} onChange={changeSeat} settings={joined.campaign.settings} map={map} onRoll={roll} />
+    : <SheetStart seat={seat} onChange={changeSeat} />
+}
+
+// the development map: the campaign of this browser, without the master
+function StubSession({ campaignId, playerId }: { campaignId: string; playerId: string }) {
   const s = useStrings()
   const state = useSession(campaignId)
   if (state.status === 'loading') return <div className={styles.start} />
   if (state.status !== 'open') return <Message text={state.status === 'missing' ? s.campaign.notFound : s.campaign.storageFailed} />
-  return <Seated session={state.session} playerId={playerId} />
+  return <StubSeated session={state.session} playerId={playerId} />
 }
 
-function Seated({ session, playerId }: { session: CampaignSession; playerId: string }) {
+function StubSeated({ session, playerId }: { session: CampaignSession; playerId: string }) {
   const s = useStrings()
   const player = session.campaign.players.find((p) => p.id === playerId)
   const stored = session.seat(playerId)
@@ -57,8 +82,15 @@ function Seated({ session, playerId }: { session: CampaignSession; playerId: str
   // the seat belongs to the place: a sheet edited by its player is not undone in the editor
   const change = (next: Seat) => session.apply([{ doc: seatKey(playerId), set: next }], { record: false })
   return seat.started
-    ? <PlayerField player={player} seat={seat} onChange={change} settings={session.campaign.settings} />
+    ? <StubField player={player} seat={seat} onChange={change} settings={session.campaign.settings} />
     : <SheetStart seat={seat} onChange={change} />
+}
+
+function StubField(props: Omit<Parameters<typeof PlayerField>[0], 'map' | 'own'>) {
+  const s = useStrings()
+  const map = useStubMap(s.player.stubMap)
+  if (!map) return <div className={styles.field}><p className={styles.preparing}>{s.player.preparingMap}</p></div>
+  return <PlayerField {...props} map={map} own />
 }
 
 /**

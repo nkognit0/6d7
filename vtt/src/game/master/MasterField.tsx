@@ -15,7 +15,7 @@ import styles from './Master.module.css'
 /** The explored mask is written this long after players stop discovering the map. */
 const SAVE_EXPLORED_MS = 2000
 
-export function MasterField({ session, mapId, preview, tool, brush, notice, onNotice, onBack, onRoll, onEngine }: {
+export function MasterField({ session, mapId, preview, tool, brush, notice, onNotice, onBack, onRoll, onEngine, explored }: {
   session: CampaignSession
   /** the map on the field; null — none chosen yet */
   mapId: string | null
@@ -30,6 +30,8 @@ export function MasterField({ session, mapId, preview, tool, brush, notice, onNo
   onRoll: (entry: RollEntry) => void
   /** the engine of the map of the game (not of a map being looked at) */
   onEngine: (engine: MapEngine | null) => void
+  /** gets the explored mask of the map of the game while it is on the field */
+  explored: { current: ExploredMask | null }
 }) {
   const s = useStrings()
   const editor = mapId ? session.map(mapId)?.get() : undefined
@@ -58,10 +60,10 @@ export function MasterField({ session, mapId, preview, tool, brush, notice, onNo
       </div>
     )
   }
-  return <Field session={session} mapId={mapId} store={store} preview={preview} tool={tool} brush={brush} bar={bar} onRoll={onRoll} onEngine={onEngine} />
+  return <Field session={session} mapId={mapId} store={store} preview={preview} tool={tool} brush={brush} bar={bar} onRoll={onRoll} onEngine={onEngine} live={explored} />
 }
 
-function Field({ session, mapId, store, preview, tool, brush, bar, onRoll, onEngine }: {
+function Field({ session, mapId, store, preview, tool, brush, bar, onRoll, onEngine, live }: {
   session: CampaignSession
   mapId: string
   store: MapStore
@@ -71,6 +73,7 @@ function Field({ session, mapId, store, preview, tool, brush, bar, onRoll, onEng
   bar: React.ReactNode
   onRoll: (entry: RollEntry) => void
   onEngine: (engine: MapEngine | null) => void
+  live: { current: ExploredMask | null }
 }) {
   const s = useStrings()
   const scene = useMapScene(store)
@@ -86,6 +89,7 @@ function Field({ session, mapId, store, preview, tool, brush, bar, onRoll, onEng
     [mapId, store])
   useEffect(() => {
     if (!explored || preview) return
+    live.current = explored
     let timer: ReturnType<typeof setTimeout> | null = null
     const save = () => {
       timer = null
@@ -97,12 +101,13 @@ function Field({ session, mapId, store, preview, tool, brush, bar, onRoll, onEng
     })
     return () => {
       off()
+      if (live.current === explored) live.current = null
       if (timer) {
         clearTimeout(timer)
         save()
       }
     }
-  }, [explored, preview, session, mapId])
+  }, [explored, preview, session, mapId, live])
 
   // the tokens of the players follow their sheets; a removed player or companion leaves the map
   useEffect(() => {
