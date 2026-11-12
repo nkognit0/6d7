@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "tokens": "node scripts/tokens.mjs",
-    "icons": "node scripts/icons.mjs"
+    "icons": "node scripts/icons.mjs",
+    "deploy": "node scripts/deploy.mjs"
   },
   "dependencies": {
     "@fontsource/inter": "5.1.0",
