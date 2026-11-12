@@ -10,7 +10,7 @@ import {
 import styles from './Maps.module.css'
 
 /**
- * D&D VTT / editor / maps (6:424): the maps of the campaign — search, «+», the chosen map; «…» and
+ * 6d7 / editor / maps (6:424): the maps of the campaign — search, «+», the chosen map; «…» and
  * the right button open «Переименовать» and «Удалить».
  */
 export function MapList({ session, selected, onSelect }: { session: CampaignSession; selected: string | null; onSelect: (id: string) => void }) {

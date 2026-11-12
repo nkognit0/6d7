@@ -3,7 +3,7 @@ import { cx } from '../../lib'
 import styles from './Window.module.css'
 
 /**
- * D&D VTT / game / inventory windows (33:6729, 34:6975): a large window split into panes —
+ * 6d7 / game / inventory windows (33:6729, 34:6975): a large window split into panes —
  * the main pane and side panes (description, spell slots) on the secondary background.
  */
 export function GameWindow({ children, className }: { children: ReactNode; className?: string }) {

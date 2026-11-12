@@ -68,13 +68,13 @@
       "url": "http://127.0.0.1:5175"
     },
     {
-      "name": "vtt",
+      "name": "6d7",
       "runtimeExecutable": "C:\\Users\\Misha\\tools\\node\\node.exe",
       "runtimeArgs": [
-        "C:\\Users\\Misha\\Desktop\\dnd-app\\vtt\\node_modules\\vite\\bin\\vite.js",
-        "C:\\Users\\Misha\\Desktop\\dnd-app\\vtt",
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\6d7\\node_modules\\vite\\bin\\vite.js",
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\6d7",
         "--config",
-        "C:\\Users\\Misha\\Desktop\\dnd-app\\vtt\\vite.config.ts",
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\6d7\\vite.config.ts",
         "--host",
         "127.0.0.1",
         "--port",
@@ -85,14 +85,14 @@
       "url": "http://127.0.0.1:5176"
     },
     {
-      "name": "vtt-pages",
+      "name": "6d7-pages",
       "runtimeExecutable": "C:\\Users\\Misha\\tools\\node\\node.exe",
       "runtimeArgs": [
-        "C:\\Users\\Misha\\Desktop\\dnd-app\\vtt\\node_modules\\vite\\bin\\vite.js",
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\6d7\\node_modules\\vite\\bin\\vite.js",
         "preview",
-        "C:\\Users\\Misha\\Desktop\\dnd-app\\vtt",
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\6d7",
         "--config",
-        "C:\\Users\\Misha\\Desktop\\dnd-app\\vtt\\vite.config.ts",
+        "C:\\Users\\Misha\\Desktop\\dnd-app\\6d7\\vite.config.ts",
         "--base",
         "/6d7/",
         "--host",

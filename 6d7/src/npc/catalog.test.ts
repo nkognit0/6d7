@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { matches, NPC_TOKENS, npcToken, searchTokens } from './catalog'
+import { matches, NPC_TOKENS, npcCards, npcToken, searchTokens } from './catalog'
 
 describe('NPC catalog', () => {
   it('has every token of the catalog with both names', () => {
@@ -18,6 +18,16 @@ describe('NPC catalog', () => {
     expect(ids('drow rare')).toEqual(['elf-drow-rare'])
     expect(searchTokens('')).toHaveLength(210)
     expect(ids('дракон')).toHaveLength(30)
+  })
+
+  it('puts tokens on the map by the id of the catalog token, not by the address of its picture', () => {
+    const [goblin] = npcCards([], true, 'goblin legendary')
+    expect(goblin.image).toBe(npcToken('npc-goblin-legendary')!.url)
+    expect(goblin.token()).toMatchObject({ kind: 'npc', name: 'Гоблин', token: 'npc-goblin-legendary' })
+    expect(goblin.token()).not.toHaveProperty('image')
+    const [saved] = npcCards([{ id: 's1', token: 'npc-goblin-rare', name: 'Грызь', description: '' }], false, '')
+    expect(saved.token()).toMatchObject({ name: 'Грызь', token: 'npc-goblin-rare', saved: 's1' })
+    expect(saved.token()).not.toHaveProperty('image')
   })
 
   it('reads «ё» as «е» and ignores punctuation', () => {

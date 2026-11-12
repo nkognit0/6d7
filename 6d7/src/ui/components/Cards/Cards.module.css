@@ -1,4 +1,4 @@
-/* D&D VTT: NPC cards (14:1451, 13:1179, 40:3918) */
+/* 6d7: NPC cards (14:1451, 13:1179, 40:3918) */
 .npc {
   display: flex;
   gap: var(--spacer-m);
@@ -87,7 +87,7 @@
   white-space: nowrap;
 }
 
-/* D&D VTT / home: campaign card (17:1630) */
+/* 6d7 / home: campaign card (17:1630) */
 .campaign {
   display: flex;
   flex-direction: column;

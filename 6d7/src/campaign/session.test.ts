@@ -82,12 +82,73 @@ describe('CampaignSession', () => {
     vi.useRealTimers()
   })
 
+  it('keeps the changes when a write fails and writes them again', async () => {
+    vi.useFakeTimers()
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { storage, snapshots } = memoryStorage()
+    let refuse = true
+    const flaky: SessionStorage = {
+      append: storage.append,
+      compact: async (...args) => {
+        if (refuse) throw new Error('QuotaExceededError')
+        return storage.compact(...args)
+      }
+    }
+    const s = new CampaignSession(docs(), flaky)
+    let seen = 0
+    s.subscribe(() => seen++)
+    s.apply([{ doc: 'campaign', op: { type: 'rename', name: 'Новое' } }])
+    await vi.advanceTimersByTimeAsync(3500)
+    expect(s.saveFailed).toBe(true)
+    expect(s.saved).toBe(false)
+    expect(seen).toBeGreaterThan(1)
+    refuse = false
+    await vi.advanceTimersByTimeAsync(10_500)
+    expect(snapshots).toHaveLength(1)
+    expect(snapshots[0].writes.map(([k]) => k)).toEqual(['campaign'])
+    expect(snapshots[0].meta.name).toBe('Новое')
+    expect(s.saveFailed).toBe(false)
+    expect(s.saved).toBe(true)
+    quiet.mockRestore()
+    vi.useRealTimers()
+  })
+
   it('makes a quick series of grid edits one step', () => {
     const s = new CampaignSession(docs(), memoryStorage().storage)
     for (const size of [2.1, 2.2, 2.3]) s.map('m1')!.dispatch({ type: 'grid', patch: { size } })
     s.undo()
     expect(s.map('m1')!.get().grid.size).toBe(2)
     expect(s.history.canUndo).toBe(false)
+  })
+
+  it('undoes an import that replaced the campaign and its game, the game too', () => {
+    const s = new CampaignSession(docs(), memoryStorage().storage)
+    const scene = s.map('m1')!.get()
+    s.apply([
+      { doc: 'game/map/m1', set: { schema: 1, scene, base: scene } },
+      { doc: 'game/explored/m1', set: { w: 1, h: 1, data: new Uint8Array([255]) } },
+      { doc: 'game', set: { schema: 1, active: 'm1' } }
+    ], { record: false })
+    s.gameMap('m1')!.store.dispatch({ type: 'token.add', token: { id: 'p1', kind: 'player', name: 'Арина', pin: { space: 'grid', u: 0.5, v: 0.5 } } })
+    const before = s.docs()
+    // what «Импортировать» of the editor does: another campaign whose game is on another map
+    const other = { ...createScene('Лес'), id: 'm2' }
+    s.apply([
+      { doc: 'campaign', set: { ...before.campaign, name: 'Из архива', maps: ['m2'] } },
+      { doc: 'map/m1', drop: true },
+      { doc: 'map/m2', set: other },
+      { doc: 'game/map/m1', drop: true },
+      { doc: 'game/explored/m1', drop: true },
+      { doc: 'game/map/m2', set: { schema: 1, scene: other, base: other } },
+      { doc: 'game', set: { schema: 1, active: 'm2' } }
+    ])
+    expect(s.gameDoc?.active).toBe('m2')
+    s.undo()
+    expect(s.docs()).toEqual(before)
+    s.redo()
+    expect(s.gameDoc?.active).toBe('m2')
+    expect(s.gameMap('m1')).toBeUndefined()
+    expect(s.exploredOf('m1')).toBeUndefined()
   })
 
   it('keeps the game: saved like the rest, never undone', async () => {

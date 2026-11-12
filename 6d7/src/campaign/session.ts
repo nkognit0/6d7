@@ -27,6 +27,8 @@ export interface SessionStorage {
 const IDLE_MS = 3000
 /** …or this many changes, whichever comes first. */
 const MAX_JOURNAL = 300
+/** After a failed write the documents are written again after this pause. */
+const RETRY_MS = 10_000
 
 // what a step edits, so that a quick series of the same edits is one step of the history
 function mergeKey(ch: Change): string | null {
@@ -63,6 +65,7 @@ export class CampaignSession {
   private dirty = new Set<DocKey>()
   private timer: ReturnType<typeof setTimeout> | null = null
   private saving: Promise<void> = Promise.resolve()
+  private failed = false
   // changes applied by the session itself are not recorded twice by the map listeners
   private applying = false
   private closed = false
@@ -131,6 +134,14 @@ export class CampaignSession {
     return this.seq === this.savedSeq && !this.pending.length
   }
 
+  /**
+   * The last write did not go through (the browser refused it, the disk is full): the changes are
+   * kept in memory and written again after a pause or on «Сохранить». The screens say so.
+   */
+  get saveFailed() {
+    return this.failed
+  }
+
   // ——— changes ———
 
   /**
@@ -177,13 +188,18 @@ export class CampaignSession {
       if (store) return [{ doc, set: store.get() }]
       return 'set' in ch ? [{ doc, drop: true }] : []
     }
-    if (kind === 'seat') {
-      const prev = this.seats.get(id)
-      if (prev) return [{ doc: ch.doc, set: prev }]
-      return 'set' in ch ? [{ doc: ch.doc, drop: true }] : []
+    // the game itself is never recorded (its changes are not undone); only the editor's import of
+    // an archive replaces it in a step of the history, and «Отменить» brings the old game back
+    if (kind === 'game/map') {
+      const gm = this.gameMaps.get(id)
+      const doc = ch.doc as `game/map/${string}`
+      if ('op' in ch) return gm ? invertMapOp(gm.store.get(), ch.op as MapOp).map((op) => ({ doc, op })) : []
+      if (gm) return [{ doc, set: { schema: 1, scene: gm.store.get(), base: gm.base } satisfies GameMap }]
+      return 'set' in ch ? [{ doc, drop: true }] : []
     }
-    // the game is not undone
-    return []
+    const prev = kind === 'seat' ? this.seats.get(id) : kind === 'game' ? this.game : kind === 'game/explored' ? this.explored.get(id) : undefined
+    if (prev) return [{ doc: ch.doc, set: prev }]
+    return 'set' in ch ? [{ doc: ch.doc, drop: true }] : []
   }
 
   private applyOne(ch: Change) {
@@ -297,7 +313,8 @@ export class CampaignSession {
     const from = this.seq + 1
     this.pending = []
     this.seq += changes.length
-    this.saving = this.saving.then(() => this.storage.append(this.id, this.tab, from, changes)).catch((e) => console.error('journal', e))
+    // a lost piece of the journal is not a lost change: its documents are dirty, the snapshot writes them whole
+    this.saving = this.saving.then(() => this.storage.append(this.id, this.tab, from, changes)).catch((e) => this.fail('journal', e))
     if (this.timer) clearTimeout(this.timer)
     if (this.seq - this.savedSeq >= MAX_JOURNAL) void this.save()
     else this.timer = setTimeout(() => void this.save(), IDLE_MS)
@@ -310,18 +327,35 @@ export class CampaignSession {
     if (this.timer) clearTimeout(this.timer)
     this.timer = null
     if (!this.dirty.size && this.seq === this.savedSeq) return this.saving
-    const writes: DocWrite[] = [...this.dirty].map((key) => [key, this.valueOf(key)])
+    const keys = [...this.dirty]
+    const writes: DocWrite[] = keys.map((key) => [key, this.valueOf(key)])
     const upto = this.seq
     const meta = this.meta()
     this.dirty.clear()
     this.saving = this.saving
       .then(() => this.storage.compact(this.id, this.tab, upto, writes, meta))
-      .then(() => {
-        this.savedSeq = Math.max(this.savedSeq, upto)
-        this.changed()
-      })
-      .catch((e) => console.error('snapshot', e))
+      .then(
+        () => {
+          this.savedSeq = Math.max(this.savedSeq, upto)
+          this.failed = false
+          this.changed()
+        },
+        (e) => {
+          // the documents are written again next time, with what changed meanwhile
+          for (const key of keys) this.dirty.add(key)
+          this.fail('snapshot', e)
+        }
+      )
     return this.saving
+  }
+
+  private fail(what: string, e: unknown) {
+    console.error(what, e)
+    if (this.closed) return
+    this.failed = true
+    // a snapshot already on its way (after a lost piece of the journal) is not put off
+    this.timer ??= setTimeout(() => void this.save(), RETRY_MS)
+    this.changed()
   }
 
   private valueOf(key: DocKey): unknown {

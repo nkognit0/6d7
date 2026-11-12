@@ -1,4 +1,4 @@
-// The dice (D&D VTT / game / player 34:7783): the window next to the dice button and the log of
+// The dice (6d7 / game / player 34:7783): the window next to the dice button and the log of
 // rolls in the bottom right corner. The log lives only in the current game (QnA).
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { rollDie } from '@app/rules/dice'

@@ -10,7 +10,7 @@ import styles from './Maps.module.css'
 const GAP = 16
 
 /**
- * D&D VTT / editor / maps (40:2994): the window of an NPC on the map, next to it — its name and
+ * 6d7 / editor / maps (40:2994): the window of an NPC on the map, next to it — its name and
  * description. «Сохранить» makes it a unique NPC of the campaign («Сохранённые» of the NPC
  * catalog). «Убрать с карты» is not in the mockup: the NPC leaves the map (Delete does the same).
  */

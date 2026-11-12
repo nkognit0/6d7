@@ -11,7 +11,7 @@ const MONO = new Set(['icon.16', 'icon.28'])
 
 // Colored icons carry their drop shadows inside the SVG, so the file is bigger than the icon.
 // All of them use one shadow effect: Figma's export bounds are the drawing plus 8 px left and
-// right, 10 px above and 6 px below (checked on the icon frames of the D&D VTT file). The drawing
+// right, 10 px above and 6 px below (checked on the icon frames of the 6d7 file). The drawing
 // is centered in its icon box (16 or 42 px); x, y place that box inside the file.
 const PAD = { x: 8, top: 10, bottom: 6 }
 function geometry(svg, nominal) {

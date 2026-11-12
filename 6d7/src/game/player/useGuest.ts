@@ -2,7 +2,7 @@
 // player does and takes what the others do. Without the master there is no game (QnA, «Можно ли
 // играть без мастера?»): the tab waits and joins as soon as the master opens the game.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ExploredMask, MapStore, newId } from '../../map'
+import { ExploredMask, MapStore, newId, trackExplored, type RuleOverrides } from '../../map'
 import { tabLink, type GameLink } from '../net/link'
 import type { CampaignInfo, MapPayload, Roll } from '../net/protocol'
 import type { Seat } from '../seat/seat'
@@ -32,17 +32,25 @@ export function useGuest(campaignId: string, playerId: string) {
     let joined = false
     let current: GuestMap | null = null
     let unwatch: (() => void) | null = null
-    // a map from the master: what this tab does on it goes to the master
+    let settings: RuleOverrides | undefined
+    // a map from the master: what this tab does on it goes to the master; what players have seen
+    // is explored here as at the master's, by the same operations (a tab in the background too)
     const open = (p: MapPayload | null): GuestMap | null => {
       unwatch?.()
       unwatch = null
       if (!p) return (current = null)
       const store = new MapStore(p.scene)
       const id = p.id
-      unwatch = store.subscribe((_, op, source) => {
+      const explored = p.scene.image ? new ExploredMask(p.scene.image, p.explored) : undefined
+      const tracker = explored && trackExplored(store, explored, () => settings)
+      const off = store.subscribe((_, op, source) => {
         if (source === 'local') l.send({ type: 'playerOp', tab, player: playerId, map: id, op })
       })
-      return (current = { id, store, explored: p.scene.image ? new ExploredMask(p.scene.image, p.explored) : undefined })
+      unwatch = () => {
+        off()
+        tracker?.stop()
+      }
+      return (current = { id, store, explored })
     }
     const joinedWith = (patch: Partial<Extract<GuestState, { status: 'joined' }>>) =>
       setState((s) => (s.status === 'joined' ? { ...s, ...patch } : s))
@@ -68,6 +76,7 @@ export function useGuest(campaignId: string, playerId: string) {
         case 'welcome':
           if (m.to !== tab) break
           joined = true
+          settings = m.state.campaign.settings
           setState({ status: 'joined', campaign: m.state.campaign, seat: m.state.seat, map: open(m.state.map) })
           break
         case 'map':

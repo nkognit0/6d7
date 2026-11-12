@@ -14,12 +14,20 @@ export const LANGUAGES: Record<string, { name: string; strings: Catalog }> = {
 }
 export type Language = keyof typeof LANGUAGES
 
-const KEY = 'vtt-language'
+const KEY = '6d7-language'
+/** The key before the app was called 6d7: moved under the new one on the first start. */
+const FORMER_KEY = 'vtt-language'
 const DEFAULT: Language = 'ru'
 
 function saved(): Language {
   try {
-    const v = window.localStorage.getItem(KEY)
+    const store = window.localStorage
+    const former = store.getItem(FORMER_KEY)
+    if (former !== null) {
+      if (store.getItem(KEY) === null) store.setItem(KEY, former)
+      store.removeItem(FORMER_KEY)
+    }
+    const v = store.getItem(KEY)
     if (v && v in LANGUAGES) return v
   } catch {
     // storage may be unavailable: the default language

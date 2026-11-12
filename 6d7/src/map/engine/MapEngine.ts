@@ -5,8 +5,9 @@ import {
 import type { MapStore } from '../core/store'
 import { rulesOf } from '../core/scene'
 import type { Door, FlowColor, MapRules, MapScene, Pin, RuleOverrides, Token, TileProvider, Vec } from '../core/types'
-import { moveBlockers, pathBlocked, sightBlockers, visibilityPolygon, visionRadius } from '../core/visibility'
+import { moveBlockers, pathBlocked } from '../core/visibility'
 import { ExploredMask } from '../core/explored'
+import { doorSeen, playerSight, playersSee, trackExplored, type ExploredTracker } from '../core/exploring'
 import { BuildLayer, strokeWalls } from './BuildLayer'
 import { Camera, CELL_AT_100, type CameraBounds } from './camera'
 import { DrawLayer, drawingPaint, PENCIL } from './DrawLayer'
@@ -66,8 +67,8 @@ export interface MapEngineOptions {
   onStats?: (stats: MapStats) => void
   onSelect?: (tokenId: string | null) => void
   /**
-   * What players have seen on this map (the game keeps and saves it); without it the engine keeps
-   * its own while it lives.
+   * What players have seen on this map: the game keeps it up to date (`trackExplored`) and saves
+   * it, the engine only shows it. Without it the engine keeps its own while it lives.
    */
   explored?: ExploredMask
 }
@@ -132,14 +133,15 @@ export class MapEngine {
   private cleanup: (() => void)[] = []
   private explored: ExploredMask | null = null
   private exploredOff: (() => void) | null = null
+  // the engine's own mask is kept up to date by the engine itself
+  private ownTracker: ExploredTracker | null = null
 
   constructor(private host: HTMLElement, private opts: MapEngineOptions) {
     this.view = opts.view
     this.theme = readTheme(host)
     this.tiles = new TileLayer(opts.tiles, () => this.requestRender(), this.touch ? 64 : 192)
     this.tokens = new TokenLayer(() => this.requestRender())
-    // new fog closes what players had explored
-    this.fog = new FogLayer(this.touch ? 1024 : 2048, (s) => this.explored?.hide(s))
+    this.fog = new FogLayer(this.touch ? 1024 : 2048)
     this.above.addChild(this.draws.container, this.build.container, this.tokens.npc, this.fog.sprite, this.tokens.players, this.overlay)
     this.below.addChild(this.tiles.container)
     this.stage.addChild(this.below, this.grid.mesh, this.above)
@@ -183,7 +185,10 @@ export class MapEngine {
     this.view = view
     if (prev.role !== view.role) this.selectToken(null)
     if (prev.role !== view.role || prev.look !== view.look) this.dirty.add('build').add('tokens').add('vision')
-    if (JSON.stringify(prev.campaignRules ?? {}) !== JSON.stringify(view.campaignRules ?? {})) this.dirty.add('vision')
+    if (JSON.stringify(prev.campaignRules ?? {}) !== JSON.stringify(view.campaignRules ?? {})) {
+      this.ownTracker?.update()
+      this.dirty.add('vision')
+    }
     if (prev.tool !== view.tool) {
       this.wallStart = null
       this.erasing = null
@@ -240,8 +245,16 @@ export class MapEngine {
       if (at) {
         const scene = this.opts.store.get()
         const pin = this.tokenPin(at)
-        if (scene.tokens.some((t) => t.id === token.id)) this.opts.store.dispatch({ type: 'token.update', id: token.id, patch: { pin } })
-        else this.opts.store.dispatch({ type: 'token.add', token: { ...token, pin } })
+        const on = scene.tokens.find((t) => t.id === token.id)
+        // a player puts a token only where players see, and moves one only where no wall stands between
+        const player = this.view.role === 'player'
+        if (on) {
+          if (!player || !pathBlocked(pinToImage(on.pin, scene.grid), at, moveBlockers(scene))) {
+            this.opts.store.dispatch({ type: 'token.update', id: token.id, patch: { pin } })
+          }
+        } else if (!player || playersSee(scene, at, this.explored, this.view.campaignRules)) {
+          this.opts.store.dispatch({ type: 'token.add', token: { ...token, pin } })
+        }
       }
       this.requestRender()
     }
@@ -255,6 +268,7 @@ export class MapEngine {
     this.destroyed = true
     cancelAnimationFrame(this.frame)
     this.exploredOff?.()
+    this.ownTracker?.stop()
     for (const fn of this.cleanup) fn()
     this.tiles.destroy()
     this.grid.destroy()
@@ -301,7 +315,6 @@ export class MapEngine {
       this.dirty.add('vision')
     } else if (prev.fog !== scene.fog) {
       this.fog.syncStrokes(renderer, scene.fog)
-      if (!scene.fog.length) this.explored?.clear()
       this.dirty.add('vision')
     }
     const gridChanged = !prev || prev.grid !== scene.grid
@@ -376,25 +389,16 @@ export class MapEngine {
     return this.ghost?.pointer ?? null
   }
 
-  /** Line of sight of every player token, cut out of the fog. The server will do this later. */
+  /**
+   * Line of sight of every player token, cut out of the fog, and what players have seen. Both are
+   * kept by the core as the map changes (`playerSight`, `trackExplored`): the engine only shows them.
+   */
   private updateVision(renderer: Renderer, scene: MapScene) {
     if (!scene.image || !this.fog.ready || !scene.fog.length) return
     const started = performance.now()
-    const blockers = sightBlockers(scene)
-    const bounds = { x: 0, y: 0, w: scene.image.width, h: scene.image.height }
-    const polys: number[][] = []
-    for (const t of scene.tokens) {
-      if (t.kind !== 'player') continue
-      const p = pinToImage(t.pin, scene.grid)
-      const poly = visibilityPolygon(p.x, p.y, blockers, visionRadius(t, scene), bounds)
-      if (poly.length >= 6) polys.push(poly)
-    }
-    const dynamic = this.rules(scene).dynamicFog
-    if (this.explored) {
-      if (!dynamic) this.explored.reveal(polys)
-      this.fog.setExplored(this.explored)
-    }
-    this.fog.compose(renderer, polys, dynamic)
+    const polys = playerSight(scene)
+    if (this.explored) this.fog.setExplored(this.explored)
+    this.fog.compose(renderer, polys, this.rules(scene).dynamicFog)
     this.stats.visionMs = performance.now() - started
   }
 
@@ -402,8 +406,12 @@ export class MapEngine {
   private useExplored(image: MapScene['image']) {
     this.exploredOff?.()
     this.exploredOff = null
+    this.ownTracker?.stop()
+    this.ownTracker = null
     const given = this.opts.explored
-    this.explored = !image ? null : given && given.image.width === image.width && given.image.height === image.height ? given : new ExploredMask(image)
+    const fits = !!image && !!given && given.image.width === image.width && given.image.height === image.height
+    this.explored = !image ? null : fits ? given! : new ExploredMask(image)
+    if (this.explored && !fits) this.ownTracker = trackExplored(this.opts.store, this.explored, () => this.view.campaignRules)
     this.exploredOff = this.explored?.subscribe(() => {
       this.dirty.add('vision')
       this.requestRender()
@@ -873,9 +881,13 @@ export class MapEngine {
   private hitDoor(w: Vec): Door | null {
     const scene = this.opts.store.get()
     const tol = cellPx(scene.grid) / 6
+    const player = this.view.role === 'player'
     for (const d of scene.doors) {
-      if (d.open && this.view.role === 'player') continue
-      if (distToSegment(w, pinToImage(d.a, scene.grid), pinToImage(d.b, scene.grid)) <= tol) return d
+      if (player && d.open) continue
+      if (distToSegment(w, pinToImage(d.a, scene.grid), pinToImage(d.b, scene.grid)) > tol) continue
+      // a player opens only a door players see: one under the fog is not even found
+      if (player && !doorSeen(scene, d, this.explored, this.view.campaignRules)) continue
+      return d
     }
     return null
   }

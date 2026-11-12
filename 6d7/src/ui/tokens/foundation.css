@@ -51,7 +51,7 @@
   /* NPC card names: Inter Bold 12/18, set in the layouts without a token */
   --font-caption-bold: var(--font-weight-bold) var(--font-size-default) / var(--line-height-small) var(--font-family);
 
-  /* Character sheet (D&D VTT «Лист персонажа черновик» 41:4939 and the approved sheet app/preview).
+  /* Character sheet (6d7 «Лист персонажа черновик» 41:4939 and the approved sheet app/preview).
      Its own rules: serif labels in txt/info, Inter Medium values in txt/primary, 28 px lines. */
   --font-sheet-label: var(--font-weight-regular) var(--font-size-large) / var(--line-height-default) var(--font-family-serif);
   --font-sheet-caption: var(--font-weight-regular) var(--font-size-large) / normal var(--font-family-serif);

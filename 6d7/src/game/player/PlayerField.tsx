@@ -1,4 +1,4 @@
-// The game of a player (D&D VTT / game / player 30:3546): the map, the big buttons of the sheets,
+// The game of a player (6d7 / game / player 30:3546): the map, the big buttons of the sheets,
 // the inventories and the dice on the left, the token and the drawing tools on the right, the log
 // of rolls in the corner. No top panel.
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'

@@ -94,7 +94,7 @@ function StubField(props: Omit<Parameters<typeof PlayerField>[0], 'map' | 'own'>
 }
 
 /**
- * D&D VTT / game / player / start: the first entry — the sheet with «Создать лист», «Повысить
+ * 6d7 / game / player / start: the first entry — the sheet with «Создать лист», «Повысить
  * уровень», «Очистить», «Начать игру» and the sheet files. The game starts once the sheet has a
  * class and a level.
  */

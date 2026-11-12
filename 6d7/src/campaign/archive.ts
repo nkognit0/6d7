@@ -60,7 +60,8 @@ export interface ArchiveFiles {
   recut(original: Blob, imageId: string): Promise<void>
 }
 
-const MEDIA_REF = /media:[0-9a-f]{64}/g
+/** A reference to a file of the media store, wherever it stands in a document. */
+export const MEDIA_REF = /media:[0-9a-f]{64}/g
 const EXT: Record<string, string> = { 'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg', 'image/avif': 'avif' }
 const TYPE: Record<string, string> = Object.fromEntries(Object.entries(EXT).map(([t, e]) => [e, t]))
 

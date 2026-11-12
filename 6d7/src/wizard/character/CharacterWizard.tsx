@@ -1,5 +1,5 @@
 // «Создать лист»: the character wizard of the old app (the same steps and rules), in the styles of
-// the VTT. The rules logic — derive, the sheet, the history — is the old app's own.
+// 6d7. The rules logic — derive, the sheet, the history — is the old app's own.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { DnDCharacter } from 'dnd-sheet'
 import { derive, type Derived } from '@app/rules/derive'

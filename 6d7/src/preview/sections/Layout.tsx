@@ -76,7 +76,7 @@ export function Layout() {
         </Row>
       </Section>
 
-      <Section id="mode-switch" title="ModeSwitch" figma="top-panel / mode-switch (D&D VTT 6:422)" note="Переключатель режимов редактора: «Редактирование» и «Глазами игрока». Выбранная кнопка — на тёмной плашке.">
+      <Section id="mode-switch" title="ModeSwitch" figma="top-panel / mode-switch (6d7 6:422)" note="Переключатель режимов редактора: «Редактирование» и «Глазами игрока». Выбранная кнопка — на тёмной плашке.">
         <Row label="состояния">
           <Cell caption="обычное"><ModeSwitch value="edit" onChange={() => {}} options={MODES} /></Cell>
           <Cell caption="наведение на второй"><ModeSwitch value="edit" onChange={() => {}} options={MODES} previewState="hover" /></Cell>

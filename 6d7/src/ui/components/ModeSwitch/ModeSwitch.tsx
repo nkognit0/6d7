@@ -10,7 +10,7 @@ export interface ModeOption<T extends string> {
 }
 
 /**
- * Figma: top-panel / mode-switch (D&D VTT 6:422 → 100:3310): icon buttons on one plate, the
+ * Figma: top-panel / mode-switch (6d7 6:422 → 100:3310): icon buttons on one plate, the
  * chosen one on a dark tile. The editor switches «Редактирование» and «Глазами игрока» with it.
  */
 export function ModeSwitch<T extends string>({ options, value, onChange, previewState, className }: {

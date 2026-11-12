@@ -35,8 +35,7 @@ export class FogLayer {
   private blurSprite = new Sprite()
   private blur = new BlurFilter({ strength: 8, quality: 3 })
 
-  /** `onNewStroke`: a stroke added to the scene after the first replay (new fog hides what was explored) */
-  constructor(private maxMask: number, private onNewStroke: (s: FogStroke) => void) {
+  constructor(private maxMask: number) {
     this.brushRoot.addChild(this.brush)
     this.exploredSprite.blendMode = 'erase'
     this.polys.blendMode = 'erase'
@@ -123,10 +122,7 @@ export class FogLayer {
       this.clearRT(renderer, this.fogRT)
       this.drawn = []
     }
-    for (const s of strokes.slice(this.drawn.length)) {
-      this.stroke(renderer, s)
-      if (prefix) this.onNewStroke(s)
-    }
+    for (const s of strokes.slice(this.drawn.length)) this.stroke(renderer, s)
     this.drawn = strokes.slice()
   }
 

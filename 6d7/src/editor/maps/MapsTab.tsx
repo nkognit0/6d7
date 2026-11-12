@@ -14,7 +14,7 @@ import styles from './Maps.module.css'
 const TAP = 6
 
 /**
- * D&D VTT / editor / maps (6:400, 6:421, 40:2994): the maps of the campaign on the left, the map
+ * 6d7 / editor / maps (6:400, 6:421, 40:2994): the maps of the campaign on the left, the map
  * in the middle, its settings on the right. The open map is in the address.
  */
 export function MapsTab({ session, mode, mapId }: { session: CampaignSession; mode: EditorMode; mapId?: string }) {

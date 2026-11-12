@@ -88,12 +88,15 @@ export interface NpcCardData {
   token: () => Omit<Token, 'pin'>
 }
 
-/** The NPCs to drag onto a map: the catalog, or (catalog off) the master's saved NPCs. */
+/**
+ * The NPCs to drag onto a map: the catalog, or (catalog off) the master's saved NPCs. Their tokens
+ * keep the id of the catalog token, not the address of its picture: the map finds it by the id.
+ */
 export function npcCards(saved: SavedNpc[], catalog: boolean, query: string): NpcCardData[] {
   if (catalog) {
     return searchTokens(query).map((c) => ({
       key: c.id, image: c.url, name: c.name, note: cap(c.rarityRu),
-      token: () => ({ id: newId(), kind: 'npc', name: c.name, image: c.url, token: c.id })
+      token: () => ({ id: newId(), kind: 'npc', name: c.name, token: c.id })
     }))
   }
   return saved
@@ -103,6 +106,6 @@ export function npcCards(saved: SavedNpc[], catalog: boolean, query: string): Np
     })
     .map((n) => ({
       key: n.id, image: npcToken(n.token)?.url ?? '', name: n.name, note: n.description.split('\n')[0] || rarityText(n.token),
-      token: () => ({ id: newId(), kind: 'npc', name: n.name, image: npcToken(n.token)?.url, token: n.token, saved: n.id })
+      token: () => ({ id: newId(), kind: 'npc', name: n.name, token: n.token, saved: n.id })
     }))
 }

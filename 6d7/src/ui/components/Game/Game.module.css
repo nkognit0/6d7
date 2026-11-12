@@ -1,4 +1,4 @@
-/* D&D VTT / assets / menu (28:434) */
+/* 6d7 / assets / menu (28:434) */
 .menuButton {
   position: relative;
   display: flex;
@@ -26,7 +26,7 @@
   box-shadow: var(--focus-outline);
 }
 
-/* D&D VTT / game: top-panel plates (41:5994, 43:7044; strokes 61:4259, 61:3985, 61:4464): a line
+/* 6d7 / game: top-panel plates (41:5994, 43:7044; strokes 61:4259, 61:3985, 61:4464): a line
    of outline/primary on every side but the edges of the screen the plate touches */
 .plate {
   --plate-top: inset 0 1px 0 var(--outline-primary);

@@ -1,4 +1,4 @@
-// The spell inventory (D&D VTT / game / spells 34:6975): the spells of the character, five in a
+// The spell inventory (6d7 / game / spells 34:6975): the spells of the character, five in a
 // row, with the filters «Все», «Заговоры», 1–9; the search over the spells of its lists with
 // «Изучить»; the description with «Подготовить» and «Удалить» (the prepared ones within the limit
 // of the sheet); the spell slots with their boxes, Pact Magic in a row of its own (no «Сбросить»:

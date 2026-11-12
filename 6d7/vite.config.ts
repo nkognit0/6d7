@@ -6,7 +6,7 @@ import react from '@vitejs/plugin-react'
 const here = (p: string) => resolve(__dirname, p)
 
 // The rules logic and its pictures live in the old app (app/src, app/public) and the rules
-// database in dnd-db/data; the VTT uses them in place until they move to a shared package.
+// database in dnd-db/data; 6d7 uses them in place until they move to a shared package.
 // 'dnd-sheet' is a shim: the sheet's type and labels without its components and styles.
 const alias = {
   '@app': here('../app/src'),

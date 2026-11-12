@@ -1,10 +1,13 @@
 // The campaigns of this browser (IndexedDB): documents, the journal of changes, the home screen
 // summaries, map tiles and the stub codes of players. The server will take its place behind the
 // same methods.
+import { collectMedia, getMedia } from '../../game/media/media'
+import type { MediaRef } from '../../game/seat/seat'
 import type { MapImageInfo, TileProvider } from '../../map/core/types'
-import type { TileSink } from '../../map/image/pyramid'
+import { importMapImage, type TileSink } from '../../map/image/pyramid'
 import type { TileBlob } from '../../map/image/protocol'
-import { applyChange, createCampaign, docEntries, metaOf, newCode } from '../campaign'
+import { MEDIA_REF } from '../archive'
+import { applyChange, createCampaign, docEntries, imagesIn, metaOf, newCode, splitKey } from '../campaign'
 import { CampaignSession, type DocWrite, type SessionStorage } from '../session'
 import type { Campaign, CampaignDocs, CampaignMeta, Change, DocKey } from '../types'
 import { prefixRange, request, S, transact } from './idb'
@@ -27,10 +30,45 @@ export interface CodeTarget {
 
 /** Tiles of map pictures, kept until no campaign uses the picture. */
 export class LocalTiles implements TileProvider, TileSink {
+  // pictures being cut again from their originals, and those that could not be
+  private recutting = new Map<string, Promise<void>>()
+  private unrecoverable = new Set<string>()
+
   async load(image: MapImageInfo, level: number, col: number, row: number): Promise<ImageBitmap> {
-    const blob = await transact([S.tiles], 'readonly', (tx) => request<Blob | undefined>(tx.objectStore(S.tiles).get([image.id, level, col, row])))
+    let blob = await this.get(image.id, level, col, row)
+    if (!blob && image.original && !(await this.has(image.id))) {
+      await this.recut(image)
+      blob = await this.get(image.id, level, col, row)
+    }
     if (!blob) throw new Error(`no tile ${level}/${col}/${row}`)
     return createImageBitmap(blob)
+  }
+
+  private get(imageId: string, level: number, col: number, row: number): Promise<Blob | undefined> {
+    return transact([S.tiles], 'readonly', (tx) => request<Blob | undefined>(tx.objectStore(S.tiles).get([imageId, level, col, row])))
+  }
+
+  /**
+   * A picture without tiles (they were collected while an undo or another tab still showed it):
+   * its original is cut again under the same id. Every tile waiting for it waits for one cut.
+   */
+  private recut(image: MapImageInfo): Promise<void> {
+    if (this.unrecoverable.has(image.id)) return Promise.resolve()
+    let job = this.recutting.get(image.id)
+    if (!job) {
+      job = (async () => {
+        const original = await getMedia(image.original as MediaRef)
+        if (!original) throw new Error(`no original of ${image.id}`)
+        await importMapImage(original, this, undefined, image.id)
+      })()
+        .catch((e) => {
+          this.unrecoverable.add(image.id)
+          console.error('recut', e)
+        })
+        .finally(() => this.recutting.delete(image.id))
+      this.recutting.set(image.id, job)
+    }
+    return job
   }
 
   add(imageId: string, tiles: TileBlob[]): Promise<void> {
@@ -119,7 +157,9 @@ export class LocalRepo implements SessionStorage {
     const loaded = await this.load(id)
     if (!loaded) return null
     if (loaded.journal) await this.snapshot(loaded.docs)
-    await this.collectTiles()
+    // the tiles and files of replaced pictures go without holding the campaign up
+    this.collectTiles().catch((e) => console.error('tiles', e))
+    this.collectMedia().catch((e) => console.error('media', e))
     return new CampaignSession(loaded.docs, this)
   }
 
@@ -180,8 +220,43 @@ export class LocalRepo implements SessionStorage {
 
   /** Deletes a campaign with its journal and codes; tiles no other campaign uses go too. */
   async remove(id: string): Promise<void> {
+    // its files go at once (no history of it is left to bring them back) unless another campaign has them
+    const own = await transact([S.docs, S.journal], 'readonly', (tx) => this.refsIn(tx, prefixRange(id)))
     await transact([S.docs, S.journal, S.meta, S.codes], 'readwrite', (tx) => this.clear(tx, id))
     await this.collectTiles()
+    await this.collectMedia(own)
+  }
+
+  // every reference to a media file in the documents and journals (of all campaigns, or a range)
+  private async refsIn(tx: IDBTransaction, range?: IDBKeyRange): Promise<Set<string>> {
+    const [keys, values, journal] = await Promise.all([
+      request(tx.objectStore(S.docs).getAllKeys(range)) as Promise<[string, DocKey][]>,
+      request<unknown[]>(tx.objectStore(S.docs).getAll(range)),
+      request<(JournalEntry | Change)[]>(tx.objectStore(S.journal).getAll(range))
+    ])
+    const refs = new Set<string>()
+    // explored masks are bytes: no references there (and long to write out)
+    const scan = (key: DocKey, value: unknown) => {
+      if (splitKey(key)[0] === 'game/explored') return
+      for (const r of JSON.stringify(value)?.match(MEDIA_REF) ?? []) refs.add(r)
+    }
+    keys.forEach(([, key], i) => scan(key, values[i]))
+    for (const e of journal) scan(entryOf(e).c.doc, entryOf(e).c)
+    return refs
+  }
+
+  /**
+   * Collects the media files no campaign refers to any more (a replaced picture or portrait, a
+   * deleted campaign): a day after the first time nothing referred to them, or at once for `now`.
+   */
+  async collectMedia(now?: ReadonlySet<string>): Promise<void> {
+    const used = await transact([S.docs, S.journal, S.meta], 'readonly', async (tx) => {
+      const refs = await this.refsIn(tx)
+      // the home screen shows the summaries' pictures
+      for (const m of await request<CampaignMeta[]>(tx.objectStore(S.meta).getAll())) if (m.preview) refs.add(m.preview)
+      return refs
+    })
+    await collectMedia(used, now)
   }
 
   private async clear(tx: IDBTransaction, id: string) {
@@ -231,11 +306,26 @@ export class LocalRepo implements SessionStorage {
     return loaded?.docs.campaign.players.some((p) => p.id === target.player) ? target : null
   }
 
-  /** Deletes the tiles of pictures no campaign uses any more (a replaced picture, a deleted campaign). */
+  /**
+   * Deletes the tiles of pictures no campaign uses any more (a replaced picture, a deleted
+   * campaign). What is used is read from the maps themselves — of the editor and of the game — and
+   * from the journals not in the snapshots yet, in one transaction with the deletion: a tab that
+   * saves meanwhile waits. A picture only an undo of an open tab still knows is cut again from its
+   * original when it is shown (`LocalTiles.load`).
+   */
   async collectTiles(): Promise<void> {
-    await transact([S.meta, S.tiles], 'readwrite', async (tx) => {
-      const metas = await request<CampaignMeta[]>(tx.objectStore(S.meta).getAll())
-      const used = new Set(metas.flatMap((m) => m.images ?? []))
+    await transact([S.docs, S.journal, S.tiles], 'readwrite', async (tx) => {
+      const docs = tx.objectStore(S.docs)
+      const [docKeys, journal] = await Promise.all([
+        request(docs.getAllKeys()) as Promise<[string, DocKey][]>,
+        request<(JournalEntry | Change)[]>(tx.objectStore(S.journal).getAll())
+      ])
+      const maps = docKeys.filter(([, key]) => ['map', 'game/map'].includes(splitKey(key)[0]))
+      const values = await Promise.all(maps.map((k) => request(docs.get(k))))
+      const used = new Set([
+        ...maps.flatMap(([, key], i) => imagesIn({ doc: key, set: values[i] })),
+        ...journal.flatMap((e) => imagesIn(entryOf(e).c))
+      ])
       const tiles = tx.objectStore(S.tiles)
       const keys = (await request(tiles.getAllKeys())) as [string, number, number, number][]
       const gone = new Set(keys.map((k) => k[0]).filter((img) => !used.has(img)))

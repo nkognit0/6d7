@@ -1,4 +1,4 @@
-// Every text of the VTT interface in Russian (not what players type, not the rules database).
+// Every text of the 6d7 interface in Russian (not what players type, not the rules database).
 // Grouped by screen as in docs/app-description.md; texts with numbers are functions. A new
 // language is a file of the same shape (see index.ts): TypeScript checks that nothing is missing.
 export const ru = {
@@ -63,6 +63,7 @@ export const ru = {
     newName: 'Новая кампания',
     nameField: 'Название кампании',
     storageFailed: 'Браузер не дал открыть хранилище кампаний. Возможно, включён приватный режим или запрещено хранение данных сайта.',
+    saveFailed: 'Изменения не сохраняются: браузер отказал в записи. Нажмите, чтобы повторить; если не поможет — экспортируйте кампанию.',
     notFound: 'Такой кампании нет в этом браузере.',
     archiveFormat: 'Это не архив кампании 6d7.',
     archiveVersion: 'Архив сделан более новой версией приложения. Обновите страницу и попробуйте снова.',
@@ -89,6 +90,7 @@ export const ru = {
       imageCutting: (pct: number) => `Готовлю карту: ${pct}%`,
       imageErrFormat: 'Формат не поддерживается: нужен PNG, JPEG, WebP или AVIF',
       imageErrDecode: 'Не удалось прочитать картинку',
+      imageErrStore: 'Не удалось сохранить картинку: браузер отказал в записи (возможно, кончилось место)',
       imageErrSize: (max: number) => `Картинка больше ${max} px по стороне`,
       replaceImage: 'Заменить изображение',
       grid: 'Сетка',

@@ -33,7 +33,7 @@ function Message({ text }: { text: string }) {
 }
 
 /**
- * D&D VTT / editor (0:1): the campaign menu and the mode switch on top, the page of the tab in
+ * 6d7 / editor (0:1): the campaign menu and the mode switch on top, the page of the tab in
  * the middle, the tabs «Карты», «NPC», «Игроки», «Параметры» at the bottom.
  */
 export function EditorScreen({ campaignId, tab, map }: { campaignId: string; tab: EditorTab; map?: string }) {
@@ -53,6 +53,8 @@ function Editor({ session, tab, map }: { session: CampaignSession; tab: EditorTa
   const [notice, setNotice] = useState<Notice>(null)
   const file = useRef<HTMLInputElement>(null)
   const campaign = session.campaign
+  // a failed write stays on top until it goes through; a click writes again
+  const shown: Notice = session.saveFailed ? { kind: 'error', text: s.campaign.saveFailed } : notice
 
   useShortcuts('editor', { undo: () => session.undo(), redo: () => session.redo() })
 
@@ -109,9 +111,10 @@ function Editor({ session, tab, map }: { session: CampaignSession; tab: EditorTa
           )
         }
         center={
-          notice && (
-            <button type="button" className={notice.kind === 'error' ? styles.error : styles.busy} onClick={() => notice.kind === 'error' && setNotice(null)}>
-              {notice.text}
+          shown && (
+            <button type="button" className={shown.kind === 'error' ? styles.error : styles.busy}
+              onClick={() => (session.saveFailed ? void session.save() : shown.kind === 'error' && setNotice(null))}>
+              {shown.text}
             </button>
           )
         }

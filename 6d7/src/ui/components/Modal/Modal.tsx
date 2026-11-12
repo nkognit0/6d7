@@ -8,7 +8,7 @@ import { RowTitle } from '../Sidebar/Sidebar'
 import styles from './Modal.module.css'
 
 /**
- * D&D VTT / game / modal/dice (34:7794): a small floating window — title with a close button,
+ * 6d7 / game / modal/dice (34:7794): a small floating window — title with a close button,
  * rows under it. Opens next to its button, without an overlay.
  */
 export function Modal({ title, onClose, children, className, style }: {
@@ -32,7 +32,7 @@ export function Divider({ className }: { className?: string }) {
 }
 
 /**
- * D&D VTT / game (30:4208): black 40% overlay with an 8 px background blur under the sheet and
+ * 6d7 / game (30:4208): black 40% overlay with an 8 px background blur under the sheet and
  * the inventories. A click on the overlay itself (outside the window) closes it.
  */
 export function Overlay({ children, onClose, className }: { children: ReactNode; onClose?: () => void; className?: string }) {

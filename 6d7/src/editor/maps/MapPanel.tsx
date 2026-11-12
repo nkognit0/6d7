@@ -41,7 +41,7 @@ function RuleRow({ label, rule, scene, campaign, onPatch }: {
 }
 
 /**
- * D&D VTT / editor / maps (9:679): zoom, the picture, the grid, objects, fog, conditions, NPCs to
+ * 6d7 / editor / maps (9:679): zoom, the picture, the grid, objects, fog, conditions, NPCs to
  * drag onto the map and «Сохранить». Without a picture — only the zoom, the upload and saving.
  */
 export function MapPanel({ session, scene, dispatch, engine, zoom, tool, onTool, brush, onBrush }: {
@@ -84,8 +84,9 @@ export function MapPanel({ session, scene, dispatch, engine, zoom, tool, onTool,
       const [original, preview] = await Promise.all([img.original ? putMedia(img.original) : undefined, putMedia(img.thumbnail)])
       dispatch({ type: 'image', image: { ...img.info, original, preview } })
     } catch (e) {
-      const code = e instanceof MapImageError ? e.code : 'other'
-      setError(code === 'format' ? t.imageErrFormat : code === 'decode' ? t.imageErrDecode : code === 'size' ? t.imageErrSize(MAX_IMAGE_SIDE) : t.imageErrDecode)
+      // not a picture error: the tiles or the file were not written
+      const code = e instanceof MapImageError ? e.code : 'store'
+      setError(code === 'format' ? t.imageErrFormat : code === 'size' ? t.imageErrSize(MAX_IMAGE_SIDE) : code === 'store' ? t.imageErrStore : t.imageErrDecode)
     } finally {
       setBusy(null)
     }

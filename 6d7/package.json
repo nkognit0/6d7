@@ -1,8 +1,8 @@
 {
-  "name": "dnd-vtt",
+  "name": "6d7",
   "private": true,
   "version": "0.1.0",
-  "description": "Virtual tabletop для D&D 2024: главный экран, редактор кампании, игра мастера и игрока.",
+  "description": "6d7 — виртуальный стол для D&D 2024: главный экран, редактор кампании, игра мастера и игрока.",
   "type": "module",
   "engines": {
     "node": ">=20"

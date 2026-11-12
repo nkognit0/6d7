@@ -9,9 +9,9 @@ import { cpSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const vtt = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const root = resolve(vtt, '..')
-const dist = resolve(vtt, 'dist')
+const project = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const root = resolve(project, '..')
+const dist = resolve(project, 'dist')
 const dry = process.argv.includes('--dry')
 // the site's files go as they are: no line-ending conversion
 const GIT = ['-c', 'core.autocrlf=false', '-c', 'user.name=nkognit0', '-c', 'user.email=85009858+nkognit0@users.noreply.github.com']
@@ -21,7 +21,7 @@ const npm = (args, cwd) => execFileSync('npm', args, { cwd, stdio: 'inherit', sh
 const git = (args, cwd) => execFileSync('git', [...GIT, ...args], { cwd, stdio: 'inherit' })
 const read = (cmd, args, cwd) => execFileSync(cmd, args, { cwd, encoding: 'utf8' }).trim()
 
-npm(['run', 'build'], vtt)
+npm(['run', 'build'], project)
 
 // the pictures the code points to by relative paths: icons/items, icons/spells, tokens
 for (const p of ['icons/items', 'icons/spells', 'tokens']) cpSync(resolve(root, 'app/public', p), resolve(dist, p), { recursive: true })

@@ -17,7 +17,7 @@ import { useSeatWizards } from '../../game/player/useSeatWizards'
 import demo from './demo-character.json'
 import styles from './SheetDemo.module.css'
 
-const KEY = 'vtt-demo-seat'
+const KEY = '6d7-demo-seat'
 type Page = 'sheet' | 'companion' | 'items' | 'spells'
 const PAGES: [Page, PlayerIcon42Name][] = [['sheet', 'sheet.character'], ['companion', 'sheet.sidekick'], ['items', 'inventory'], ['spells', 'spells']]
 

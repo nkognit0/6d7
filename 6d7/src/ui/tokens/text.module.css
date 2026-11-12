@@ -1,7 +1,7 @@
 /* Text styles for screens. The values live in foundation.css (--font-*): components use them
    directly as `font: var(--font-body)`, screens use these classes or the <Text> component.
    The library's named styles are body, title, display and multiline; caption and captionStrong
-   are set in the VTT layouts without a token. */
+   are set in the 6d7 layouts without a token. */
 .body {
   font: var(--font-body);
 }

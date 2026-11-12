@@ -11,7 +11,7 @@ import styles from './HomeScreen.module.css'
 type Notice = { kind: 'busy' | 'error'; text: string } | null
 
 /**
- * D&D VTT / home (17:1613): the user menu and «Присоединиться к игре» on top; the campaigns of
+ * 6d7 / home (17:1613): the user menu and «Присоединиться к игре» on top; the campaigns of
  * this browser as tiles, four in a row, with «Создать» and the archive import.
  */
 export function HomeScreen() {

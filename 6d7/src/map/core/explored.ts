@@ -54,6 +54,13 @@ export class ExploredMask {
     return !this.data.some((v) => v)
   }
 
+  /** Whether players have seen the point (x, y in picture pixels). */
+  seen(x: number, y: number): boolean {
+    const mx = Math.floor(x * this.kx)
+    const my = Math.floor(y * this.ky)
+    return mx >= 0 && my >= 0 && mx < this.w && my < this.h && this.data[my * this.w + mx] === 255
+  }
+
   /** Marks what is inside the polygons (x, y pairs in picture pixels) as seen. */
   reveal(polys: number[][]): boolean {
     let changed = false

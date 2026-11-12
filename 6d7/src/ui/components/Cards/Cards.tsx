@@ -4,7 +4,7 @@ import { Avatar, type AvatarProps } from '../Avatar/Avatar'
 import styles from './Cards.module.css'
 
 /**
- * D&D VTT: NPC card with the token picture, name and rarity.
+ * 6d7: NPC card with the token picture, name and rarity.
  * grid — catalog tile (14:1451, 116 px); list — side panel row (13:1179, 56 px picture);
  * preview — big picture in the NPC panel (40:3918).
  */
@@ -35,7 +35,7 @@ export function NpcCard({ image, name, note, layout = 'grid', selected, classNam
 }
 
 /**
- * D&D VTT / home (17:1630): campaign tile — first map, name, players' avatars and the
+ * 6d7 / home (17:1630): campaign tile — first map, name, players' avatars and the
  * Играть / Редактировать buttons.
  */
 export function CampaignCard({ name, preview, players, actions, className, ...rest }: Omit<HTMLAttributes<HTMLElement>, 'children'> & {

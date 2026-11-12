@@ -70,11 +70,14 @@ export interface Token {
   name: string
   /** player tokens: the ring color */
   color?: FlowColor
-  /** portrait or NPC token image (URL) */
+  /** a picture of its own: a portrait (`media:<hash>`) or a URL; a catalog NPC has none */
   image?: string
   /** a token of a player that is not the hero (a companion): the player who moves it */
   owner?: string
-  /** NPC: id of the catalog token (the picture is found again by it) */
+  /**
+   * NPC: id of the catalog token; the picture is found by it wherever the map is opened (an
+   * address saved in `image` by earlier versions is ignored)
+   */
   token?: string
   /** NPC: the saved NPC of the campaign it became (its own name and description) */
   saved?: string

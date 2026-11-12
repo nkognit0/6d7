@@ -5,7 +5,7 @@ import { TabPage } from './TabPage'
 import styles from './EditorScreen.module.css'
 
 /**
- * D&D VTT / editor / rules (41:4119): the settings of the campaign. Maps follow them unless they
+ * 6d7 / editor / rules (41:4119): the settings of the campaign. Maps follow them unless they
  * changed a setting themselves. Doors open freely only while tokens move freely, so the door
  * setting shows only then.
  */

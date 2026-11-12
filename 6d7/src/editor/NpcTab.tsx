@@ -14,7 +14,7 @@ type Tab = 'catalog' | 'saved'
 type Choice = { kind: 'token'; id: string } | { kind: 'saved'; id: string }
 
 /**
- * D&D VTT / editor / NPC (14:1274, 40:3926): the catalog of tokens and the saved NPCs of the
+ * 6d7 / editor / NPC (14:1274, 40:3926): the catalog of tokens and the saved NPCs of the
  * campaign; the panel on the right makes a token a unique NPC («Новый NPC») or changes a saved
  * one («Изменить NPC»).
  */

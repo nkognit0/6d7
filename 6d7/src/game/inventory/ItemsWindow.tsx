@@ -1,4 +1,4 @@
-// The item inventory (D&D VTT / game / inventory 33:6729): the cells, eight in a row; the search
+// The item inventory (6d7 / game / inventory 33:6729): the cells, eight in a row; the search
 // over every item of the rules with «Получить» and «Купить»; the coins; the description of the
 // chosen thing with «Экипировать», «Маг. настройка» and «Удалить». No places on the hero: a
 // thing in use is marked in its cell, and the sheet follows it (armour class, magic items).

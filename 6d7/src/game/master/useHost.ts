@@ -3,11 +3,13 @@
 // takes the changes of the players after checking them and puts their rolls into the master's log.
 import { useEffect, useRef } from 'react'
 import { seatKey, type CampaignSession } from '../../campaign'
-import type { ExploredMask } from '../../map'
+import type { Token } from '../../map'
 import { allowPlayerOp } from '../net/allow'
 import { tabLink } from '../net/link'
 import type { CampaignInfo, GameMessage, MapPayload, Roll } from '../net/protocol'
+import { companionToken, heroToken } from '../player/tokens'
 import type { Seat } from '../seat/seat'
+import type { ExploredKeeper } from './explored'
 
 export interface HostEvents {
   /** a roll of a player, for the master's log */
@@ -15,12 +17,14 @@ export interface HostEvents {
 }
 
 /**
- * `explored` — the live mask of the map of the game (what the master's map shows now); the saved
- * one lags behind by a few seconds.
+ * `explored` — keeps the live mask of the map of the game; the saved one lags behind by a few
+ * seconds.
  */
-export function useHost(session: CampaignSession, explored: { current: ExploredMask | null }, events: HostEvents) {
+export function useHost(session: CampaignSession, explored: ExploredKeeper | null, events: HostEvents) {
   const latest = useRef(events)
   latest.current = events
+  const keeper = useRef(explored)
+  keeper.current = explored
 
   useEffect(() => {
     const link = tabLink(session.id)
@@ -31,8 +35,7 @@ export function useHost(session: CampaignSession, explored: { current: ExploredM
     const payload = (id: string | null): MapPayload | null => {
       const gm = id ? session.gameMap(id) : undefined
       if (!id || !gm) return null
-      const mask = explored.current
-      return { id, scene: gm.store.get(), explored: mask && mask.image === gm.store.get().image ? mask.save() : (session.exploredOf(id) ?? null) }
+      return { id, scene: gm.store.get(), explored: keeper.current?.of(id)?.save() ?? session.exploredOf(id) ?? null }
     }
 
     // the changes of the map of the game go to everyone; `from` — the tab whose change is applied now
@@ -76,8 +79,16 @@ export function useHost(session: CampaignSession, explored: { current: ExploredM
           break
         case 'playerOp': {
           const store = active === m.map ? session.gameMap(m.map)?.store : undefined
-          if (!known(m.player)) break
-          if (store && allowPlayerOp(store.get(), session.campaign.settings, m.player, m.op)) {
+          const slot = session.campaign.players.find((p) => p.id === m.player)
+          if (!slot) break
+          // the tokens of a player are the sheet's, not what the player's tab says they are
+          const seat = session.seat(m.player)
+          const ctx = {
+            explored: keeper.current?.of(m.map),
+            color: slot.color,
+            expected: (t: Token) => (t.owner ? companionToken(slot, seat) : heroToken(slot, seat))
+          }
+          if (store && allowPlayerOp(store.get(), session.campaign.settings, m.player, m.op, ctx)) {
             from = m.tab
             try {
               store.dispatch(m.op)
@@ -114,5 +125,5 @@ export function useHost(session: CampaignSession, explored: { current: ExploredM
       unwatch?.()
       link.close()
     }
-  }, [session, explored])
+  }, [session])
 }

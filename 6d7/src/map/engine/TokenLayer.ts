@@ -2,7 +2,7 @@ import { Container, Graphics, Sprite, Text } from 'pixi.js'
 import { cellPx, pinToImage } from '../core/geometry'
 import type { GridSettings, Token, Vec } from '../core/types'
 import type { MapTheme } from './theme'
-import { loadTexture } from './textures'
+import { loadTexture, tokenImage } from './textures'
 
 // a token takes its whole cell; the player's ring is 1/16 of a cell (8 px at 100%)
 const RING = 1 / 16
@@ -15,8 +15,8 @@ interface View {
 
 /**
  * Tokens: NPCs go under the fog, players above it (players always see their own tokens).
- * A player token is the portrait in a thick ring of the player's color; without a portrait —
- * the first letter of the name.
+ * A player token is the portrait in a thick ring of the player's color; without a picture (or
+ * one that does not load) — the first letter of the name.
  */
 export class TokenLayer {
   readonly npc = new Container()
@@ -31,7 +31,7 @@ export class TokenLayer {
     const seen = new Set<string>()
     for (const t of tokens) {
       seen.add(t.id)
-      const key = `${t.name}|${t.image}|${t.color}|${t.kind}|${c}|${selected === t.id}`
+      const key = `${t.name}|${tokenImage(t)}|${t.color}|${t.kind}|${c}|${selected === t.id}`
       let v = this.views.get(t.id)
       if (!v || v.key !== key) {
         if (v) v.root.destroy({ children: true })
@@ -63,7 +63,7 @@ export class TokenLayer {
   /** A token dragged in from the panel, before it is on the map. */
   setGhost(token: Omit<Token, 'pin'> | null, p: Vec | null, grid: GridSettings, theme: MapTheme) {
     const c = cellPx(grid)
-    const key = token ? `${token.name}|${token.image}|${token.color}|${c}` : ''
+    const key = token ? `${token.name}|${tokenImage(token)}|${token.color}|${c}` : ''
     if (this.ghost && (!token || this.ghost.key !== key)) {
       this.ghost.root.destroy({ children: true })
       this.ghost = null
@@ -84,31 +84,40 @@ export class TokenLayer {
     const base = new Graphics().circle(0, 0, r).fill({ color: theme.tokenFill.color, alpha: theme.tokenFill.alpha })
     root.addChild(base)
 
-    if (t.image) {
-      const inner = ring ? r - c * RING : r
-      loadTexture(t.image).then((tex) => {
-        if (root.destroyed) return
-        const sprite = new Sprite(tex)
-        sprite.anchor.set(0.5)
-        sprite.width = sprite.height = inner * 2
-        if (ring) {
-          const mask = new Graphics().circle(0, 0, inner).fill(0xffffff)
-          root.addChild(mask)
-          sprite.mask = mask
-        }
-        root.addChildAt(sprite, 1)
-        this.onImage()
-      })
-    } else {
-      const letter = new Text({
+    const letter = () => {
+      const text = new Text({
         text: (t.name.trim()[0] ?? '?').toUpperCase(),
         style: { fontFamily: 'Inter, sans-serif', fontWeight: '600', fontSize: c * 0.42, fill: theme.tokenText.color },
         resolution: 2
       })
-      letter.anchor.set(0.5)
-      letter.alpha = theme.tokenText.alpha
-      root.addChild(letter)
+      text.anchor.set(0.5)
+      text.alpha = theme.tokenText.alpha
+      return text
     }
+    const image = tokenImage(t)
+    if (image) {
+      const inner = ring ? r - c * RING : r
+      loadTexture(image).then(
+        (tex) => {
+          if (root.destroyed) return
+          const sprite = new Sprite(tex)
+          sprite.anchor.set(0.5)
+          sprite.width = sprite.height = inner * 2
+          if (ring) {
+            const mask = new Graphics().circle(0, 0, inner).fill(0xffffff)
+            root.addChild(mask)
+            sprite.mask = mask
+          }
+          root.addChildAt(sprite, 1)
+          this.onImage()
+        },
+        () => {
+          if (root.destroyed) return
+          root.addChildAt(letter(), 1)
+          this.onImage()
+        }
+      )
+    } else root.addChild(letter())
     const top = new Graphics()
     if (ring) top.circle(0, 0, r - (c * RING) / 2).stroke({ width: c * RING, color: ring.color, alpha: ring.alpha })
     if (selected) top.circle(0, 0, r + (c * SELECT) / 2).stroke({ width: c * SELECT, color: theme.selection.color, alpha: theme.selection.alpha })

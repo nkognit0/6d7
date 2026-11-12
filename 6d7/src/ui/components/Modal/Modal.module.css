@@ -1,4 +1,4 @@
-/* D&D VTT / game / modal/dice (34:7794) */
+/* 6d7 / game / modal/dice (34:7794) */
 .modal {
   display: flex;
   flex-direction: column;
@@ -21,7 +21,7 @@
   background: var(--outline-primary);
 }
 
-/* D&D VTT / game: Rectangle 14 (30:4208) */
+/* 6d7 / game: Rectangle 14 (30:4208) */
 .overlay {
   position: fixed;
   inset: 0;

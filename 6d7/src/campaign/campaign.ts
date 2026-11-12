@@ -3,7 +3,7 @@
 import { newId } from '../map/core/geometry'
 import { applyOp } from '../map/core/scene'
 import type { ExploredData } from '../map/core/explored'
-import type { FlowColor, MapOp } from '../map/core/types'
+import type { FlowColor, MapOp, MapScene } from '../map/core/types'
 import type { GameDoc, GameMap } from './game'
 import type { Campaign, CampaignDocs, CampaignMeta, CampaignOp, CampaignSettings, Change, DocKey, PlayerSlot } from './types'
 
@@ -178,9 +178,29 @@ export function metaOf(docs: CampaignDocs, updated: number): CampaignMeta {
     name: docs.campaign.name,
     players: docs.campaign.players,
     preview: first?.image?.preview ?? null,
-    images: Object.values(docs.maps).map((m) => m.image?.id).filter((x): x is string => !!x),
     updated
   }
+}
+
+/**
+ * The pictures a document or a change refers to: a map of the editor, a map of the game (its scene
+ * and the editor's map it was merged with). Their tiles must stay.
+ */
+export function imagesIn(ch: Change): string[] {
+  const [kind] = splitKey(ch.doc)
+  const ids: (string | undefined)[] = []
+  if ('set' in ch && ch.set) {
+    if (kind === 'map') ids.push((ch.set as MapScene).image?.id)
+    else if (kind === 'game/map') {
+      const gm = ch.set as GameMap
+      ids.push(gm.scene?.image?.id, gm.base?.image?.id)
+    }
+  } else if ('op' in ch && (kind === 'map' || kind === 'game/map')) {
+    const op = ch.op as MapOp
+    if (op.type === 'image') ids.push(op.image?.id)
+    else if (op.type === 'scene') ids.push(op.scene.image?.id)
+  }
+  return ids.filter((x): x is string => !!x)
 }
 
 /** `map/<id>` → ['map', id]; `campaign` → ['campaign', '']. */

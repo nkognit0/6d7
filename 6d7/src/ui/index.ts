@@ -31,7 +31,7 @@ export * from './components/ScrollArea/ScrollArea'
 export * from './components/Slider/Slider'
 export * from './components/Modal/Modal'
 export * from './components/Window/Window'
-// D&D VTT elements
+// 6d7 elements
 export * from './components/Game/Game'
 export * from './components/Game/InviteCode'
 export * from './components/InventorySlot/InventorySlot'

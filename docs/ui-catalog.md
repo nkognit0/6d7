@@ -1,8 +1,8 @@
-# Каталог компонентов VTT
+# Каталог компонентов 6d7
 
-Библиотека: `vtt/src/ui/` (импорт — `vtt/src/ui/index.ts`). Страница-превью со всеми компонентами и состояниями открывается на dev-сервере `vtt`: http://127.0.0.1:5176/.
+Библиотека: `6d7/src/ui/` (импорт — `6d7/src/ui/index.ts`). Страница-превью со всеми компонентами и состояниями открывается на dev-сервере `6d7`: http://127.0.0.1:5176/.
 
-Компоненты сняты из UI Library (Chatsky Team) — только те, что встречаются в D&D VTT, — и из самого файла D&D VTT. Цвета — `assets/dnd-tokens-dark.json` → `tokens/colors.css` (`npm run tokens`), иконки — `assets/icon.*` → `ui/icons/svg` (`npm run icons`).
+Компоненты сняты из UI Library (Chatsky Team) — только те, что встречаются в 6d7, — и из самого файла 6d7. Цвета — `assets/dnd-tokens-dark.json` → `tokens/colors.css` (`npm run tokens`), иконки — `assets/icon.*` → `ui/icons/svg` (`npm run icons`).
 
 ## Правила
 
@@ -21,7 +21,7 @@
 
 ### Текст листа персонажа
 
-Свои правила листа (D&D VTT «Лист персонажа черновик» `41:4939` и утверждённый лист `app/preview`): подписи — PT Serif Caption в txt/info, значения — Inter Medium в txt/primary, строки по 28 px. Цвет входит в класс.
+Свои правила листа (6d7 «Лист персонажа черновик» `41:4939` и утверждённый лист `app/preview`): подписи — PT Serif Caption в txt/info, значения — Inter Medium в txt/primary, строки по 28 px. Цвет входит в класс.
 
 | Класс | Стиль | Где в листе |
 |---|---|---|
@@ -58,15 +58,15 @@
 | ProjectMenu, UserMenu (без пунктов меню ничего не открывает) | `26:749`, `26:743` | `components/MenuButton` |
 | NavTab, NavPage | `27:1960`, `27:1948` | `components/Nav` |
 | TopPanel, BottomNavigation | `100:3404`, `100:3004` | `components/Bars` |
-| ModeSwitch — переключатель режимов редактора («Редактирование», «Глазами игрока»): кнопки на подложке bg/tertiary, выбранная — на icon/button с тенью | top-panel / mode-switch (D&D VTT `6:422`) | `components/ModeSwitch` |
+| ModeSwitch — переключатель режимов редактора («Редактирование», «Глазами игрока»): кнопки на подложке bg/tertiary, выбранная — на icon/button с тенью | top-panel / mode-switch (6d7 `6:422`) | `components/ModeSwitch` |
 | SidebarSection, SidebarTitle, RowTitle | `887:4304`, `887:4452`, `32:2409` | `components/Sidebar` |
 | RowSubtitle, RowField (line, dropdown, multiline), RowSwitch, RowCard, RowTabs | `32:2770`, `32:3139`, `32:3950`, `32:3870`, `38:247`, `89:1647`, `329:879` | `components/Rows` |
-| ScrollArea; скроллбар всего приложения (12 px, ползунок bg/scroll, без дорожки и стрелок) | scroll-bar `1:1382`, D&D VTT `14:1470` | `components/ScrollArea`, `ui/scrollbar.css` |
+| ScrollArea; скроллбар всего приложения (12 px, ползунок bg/scroll, без дорожки и стрелок) | scroll-bar `1:1382`, 6d7 `14:1470` | `components/ScrollArea`, `ui/scrollbar.css` |
 | Divider, Modal | `24:1305`; modal/dice `34:7794` | `components/Modal` |
 
-## Элементы D&D VTT
+## Элементы 6d7
 
-| Компонент | Figma (D&D VTT) | Где |
+| Компонент | Figma (6d7) | Где |
 |---|---|---|
 | GameMenuButton — кнопка навигации 58 px | menu `28:434` | `components/Game` |
 | Plate — плашки кластеров кнопок; линия outline/primary со всех сторон, кроме краёв экрана из `edge` (одна сторона или две — угол) | `43:7044`, `41:5994`; обводки `61:4259`, `61:3985`, `61:4464` | `components/Game` |
@@ -81,7 +81,7 @@
 | GameWindow, WindowPane | `33:6729`, `33:6800` | `components/Window` |
 | Overlay — чёрный 40% и размытие 8 px | `30:4208` | `components/Modal` |
 
-## Листы и инвентари игрока (`vtt/src/game/`)
+## Листы и инвентари игрока (`6d7/src/game/`)
 
 Не компоненты библиотеки, а части экранов игры; собраны из компонентов выше. Демо — http://127.0.0.1:5176/#sheet.
 
@@ -95,9 +95,9 @@
 | Карточка описания (заголовок, факты в две колонки, текст, пометка в конце) | `game/inventory/Card.tsx` |
 | Окна инвентарей на телефоне (< 768 px): одна панель за раз, шапка «Назад» + название (`BackHead`), «Ячейки заклинаний» внизу окна заклинаний; хук ширины `useNarrow` | `game/inventory/ItemsWindow.tsx`, `SpellsWindow.tsx`, `narrow.ts` |
 
-## Игра игрока (`vtt/src/game/player/`)
+## Игра игрока (`6d7/src/game/player/`)
 
-Экраны `D&D VTT / game / player`; собраны из компонентов выше. Вход — `#/join/<код>`.
+Экраны `6d7 / game / player`; собраны из компонентов выше. Вход — `#/join/<код>`.
 
 | Что | Где |
 |---|---|
@@ -107,9 +107,9 @@
 | Окна листа, спутника и инвентарей на оверлее с TopPanel: «Повысить уровень», «Отдых» (меню короткий / долгий), «Создать спутника», файлы листа (`SheetFiles`); на телефоне — меню «Ещё» (`MoreMenu`, IconButton `more.three.dots` + Popover) и «Закрыть» | `game/player/SeatWindow.tsx` |
 | Визарды листа для экрана и окон: создание, уровень, спутник, его уровень | `game/player/useSeatWizards.tsx` |
 
-## Игра мастера (`vtt/src/game/master/`)
+## Игра мастера (`6d7/src/game/master/`)
 
-Экраны `D&D VTT / game / master` (44:1629, 44:2135, 45:5549, 46:10178); собраны из компонентов выше. Адрес — `#/c/<id>/play`.
+Экраны `6d7 / game / master` (44:1629, 44:2135, 45:5549, 46:10178); собраны из компонентов выше. Адрес — `#/c/<id>/play`.
 
 | Что | Где |
 |---|---|
@@ -118,7 +118,7 @@
 | Поле: MapView, полоса предпросмотра и сообщений, кластер в левом нижнем углу — Plate `left+bottom` с GameMenuButton костей (`grey`) и IconButton `switch` фишек игроков (`character.figure.avatar` в их цветах) и спутников (временная буква); окно костей над кластером | `game/master/MasterField.tsx` |
 | Правая панель (57:3450): туман (button-chat, Slider, ластик), рисование (две button-chat: `character.pencil` серым, `character.eraser`), условия RowSwitch, лог 240×128 внизу (LogList) | `game/master/MasterTools.tsx` |
 
-## Визарды (`vtt/src/wizard/`)
+## Визарды (`6d7/src/wizard/`)
 
 Не в макете — собраны из компонентов библиотеки. Демо — http://127.0.0.1:5176/#sheet.
 
@@ -131,13 +131,13 @@
 
 ## Ещё не сделано
 
-- Канвас карты в экранах. Прототип уже есть: модуль `vtt/src/map` (сетка, стены, двери, туман, фишки, карандаш), страница http://127.0.0.1:5176/#map.
+- Канвас карты в экранах. Прототип уже есть: модуль `6d7/src/map` (сетка, стены, двери, туман, фишки, карандаш), страница http://127.0.0.1:5176/#map.
 
 ## Строки интерфейса
 
-Все тексты интерфейса (не то, что вводят игроки, и не база правил) — в каталоге `vtt/src/i18n/`:
+Все тексты интерфейса (не то, что вводят игроки, и не база правил) — в каталоге `6d7/src/i18n/`:
 
 - `ru.ts` — русский каталог, сгруппирован по экранам описания: `common`, `coins`, `home`, `campaignMenu`, `editor` (`maps`, `npc`, `players`, `settings`), `player`, `sheet`, `companion`, `rest`, `inventory`, `spells`, `dice`, `master`, `wizard`. Тексты с числами — функции: `s.sheet.levelUp(3)` → «Повысить уровень: 3».
-- `index.ts` — текущий язык (одна настройка, хранится в `localStorage` `vtt-language`), `useStrings()` для компонентов, `strings()` вне React, `setLanguage()`.
+- `index.ts` — текущий язык (одна настройка, хранится в `localStorage` `6d7-language`), `useStrings()` для компонентов, `strings()` вне React, `setLanguage()`.
 - Новый язык: файл той же формы `export const en: Catalog = { … }` и строка в `LANGUAGES`; TypeScript проверит, что не пропущено ни одной строки.
 - Компоненты библиотеки пока держат свои тексты по умолчанию («Поиск», «Закрыть», «Скопировать код», названия монет); они уже есть в каталоге (`common`, `coins`) — при сборке экранов передавать их из `useStrings()`.

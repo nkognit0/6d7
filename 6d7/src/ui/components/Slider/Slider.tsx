@@ -3,7 +3,7 @@ import { cx } from '../../lib'
 import styles from './Slider.module.css'
 
 /**
- * D&D VTT / editor (9:684): a slider with an optional label on the left and the value on the
+ * 6d7 / editor (9:684): a slider with an optional label on the left and the value on the
  * right (grid size, fog brush). A native range input, so it works with touch and keyboard.
  */
 export function Slider({ value, min, max, step = 1, onChange, label, valueText, disabled, className, 'aria-label': ariaLabel }: {
@@ -41,7 +41,7 @@ export function Slider({ value, min, max, step = 1, onChange, label, valueText, 
 }
 
 /**
- * D&D VTT / editor (9:749): a short number field with a bold label (grid offset X and Y, grid
+ * 6d7 / editor (9:749): a short number field with a bold label (grid offset X and Y, grid
  * size). As in Figma, dragging the label changes the value: `scrub` 'x' — right adds, left takes
  * away; 'y' — down adds, up takes away (the grid follows the pointer). One step per pixel, ten
  * with Shift. Values are kept in [min, max] and rounded to the step; the field shows as many

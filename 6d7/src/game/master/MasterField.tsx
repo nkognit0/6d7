@@ -3,17 +3,15 @@
 // players to drag onto the map (46:10178).
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { useShortcuts } from '../../app/shortcuts'
-import { exploredKey, repo, type CampaignSession } from '../../campaign'
+import { repo, type CampaignSession } from '../../campaign'
 import { useStrings } from '../../i18n'
-import { ExploredMask, MapStore, MapView, useMapScene, type MapEngine, type MapTool, type MapViewState, type Token } from '../../map'
+import { ExploredMask, MapStore, MapView, trackExplored, useMapScene, type MapEngine, type MapTool, type MapViewState, type Token } from '../../map'
 import { Button, GameMenuButton, IconButton, Plate, PlayerIcon } from '../../ui'
 import { DiceWindow, rollEntry, type RollEntry } from '../player/Dice'
 import { companionToken, followSheet, heroToken } from '../player/tokens'
+import type { ExploredKeeper } from './explored'
 import type { Notice } from './MasterGame'
 import styles from './Master.module.css'
-
-/** The explored mask is written this long after players stop discovering the map. */
-const SAVE_EXPLORED_MS = 2000
 
 export function MasterField({ session, mapId, preview, tool, brush, notice, onNotice, onBack, onRoll, onEngine, explored }: {
   session: CampaignSession
@@ -30,8 +28,8 @@ export function MasterField({ session, mapId, preview, tool, brush, notice, onNo
   onRoll: (entry: RollEntry) => void
   /** the engine of the map of the game (not of a map being looked at) */
   onEngine: (engine: MapEngine | null) => void
-  /** gets the explored mask of the map of the game while it is on the field */
-  explored: { current: ExploredMask | null }
+  /** keeps what players have seen on the map of the game */
+  explored: ExploredKeeper
 }) {
   const s = useStrings()
   const editor = mapId ? session.map(mapId)?.get() : undefined
@@ -60,10 +58,10 @@ export function MasterField({ session, mapId, preview, tool, brush, notice, onNo
       </div>
     )
   }
-  return <Field session={session} mapId={mapId} store={store} preview={preview} tool={tool} brush={brush} bar={bar} onRoll={onRoll} onEngine={onEngine} live={explored} />
+  return <Field session={session} mapId={mapId} store={store} preview={preview} tool={tool} brush={brush} bar={bar} onRoll={onRoll} onEngine={onEngine} keeper={explored} />
 }
 
-function Field({ session, mapId, store, preview, tool, brush, bar, onRoll, onEngine, live }: {
+function Field({ session, mapId, store, preview, tool, brush, bar, onRoll, onEngine, keeper }: {
   session: CampaignSession
   mapId: string
   store: MapStore
@@ -73,7 +71,7 @@ function Field({ session, mapId, store, preview, tool, brush, bar, onRoll, onEng
   bar: React.ReactNode
   onRoll: (entry: RollEntry) => void
   onEngine: (engine: MapEngine | null) => void
-  live: { current: ExploredMask | null }
+  keeper: ExploredKeeper
 }) {
   const s = useStrings()
   const scene = useMapScene(store)
@@ -84,30 +82,15 @@ function Field({ session, mapId, store, preview, tool, brush, bar, onRoll, onEng
   const players = session.campaign.players
   const settings = session.campaign.settings
 
-  // what players have seen: kept by the game, saved in pauses of discovering
-  const explored = useMemo(() => (scene.image ? new ExploredMask(scene.image, session.exploredOf(mapId)) : undefined),
-    [mapId, store])
+  // what players have seen: on the map of the game — the keeper's live mask; on a map looked at —
+  // a copy of the saved one, explored only while looked at
+  const copy = useMemo(() => (preview && scene.image ? new ExploredMask(scene.image, session.exploredOf(mapId)) : undefined),
+    [preview, mapId, store])
   useEffect(() => {
-    if (!explored || preview) return
-    live.current = explored
-    let timer: ReturnType<typeof setTimeout> | null = null
-    const save = () => {
-      timer = null
-      session.apply([{ doc: exploredKey(mapId), set: explored.save() }], { record: false })
-    }
-    const off = explored.subscribe(() => {
-      if (timer) clearTimeout(timer)
-      timer = setTimeout(save, SAVE_EXPLORED_MS)
-    })
-    return () => {
-      off()
-      if (live.current === explored) live.current = null
-      if (timer) {
-        clearTimeout(timer)
-        save()
-      }
-    }
-  }, [explored, preview, session, mapId, live])
+    if (!copy) return
+    return trackExplored(store, copy, () => session.campaign.settings).stop
+  }, [copy, store, session])
+  const explored = preview ? copy : (keeper.of(mapId) ?? undefined)
 
   // the tokens of the players follow their sheets; a removed player or companion leaves the map
   useEffect(() => {

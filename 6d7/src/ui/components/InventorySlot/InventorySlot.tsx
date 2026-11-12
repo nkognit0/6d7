@@ -12,7 +12,7 @@ export function slotMark({ equipped, attuned }: { equipped?: boolean; attuned?: 
 }
 
 /**
- * D&D VTT / game / inventory-slot (33:6735): a square cell of the item and spell inventories.
+ * 6d7 / game / inventory-slot (33:6735): a square cell of the item and spell inventories.
  * `mark` sets the frame; `selected` (the thing shown in the description) fills the cell like the
  * hover of the player's menu buttons, so it never hides the frame. An empty cell is not clickable.
  */

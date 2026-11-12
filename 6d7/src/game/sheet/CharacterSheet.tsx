@@ -1,4 +1,4 @@
-// The character sheet of the VTT: the approved sheet (app/preview) in the dark theme — the sheet
+// The character sheet of 6d7: the approved sheet (app/preview) in the dark theme — the sheet
 // and the profile, every field editable — with the uses of features, exhaustion and the vision
 // block, which the app counts and the player cannot edit. Equipment and spells live in the
 // inventories.

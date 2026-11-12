@@ -1,4 +1,4 @@
-// The game of the master (D&D VTT / game / master 44:1629, #/c/<id>/play): the campaign menu, the
+// The game of the master (6d7 / game / master 44:1629, #/c/<id>/play): the campaign menu, the
 // players and «Отдых» on top; maps and NPCs on the left; the map with the dice and the tokens of
 // the players; fog, drawing, conditions and the log on the right. The master can do whatever a
 // player does on the player's pages.
@@ -8,12 +8,13 @@ import { archiveMessage } from '../../app/archiveMessage'
 import { go } from '../../app/route'
 import { ARCHIVE_EXT, downloadGame, importGameInto, seatKey, useSession, type CampaignSession, type Change, type PlayerSlot } from '../../campaign'
 import { useStrings } from '../../i18n'
-import type { ExploredMask, MapEngine, MapTool } from '../../map'
+import type { MapEngine, MapTool } from '../../map'
 import { Button, GameMenuButton, Menu, MenuDivider, MenuItem, Plate, Popover, ProjectMenu, TopPanel, type PlayerIcon42Name } from '../../ui'
 import { characterOf, emptySeat, withCharacter, type Seat } from '../seat/seat'
 import { rollEntry, type RollEntry } from '../player/Dice'
 import { SeatWindow, type SeatPage } from '../player/SeatWindow'
 import { useSeatWizards } from '../player/useSeatWizards'
+import { ExploredKeeper } from './explored'
 import { MasterField } from './MasterField'
 import { MasterMaps } from './MasterMaps'
 import { MasterTools } from './MasterTools'
@@ -68,14 +69,22 @@ function Master({ session, onRestart }: { session: CampaignSession; onRestart: (
   const [brush, setBrush] = useState(4)
   // the engine of the map of the game: NPCs are dragged onto it
   const [engine, setEngine] = useState<MapEngine | null>(null)
-  // what players have seen on the map of the game, as its field shows it now
-  const explored = useRef<ExploredMask | null>(null)
+  // what players have seen on the map of the game: kept whatever the field shows
+  const [explored, setExplored] = useState<ExploredKeeper | null>(null)
+  useEffect(() => {
+    const keeper = new ExploredKeeper(session)
+    const detach = keeper.attach()
+    setExplored(keeper)
+    return detach
+  }, [session])
   const file = useRef<HTMLInputElement>(null)
   const campaign = session.campaign
   const active = session.gameDoc?.active ?? null
   // a map the editor deleted while previewed
   const previewing = preview && preview !== active && campaign.maps.includes(preview) ? preview : null
   const shown = previewing ?? active
+  // a failed write stays over the map until it goes through; a click writes again
+  const saveNotice: Notice = session.saveFailed ? { kind: 'error', text: s.campaign.saveFailed } : null
 
   // the players' tabs play in this game; their rolls come into the log
   useHost(session, explored, {
@@ -96,6 +105,8 @@ function Master({ session, onRestart }: { session: CampaignSession; onRestart: (
     setPreview(null)
     setTool('select')
   }
+
+  if (!explored) return <div className={styles.screen} />
 
   const importFile = async (f: File) => {
     setNotice({ kind: 'busy', text: s.master.importing })
@@ -152,8 +163,8 @@ function Master({ session, onRestart }: { session: CampaignSession; onRestart: (
           preview={!!previewing}
           tool={tool}
           brush={brush}
-          notice={notice}
-          onNotice={setNotice}
+          notice={saveNotice ?? notice}
+          onNotice={(n) => (n === null && saveNotice ? void session.save() : setNotice(n))}
           onBack={active ? () => setPreview(null) : undefined}
           onRoll={(entry) => setLog((l) => [...l, entry])}
           onEngine={setEngine}

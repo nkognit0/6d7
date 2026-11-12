@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { applyCampaignOp, createCampaign, FLOW_ORDER, freeColor, invertCampaignOp, newCode, newPlayer, normalizeCode, CODE_LENGTH } from './campaign'
+import { createScene } from '../map/core/scene'
+import { applyCampaignOp, createCampaign, FLOW_ORDER, freeColor, imagesIn, invertCampaignOp, newCode, newPlayer, normalizeCode, CODE_LENGTH } from './campaign'
 import { History } from './history'
 import type { Campaign, CampaignOp, Change } from './types'
 
@@ -83,5 +84,25 @@ describe('History', () => {
     expect(h.canRedo).toBe(true)
     h.record([ch('b')], [ch('')], null, 10)
     expect(h.canRedo).toBe(false)
+  })
+})
+
+describe('imagesIn', () => {
+  const image = (id: string) => ({ id, width: 100, height: 100, tileSize: 512, levels: 1 })
+  const scene = (id: string | null) => ({ ...createScene('Карта'), image: id ? image(id) : null })
+
+  it('finds the pictures of maps of the editor and of the game', () => {
+    expect(imagesIn({ doc: 'map/m1', set: scene('a') })).toEqual(['a'])
+    expect(imagesIn({ doc: 'game/map/m1', set: { schema: 1, scene: scene('b'), base: scene('a') } })).toEqual(['b', 'a'])
+    expect(imagesIn({ doc: 'map/m1', op: { type: 'image', image: image('c') } })).toEqual(['c'])
+    expect(imagesIn({ doc: 'game/map/m1', op: { type: 'scene', scene: scene('d') } })).toEqual(['d'])
+  })
+
+  it('finds nothing in other documents and changes', () => {
+    expect(imagesIn({ doc: 'map/m1', set: scene(null) })).toEqual([])
+    expect(imagesIn({ doc: 'map/m1', drop: true })).toEqual([])
+    expect(imagesIn({ doc: 'map/m1', op: { type: 'image', image: null } })).toEqual([])
+    expect(imagesIn({ doc: 'campaign', op: { type: 'rename', name: 'x' } })).toEqual([])
+    expect(imagesIn({ doc: 'seat/p1', set: { schema: 1, sheet: {}, spells: [], inventory: [], companion: null } })).toEqual([])
   })
 })

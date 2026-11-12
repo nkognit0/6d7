@@ -1,5 +1,5 @@
 // «Экспорт листа»: the sheet as a JSON file of the old app's format, the pictures inside as data
-// URLs — the old app and «Импорт листа» of the VTT (import.ts) both read it.
+// URLs — the old app and «Импорт листа» of 6d7 (import.ts) both read it.
 import type { DnDCharacter } from 'dnd-sheet'
 import { getMedia } from '../media/media'
 import { characterOf, type MediaRef, type Seat } from './seat'

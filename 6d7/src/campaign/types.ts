@@ -81,8 +81,6 @@ export interface CampaignMeta {
   players: PlayerSlot[]
   /** picture of the first map (media store) */
   preview: string | null
-  /** pictures of all maps: their tiles stay while some campaign uses them */
-  images: string[]
   /** time of the last saved change, ms */
   updated: number
 }

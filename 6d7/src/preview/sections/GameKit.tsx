@@ -30,7 +30,7 @@ export function GameKit() {
   const [dice, setDice] = useState<'d20' | 'd6'>('d20')
   return (
     <>
-      <Section id="game-nav" title="Навигация игрока" figma="D&D VTT / assets / menu (28:434); top-panel plates (43:7044, 41:5994; обводки 61:4259, 61:3985, 61:4464)" note="Крупные кнопки 58 px в цвете игрока (серый — мастер) и плашки кластеров: линия со всех сторон, кроме краёв экрана, к которым плашка прижата. Выберите цвет и нажимайте кнопки.">
+      <Section id="game-nav" title="Навигация игрока" figma="6d7 / assets / menu (28:434); top-panel plates (43:7044, 41:5994; обводки 61:4259, 61:3985, 61:4464)" note="Крупные кнопки 58 px в цвете игрока (серый — мастер) и плашки кластеров: линия со всех сторон, кроме краёв экрана, к которым плашка прижата. Выберите цвет и нажимайте кнопки.">
         <Row label="цвет">
           <Select value={color} onChange={setColor} options={[...PLAYER_COLORS, 'grey' as const].map((c) => ({ value: c, label: c }))} aria-label="Цвет игрока" />
         </Row>
@@ -64,7 +64,7 @@ export function GameKit() {
         </Row>
       </Section>
 
-      <Section id="map-tools" title="Слайдер и координаты" figma="D&D VTT / editor / map toolbar (9:683)" note="Размер сетки, толщина кисти тумана, смещение сетки по X и Y. Как в Figma, значение поля меняется перетаскиванием подписи: размер и X — влево-вправо, Y — вверх-вниз; шаг размера 0,01, с Shift шаг в 10 раз больше.">
+      <Section id="map-tools" title="Слайдер и координаты" figma="6d7 / editor / map toolbar (9:683)" note="Размер сетки, толщина кисти тумана, смещение сетки по X и Y. Как в Figma, значение поля меняется перетаскиванием подписи: размер и X — влево-вправо, Y — вверх-вниз; шаг размера 0,01, с Shift шаг в 10 раз больше.">
         <Row label="примеры">
           <Cell caption="размер сетки" width={216}><NumberField label="Размер сетки" value={size} min={1} max={10} step={0.01} onChange={setSize} /></Cell>
           <Cell caption="кисть тумана" width={216}>
@@ -83,7 +83,7 @@ export function GameKit() {
         </Row>
       </Section>
 
-      <Section id="slots" title="InventorySlot, SlotGrid" figma="D&D VTT / game / inventory-slot (33:6735)"
+      <Section id="slots" title="InventorySlot, SlotGrid" figma="6d7 / game / inventory-slot (33:6735)"
         note="Ярко-синяя рамка — экипировано (у заклинаний — подготовлено), жёлтая — магическая настройка. Выбранная для описания ячейка залита, как кнопки игрока при наведении, — рамке это не мешает. В сетке клетки квадратные, 80–100 px, и заполняют всю ширину: колонок столько, сколько влезает.">
         <Row label="состояния">
           {SLOTS.map(([m, selected, caption]) => (
@@ -103,7 +103,7 @@ export function GameKit() {
         </Row>
       </Section>
 
-      <Section id="npc-cards" title="Карточки NPC" figma="D&D VTT / editor (14:1451, 13:1179, 40:3918)">
+      <Section id="npc-cards" title="Карточки NPC" figma="6d7 / editor (14:1451, 13:1179, 40:3918)">
         <Row label="плитка каталога">
           {(['common', 'rare', 'legendary'] as const).map((r) => (
             <NpcCard key={r} image={TOKEN(r)} name="Гоблин" note={r === 'common' ? 'Обычный' : r === 'rare' ? 'Редкий' : 'Легендарный'}
@@ -122,7 +122,7 @@ export function GameKit() {
         </Row>
       </Section>
 
-      <Section id="campaign-card" title="Карточка кампании" figma="D&D VTT / home (17:1630)">
+      <Section id="campaign-card" title="Карточка кампании" figma="6d7 / home (17:1630)">
         <Row label="пример">
           <div style={{ width: 330 }}>
             <CampaignCard
@@ -134,7 +134,7 @@ export function GameKit() {
         </Row>
       </Section>
 
-      <Section id="rows-game" title="Строки игроков, настроек, монет и ячеек" figma="D&D VTT (14:1568, 41:4128, 34:6919, 34:7386)">
+      <Section id="rows-game" title="Строки игроков, настроек, монет и ячеек" figma="6d7 (14:1568, 41:4128, 34:6919, 34:7386)">
         <Row label="игрок">
           <div style={{ width: 560 }}>
             <PlayerRow avatar={<Avatar name="Макар" color="green" />} name={<TextInput defaultValue="Макар" placeholder="Введите имя игрока…" />}
@@ -158,7 +158,7 @@ export function GameKit() {
         </Row>
       </Section>
 
-      <Section id="windows" title="Окна" figma="D&D VTT / game (34:7794 modal/dice, 33:6729 окно инвентаря, 30:4208 оверлей)" note="Маленькое окно костей, большое окно с панелями и оверлей под окнами (откройте кнопкой).">
+      <Section id="windows" title="Окна" figma="6d7 / game (34:7794 modal/dice, 33:6729 окно инвентаря, 30:4208 оверлей)" note="Маленькое окно костей, большое окно с панелями и оверлей под окнами (откройте кнопкой).">
         <Row label="окно костей">
           <Modal title="Бросить кости" onClose={() => {}}>
             <RowField label="Количество"><TextInput defaultValue="1" inputMode="numeric" /></RowField>

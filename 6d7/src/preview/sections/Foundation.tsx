@@ -54,7 +54,7 @@ export function Foundation() {
         ))}
       </Section>
 
-      <Section id="sheet-text" title="Текст листа персонажа" figma="D&D VTT / Лист персонажа черновик (41:4939), утверждённый лист app/preview"
+      <Section id="sheet-text" title="Текст листа персонажа" figma="6d7 / Лист персонажа черновик (41:4939), утверждённый лист app/preview"
         note="Свои правила листа: подписи — PT Serif Caption в цвете txt/info, значения — Inter Medium, строки по 28 px.">
         {SHEET_STYLES.map(([k, sample, d]) => (
           <Row key={k} label={k}>

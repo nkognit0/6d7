@@ -6,7 +6,7 @@ import { TabPage } from './TabPage'
 import styles from './EditorScreen.module.css'
 
 /**
- * D&D VTT / editor / players (14:1481): up to eight players, each with a name, a color of its own
+ * 6d7 / editor / players (14:1481): up to eight players, each with a name, a color of its own
  * and a code. Until invitations exist the code is a stub of this browser.
  */
 export function PlayersTab({ session }: { session: CampaignSession }) {

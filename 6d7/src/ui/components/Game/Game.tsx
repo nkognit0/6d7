@@ -10,7 +10,7 @@ export type Coin = 'pp' | 'gp' | 'sp' | 'cp'
 const COIN_ICON = { pp: 'character.coin.P', gp: 'character.coin.G', sp: 'character.coin.S', cp: 'character.coin.M' } as const
 const COIN_NAME = { pp: 'Платиновые монеты', gp: 'Золотые монеты', sp: 'Серебряные монеты', cp: 'Медные монеты' } as const
 
-/** D&D VTT / game / inventory (34:6919): a coin with its amount. */
+/** 6d7 / game / inventory (34:6919): a coin with its amount. */
 export function CoinValue({ coin, value }: { coin: Coin; value: number }) {
   return (
     <span className={styles.coin} title={COIN_NAME[coin]}>
@@ -20,7 +20,7 @@ export function CoinValue({ coin, value }: { coin: Coin; value: number }) {
   )
 }
 
-/** D&D VTT / game / spell slots (34:7386): circle number and its slot checkboxes. */
+/** 6d7 / game / spell slots (34:7386): circle number and its slot checkboxes. */
 export function SpellSlotRow({ level, used, total, onChange }: {
   level: number
   /** how many slots are spent */
@@ -40,7 +40,7 @@ export function SpellSlotRow({ level, used, total, onChange }: {
   )
 }
 
-/** D&D VTT / editor / rules (41:4128): a campaign setting — name, explanation and a switch. */
+/** 6d7 / editor / rules (41:4128): a campaign setting — name, explanation and a switch. */
 export function SettingRow({ title, description, checked, onChange, disabled }: {
   title: string
   description: string
@@ -59,7 +59,7 @@ export function SettingRow({ title, description, checked, onChange, disabled }: 
   )
 }
 
-/** D&D VTT / editor / players (14:1568): avatar, name field, invite code and a remove button. */
+/** 6d7 / editor / players (14:1568): avatar, name field, invite code and a remove button. */
 export function PlayerRow({ avatar, name, code, action }: { avatar: ReactNode; name: ReactNode; code: ReactNode; action?: ReactNode }) {
   return (
     <div className={styles.player}>
@@ -72,7 +72,7 @@ export function PlayerRow({ avatar, name, code, action }: { avatar: ReactNode; n
 }
 
 /**
- * D&D VTT / assets / menu (28:434): the 58 px game navigation button with a 42 px icon in the
+ * 6d7 / assets / menu (28:434): the 58 px game navigation button with a 42 px icon in the
  * player's color (grey for the master). `open` keeps the active look while its window is open.
  */
 export function GameMenuButton({ icon, color, label, open, previewState, className, type = 'button', ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -98,7 +98,7 @@ export function GameMenuButton({ icon, color, label, open, previewState, classNa
 }
 
 /**
- * D&D VTT: the dark plates that hold floating game controls (player navigation on the left,
+ * 6d7: the dark plates that hold floating game controls (player navigation on the left,
  * tools on the right, the master's player menu and action cluster). `edge` is the side of the
  * screen the plate touches, or two sides for a corner: there the plate has no line and its outer
  * corners stay square.

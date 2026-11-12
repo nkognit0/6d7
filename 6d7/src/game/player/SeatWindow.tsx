@@ -1,4 +1,4 @@
-// A window of a player's seat over the game (D&D VTT / game / player 30:4197, 45:3439, 31:4710,
+// A window of a player's seat over the game (6d7 / game / player 30:4197, 45:3439, 31:4710,
 // 34:6963): the top panel and the sheet, the companion sheet or an inventory under it, on the
 // overlay. A click past the window closes it; a phone has no room past it, so there it gets «Закрыть».
 // The master opens the same windows for a player.
