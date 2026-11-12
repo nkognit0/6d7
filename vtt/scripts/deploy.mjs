@@ -13,12 +13,15 @@ const vtt = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const root = resolve(vtt, '..')
 const dist = resolve(vtt, 'dist')
 const dry = process.argv.includes('--dry')
-const AUTHOR = ['-c', 'user.name=nkognit0', '-c', 'user.email=85009858+nkognit0@users.noreply.github.com']
+// the site's files go as they are: no line-ending conversion
+const GIT = ['-c', 'core.autocrlf=false', '-c', 'user.name=nkognit0', '-c', 'user.email=85009858+nkognit0@users.noreply.github.com']
 
-const run = (cmd, args, cwd) => execFileSync(cmd, args, { cwd, stdio: 'inherit', shell: process.platform === 'win32' })
+// npm is a .cmd on Windows and needs a shell; git does not (a shell would split the commit message)
+const npm = (args, cwd) => execFileSync('npm', args, { cwd, stdio: 'inherit', shell: process.platform === 'win32' })
+const git = (args, cwd) => execFileSync('git', [...GIT, ...args], { cwd, stdio: 'inherit' })
 const read = (cmd, args, cwd) => execFileSync(cmd, args, { cwd, encoding: 'utf8' }).trim()
 
-run('npm', ['run', 'build'], vtt)
+npm(['run', 'build'], vtt)
 
 // the pictures the code points to by relative paths: icons/items, icons/spells, tokens
 for (const p of ['icons/items', 'icons/spells', 'tokens']) cpSync(resolve(root, 'app/public', p), resolve(dist, p), { recursive: true })
@@ -31,9 +34,9 @@ const origin = read('git', ['remote', 'get-url', 'origin'], root)
 const source = read('git', ['rev-parse', '--short', 'HEAD'], root)
 const dirty = read('git', ['status', '--porcelain'], root) ? ' + незакоммиченные правки' : ''
 rmSync(resolve(dist, '.git'), { recursive: true, force: true })
-run('git', ['init', '-q', '-b', 'gh-pages'], dist)
-run('git', ['add', '-A'], dist)
-run('git', [...AUTHOR, 'commit', '-q', '-m', `Сайт из ${source}${dirty}`], dist)
-run('git', ['push', '-f', origin, 'gh-pages'], dist)
+git(['init', '-q', '-b', 'gh-pages'], dist)
+git(['add', '-A'], dist)
+git(['commit', '-q', '-m', `Сайт из ${source}${dirty}`], dist)
+git(['push', '-f', origin, 'gh-pages'], dist)
 rmSync(resolve(dist, '.git'), { recursive: true, force: true })
 console.log('Опубликовано: https://nkognit0.github.io/6d7/ (Pages обновляется за минуту-две)')
