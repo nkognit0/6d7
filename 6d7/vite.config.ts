@@ -16,8 +16,8 @@ const alias = {
 
 const TYPES: Record<string, string> = { '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg' }
 
-// item and spell icons and NPC tokens from app/public on the dev server
-const APP_PUBLIC = ['/icons/items/', '/icons/spells/', '/tokens/']
+// item and spell icons from app/public on the dev server (NPC tokens are the app's own: public/tokens)
+const APP_PUBLIC = ['/icons/items/', '/icons/spells/']
 
 function appIcons(): Plugin {
   const root = here('../app/public')

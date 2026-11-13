@@ -2,6 +2,7 @@
   "name": "6d7",
   "private": true,
   "version": "0.1.0",
+  "license": "AGPL-3.0-or-later",
   "description": "6d7 — виртуальный стол для D&D 2024: главный экран, редактор кампании, игра мастера и игрока.",
   "type": "module",
   "engines": {

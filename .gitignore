@@ -1,4 +1,4 @@
-# The 6d7 repository: 6d7/ (the app), docs/, assets/ and the project notes.
+# The 6d7 repository: 6d7/ (the app), docs/, assets/, README.md and LICENSE.
 # Neighbors with their own life stay out: the old sheet app and the sheet fork have their own
 # git, the rules database is never published (raw/ above all), design-preview is an old page.
 /app/
@@ -6,8 +6,10 @@
 /dnd-db/
 /design-preview/
 
+# the notes and the dev server settings of one machine (its paths) stay on it
+/CLAUDE.md
+.claude/
+
 node_modules/
 dist/
 *.log
-.claude/*
-!.claude/launch.json

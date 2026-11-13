@@ -1,7 +1,7 @@
-// The catalog of NPC tokens: 70 kinds × common, rare and legendary, from Too Many Tokens (MIT).
-// The list and the Russian names live in the old app's token catalog (app/src/tokens/tokens.json),
-// the pictures in app/public/tokens; the dev server serves them at /tokens/.
-import tokens from '@app/tokens/tokens.json'
+// The catalog of NPC tokens: 70 kinds × common, rare and legendary, from Too Many Tokens (MIT,
+// public/tokens/LICENSE). The list with the Russian names — tokens.json (the same catalog as the
+// old app's); the pictures — public/tokens, served at /tokens/.
+import tokens from './tokens.json'
 import type { SavedNpc } from '../campaign/types'
 import { newId } from '../map/core/geometry'
 import type { Token } from '../map/core/types'
