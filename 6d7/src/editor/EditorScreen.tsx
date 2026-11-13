@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode } from 'react'
 import { go, type EditorTab } from '../app/route'
 import { shortcutLabel, useShortcuts } from '../app/shortcuts'
 import { archiveMessage } from '../app/archiveMessage'
+import { SessionMessage } from '../app/ScreenMessage'
 import { ARCHIVE_EXT, downloadArchive, importInto, repo, useSession, type CampaignSession } from '../campaign'
 import { useStrings } from '../i18n'
 import {
@@ -21,27 +22,14 @@ export type EditorMode = 'edit' | 'player'
 
 type Notice = { kind: 'busy' | 'error'; text: string } | null
 
-/** A message in place of the editor: a missing campaign, a refused storage. */
-function Message({ text }: { text: string }) {
-  const s = useStrings()
-  return (
-    <div className={styles.message}>
-      <p>{text}</p>
-      <a href="#/">{s.stub.home}</a>
-    </div>
-  )
-}
-
 /**
  * 6d7 / editor (0:1): the campaign menu and the mode switch on top, the page of the tab in
  * the middle, the tabs «Карты», «NPC», «Игроки», «Параметры» at the bottom.
  */
 export function EditorScreen({ campaignId, tab, map }: { campaignId: string; tab: EditorTab; map?: string }) {
-  const s = useStrings()
   const state = useSession(campaignId)
   if (state.status === 'loading') return <div className={styles.screen} />
-  if (state.status === 'missing') return <Message text={s.campaign.notFound} />
-  if (state.status === 'failed') return <Message text={s.campaign.storageFailed} />
+  if (state.status !== 'open') return <SessionMessage state={state} />
   return <Editor session={state.session} tab={tab} map={map} />
 }
 

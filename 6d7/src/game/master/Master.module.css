@@ -9,29 +9,6 @@
   color: var(--txt-primary);
 }
 
-.message {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacer-xl);
-  padding: var(--spacer-xl);
-  background: var(--bg-secondary);
-  color: var(--txt-primary);
-  font: var(--font-navigation);
-  text-align: center;
-}
-
-.message p {
-  margin: 0;
-}
-
-.message a {
-  font: var(--font-body);
-  color: var(--txt-info);
-}
-
 .anchor {
   position: relative;
 }

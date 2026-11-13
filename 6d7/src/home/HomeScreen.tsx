@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { go } from '../app/route'
 import { archiveMessage } from '../app/archiveMessage'
-import { ARCHIVE_EXT, freeName, importArchive, repo, type CampaignMeta } from '../campaign'
+import { ARCHIVE_EXT, freeName, holdCampaign, importArchive, repo, type CampaignMeta } from '../campaign'
 import { useStrings } from '../i18n'
 import { Button, ConfirmDialog, Icon, IconButton, MenuItem, TopPanel, UserMenu } from '../ui'
 import { CampaignTile } from './CampaignTile'
@@ -57,18 +57,33 @@ export function HomeScreen() {
     refresh()
   }
 
+  // a campaign open in another tab is renamed or deleted there, not under it
+  const whenFree = async (id: string, run: () => Promise<void>) => {
+    try {
+      const lock = await holdCampaign(id, 0)
+      if (!lock) return setNotice({ kind: 'error', text: s.campaign.busyElsewhere })
+      try {
+        await run()
+      } finally {
+        lock.release()
+      }
+    } catch {
+      setNotice({ kind: 'error', text: s.campaign.storageFailed })
+    }
+  }
+
   const rename = async (id: string, name: string | null) => {
     setRenaming(null)
     if (!name) return
     setCampaigns((list) => list?.map((c) => (c.id === id ? { ...c, name } : c)) ?? null)
-    await repo.rename(id, name).catch(() => setNotice({ kind: 'error', text: s.campaign.storageFailed }))
+    await whenFree(id, () => repo.rename(id, name))
     refresh()
   }
 
   const remove = async (c: CampaignMeta) => {
     setDeleting(null)
     setCampaigns((list) => list?.filter((x) => x.id !== c.id) ?? null)
-    await repo.remove(c.id).catch(() => setNotice({ kind: 'error', text: s.campaign.storageFailed }))
+    await whenFree(c.id, () => repo.remove(c.id))
     refresh()
   }
 

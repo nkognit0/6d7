@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { longRest, shortRest } from '@app/rest/rest'
 import { archiveMessage } from '../../app/archiveMessage'
+import { SessionMessage } from '../../app/ScreenMessage'
 import { go } from '../../app/route'
 import { ARCHIVE_EXT, downloadGame, importGameInto, seatKey, useSession, type CampaignSession, type Change, type PlayerSlot } from '../../campaign'
 import { useStrings } from '../../i18n'
@@ -27,22 +28,10 @@ const PAGES: [SeatPage, PlayerIcon42Name][] = [['sheet', 'sheet.character'], ['c
 /** A line over the map: the result of a rest, an import going on or failed. A click hides it. */
 export type Notice = { kind: 'info' | 'busy' | 'error'; text: string } | null
 
-function Message({ text }: { text: string }) {
-  const s = useStrings()
-  return (
-    <div className={styles.message}>
-      <p>{text}</p>
-      <a href="#/">{s.stub.home}</a>
-    </div>
-  )
-}
-
 export function MasterGame({ campaignId }: { campaignId: string }) {
-  const s = useStrings()
   const state = useSession(campaignId)
   if (state.status === 'loading') return <div className={styles.screen} />
-  if (state.status === 'missing') return <Message text={s.campaign.notFound} />
-  if (state.status === 'failed') return <Message text={s.campaign.storageFailed} />
+  if (state.status !== 'open') return <SessionMessage state={state} />
   return <Launch session={state.session} />
 }
 

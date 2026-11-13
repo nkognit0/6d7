@@ -1,0 +1,25 @@
+/* A whole screen that only says something: a missing campaign, a refused storage, a campaign open in another tab */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacer-xl);
+  padding: var(--spacer-xl);
+  background: var(--bg-secondary);
+  color: var(--txt-primary);
+  font: var(--font-navigation);
+  text-align: center;
+}
+
+.screen p {
+  margin: 0;
+  max-width: 560px;
+}
+
+.screen a {
+  font: var(--font-body);
+  color: var(--txt-info);
+}

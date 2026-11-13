@@ -69,30 +69,6 @@
   cursor: pointer;
 }
 
-.messageScreen {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacer-xl);
-  padding: var(--spacer-xl);
-  background: var(--bg-secondary);
-  color: var(--txt-primary);
-  font: var(--font-navigation);
-  text-align: center;
-}
-
-.messageScreen p {
-  margin: 0;
-}
-
-.messageScreen a {
-  font: var(--font-body);
-  color: var(--txt-info);
-}
-
 .anchor {
   position: relative;
 }

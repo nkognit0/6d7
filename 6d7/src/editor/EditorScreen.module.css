@@ -97,28 +97,3 @@
 .settings {
   max-width: 480px;
 }
-
-/* a missing campaign, a refused storage */
-.message {
-  height: 100vh;
-  height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacer-xl);
-  padding: var(--spacer-xl);
-  background: var(--bg-primary);
-  color: var(--txt-primary);
-  font: var(--font-navigation);
-  text-align: center;
-}
-
-.message p {
-  margin: 0;
-}
-
-.message a {
-  font: var(--font-body);
-  color: var(--txt-info);
-}
