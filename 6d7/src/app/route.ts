@@ -2,6 +2,8 @@
 // (reload, the back button, a player's game in its own tab).
 import { useSyncExternalStore } from 'react'
 
+const DEV = import.meta.env.DEV
+
 export const EDITOR_TABS = ['maps', 'npc', 'players', 'settings'] as const
 export type EditorTab = (typeof EDITOR_TABS)[number]
 
@@ -25,10 +27,11 @@ export function parseRoute(hash: string): Route {
     const tab = (EDITOR_TABS as readonly string[]).includes(b) ? (b as EditorTab) : 'maps'
     return tab === 'maps' && c ? { page: 'editor', campaign: a, tab, map: c } : { page: 'editor', campaign: a, tab }
   }
-  if (head === 'join' && a) return b === 'stub' ? { page: 'join', code: a, stub: true } : { page: 'join', code: a }
-  if (head === 'preview') return a ? { page: 'preview', section: a } : { page: 'preview' }
-  if (head === 'map') return { page: 'map' }
-  if (head === 'sheet') return { page: 'sheet' }
+  if (head === 'join' && a) return DEV && b === 'stub' ? { page: 'join', code: a, stub: true } : { page: 'join', code: a }
+  // the pages for development exist on the dev server only; on the site their addresses lead home
+  if (DEV && head === 'preview') return a ? { page: 'preview', section: a } : { page: 'preview' }
+  if (DEV && head === 'map') return { page: 'map' }
+  if (DEV && head === 'sheet') return { page: 'sheet' }
   return { page: 'home' }
 }
 

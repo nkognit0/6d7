@@ -1,8 +1,8 @@
 // Step 12: everything the wizard computed, before the sheet is filled.
-import { ABILITIES, abilityName, nameOf, skills } from '@app/data'
-import { mod, signed } from '@app/rules/derive'
-import { SKILL_FIELD, buildCharacter } from '@app/rules/sheet'
-import type { StepProps } from '@app/wizard/steps/common'
+import { ABILITIES, abilityName, nameOf, skills } from '@rules/data'
+import { mod, signed } from '@rules/rules/derive'
+import { SKILL_FIELD, buildCharacter } from '@rules/rules/sheet'
+import type { StepProps } from '@rules/wizard/steps/common'
 import { useStrings } from '../../i18n'
 import styles from '../Wizard.module.css'
 

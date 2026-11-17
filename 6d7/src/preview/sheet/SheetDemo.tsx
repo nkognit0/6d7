@@ -4,7 +4,7 @@
 // media store.
 import { useEffect, useRef, useState } from 'react'
 import type { DnDCharacter } from 'dnd-sheet'
-import { longRest, shortRest } from '@app/rest/rest'
+import { longRest } from '@rules/rest/rest'
 import { Button, GameMenuButton, Overlay, Plate, TopPanel, type PlayerIcon42Name } from '../../ui'
 import { useStrings } from '../../i18n'
 import { CharacterSheet } from '../../game/sheet/CharacterSheet'
@@ -14,6 +14,7 @@ import { SpellsWindow } from '../../game/inventory/SpellsWindow'
 import { importCharacter } from '../../game/seat/import'
 import { characterOf, withCharacter, type Seat } from '../../game/seat/seat'
 import { useSeatWizards } from '../../game/player/useSeatWizards'
+import { ShortRestDialog } from '../../game/player/ShortRest'
 import demo from './demo-character.json'
 import styles from './SheetDemo.module.css'
 
@@ -53,12 +54,15 @@ function Demo({ seat, setSeat }: { seat: Seat; setSeat: (seat: Seat) => void }) 
   const s = useStrings()
   const [page, setPage] = useState<Page | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  // a short rest asks how many hit dice to spend, as in the game
+  const [short, setShort] = useState(false)
   const file = useRef<HTMLInputElement>(null)
   const wizards = useSeatWizards(seat, setSeat)
   const change = (next: Seat) => setSeat(next)
   const rest = (kind: 'short' | 'long') => {
+    if (kind === 'short') return setShort(true)
     const c = characterOf(seat)
-    const r = kind === 'long' ? longRest(c) : shortRest(c, [])
+    const r = longRest(c)
     setMessage(r.changes.join(' · ') || s.sheetDemo.restNothing)
     setSeat(withCharacter(seat, r.character))
   }
@@ -97,6 +101,7 @@ function Demo({ seat, setSeat }: { seat: Seat; setSeat: (seat: Seat) => void }) 
         </div>
       </div>
       {wizards.element}
+      {short && <ShortRestDialog seat={seat} onChange={setSeat} onMessage={setMessage} onClose={() => setShort(false)} />}
       <Plate edge="left" className={styles.plate}>
         {PAGES.map(([p, icon]) => (
           <GameMenuButton key={p} icon={icon} color="blue" label={label[p]} open={page === p} onClick={() => setPage(page === p ? null : p)} />

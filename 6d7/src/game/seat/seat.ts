@@ -2,12 +2,12 @@
 // (a picture field — the portrait, the emblem — keeps a reference to the media store), the
 // spells by their database ids, the item cells (no places on the hero: a thing in use is marked
 // «equipped») and the companion sheet.
-// The rules logic of the old app (@app) works on its flat sheet; `characterOf` builds that sheet
+// The rules logic (@rules, the dnd-rules package) works on its flat sheet; `characterOf` builds that sheet
 // from a seat, `withCharacter` takes its changes back, `seatFromCharacter` imports an old sheet.
 import type { DnDCharacter, DnDSpell } from 'dnd-sheet'
-import { byId, nameOf, spells } from '@app/data'
-import { INVENTORY_SIZE, inventoryOf, type Slot } from '@app/inventory/inventory'
-import { NO_WORN, kindOf, twoHanded, wornOf, type Bag, type Worn } from '@app/inventory/worn'
+import { byId, nameOf, spells } from '@rules/data'
+import { INVENTORY_SIZE, inventoryOf, type Slot } from '@rules/inventory/inventory'
+import { NO_WORN, kindOf, twoHanded, wornOf, type Bag, type Worn } from '@rules/inventory/worn'
 
 /** A file of the media store: «media:» and the SHA-256 of its bytes. */
 export type MediaRef = `media:${string}`

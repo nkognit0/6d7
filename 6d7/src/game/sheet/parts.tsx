@@ -1,9 +1,9 @@
 // Parts of the sheets (character and companion): a field with an underline, a big number, ruled
 // text, a stat card, the boxes of a count, a picture. Values are the free strings and flags of the
 // sheet; a picture field keeps a reference to the media store (`media:<hash>`).
-import { useRef, type ReactNode } from 'react'
-import { ABILITIES, abilities, nameOf, skills } from '@app/data'
-import { SKILL_FIELD } from '@app/rules/sheet'
+import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react'
+import { ABILITIES, abilities, nameOf, skills } from '@rules/data'
+import { SKILL_FIELD } from '@rules/rules/sheet'
 import { Checkbox } from '../../ui'
 import { useStrings } from '../../i18n'
 import { storePicture, useMediaUrl } from '../media/media'
@@ -49,13 +49,41 @@ export function Big(props: P & { name: string; label: string }) {
   )
 }
 
-/** Free text on ruled lines; grows with its text and keeps at least `rows` lines to write on. */
+/** A line of the ruled text, px. */
+const LINE = 28
+
+/**
+ * Free text on ruled lines; grows with its text, wrapped lines too, and keeps at least `rows`
+ * lines to write on. The height is measured, not left to `field-sizing`, which not every browser
+ * knows (Firefox, older Safari would cut a long text).
+ */
 export function Area(props: P & { name: string; label: string; rows?: number }) {
   const v = str(props.c[props.name])
   const rows = props.rows ?? 2
+  const ref = useRef<HTMLTextAreaElement>(null)
+  const fit = () => {
+    const el = ref.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${Math.max(rows * LINE, el.scrollHeight)}px`
+  }
+  useLayoutEffect(fit, [v, rows])
+  // another width wraps the text anew
+  useEffect(() => {
+    const el = ref.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    let width = el.clientWidth
+    const watch = new ResizeObserver(() => {
+      if (el.clientWidth === width) return
+      width = el.clientWidth
+      fit()
+    })
+    watch.observe(el)
+    return () => watch.disconnect()
+  })
   return (
-    <textarea className={styles.area} data-field={props.name} aria-label={props.label} rows={Math.max(rows, v.split('\n').length)}
-      style={{ minHeight: rows * 28 }} value={v} onChange={(e) => props.set({ [props.name]: e.target.value })} />
+    <textarea ref={ref} className={styles.area} data-field={props.name} aria-label={props.label} rows={rows}
+      value={v} onChange={(e) => props.set({ [props.name]: e.target.value })} />
   )
 }
 

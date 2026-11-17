@@ -4,11 +4,13 @@
 // player makes the sheet («Начать игру»), then plays on the map. `#/join/<code>/stub` — the
 // development map without the master (the sheet is written into the campaign directly).
 import { useEffect, useMemo, useState } from 'react'
-import { MAX_LEVEL } from '@app/levelup/read'
+import { MAX_LEVEL } from '@rules/levelup/read'
 import { ScreenMessage, SessionMessage } from '../../app/ScreenMessage'
+import '../../npc/pictures'
 import { repo, seatKey, useSession, type CampaignSession, type CodeTarget } from '../../campaign'
 import { useStrings } from '../../i18n'
 import { Button, ConfirmDialog, TopPanel } from '../../ui'
+import { diffSeat } from '../seat/patch'
 import { emptySeat, type Seat } from '../seat/seat'
 import { CharacterSheet } from '../sheet/CharacterSheet'
 import { PlayerField } from './PlayerField'
@@ -32,7 +34,8 @@ export function PlayerGame({ code, stub }: { code: string; stub?: boolean }) {
   }, [code])
   if (target === undefined) return <div className={styles.start} />
   if (target === null) return <ScreenMessage text={s.stub.joinUnknown} />
-  return stub
+  // the stub map is for development: the site has none of it
+  return import.meta.env.DEV && stub
     ? <StubSession key={target.campaign + target.player} campaignId={target.campaign} playerId={target.player} />
     : <Guest key={target.campaign + target.player} campaignId={target.campaign} playerId={target.player} />
 }
@@ -70,7 +73,10 @@ function StubSeated({ session, playerId }: { session: CampaignSession; playerId:
   const seat = useMemo(() => stored ?? emptySeat(), [stored])
   if (!player) return <ScreenMessage text={s.player.seatGone} />
   // the seat belongs to the place: a sheet edited by its player is not undone in the editor
-  const change = (next: Seat) => session.apply([{ doc: seatKey(playerId), set: next }], { record: false })
+  const change = (next: Seat) => {
+    const op = diffSeat(session.seat(playerId), next)
+    if (op) session.apply([{ doc: seatKey(playerId), op }], { record: false })
+  }
   return seat.started
     ? <StubField player={player} seat={seat} onChange={change} settings={session.campaign.settings} />
     : <SheetStart seat={seat} onChange={change} />

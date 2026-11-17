@@ -2,8 +2,8 @@
 // and the profile, every field editable — with the uses of features, exhaustion and the vision
 // block, which the app counts and the player cannot edit. Equipment and spells live in the
 // inventories.
-import { resourcesOf, type Resource } from '@app/rules/uses'
-import { visionOf } from '@app/rules/vision'
+import { resourcesOf, type Resource } from '@rules/rules/uses'
+import { visionOf } from '@rules/rules/vision'
 import { Checkbox } from '../../ui'
 import { useStrings } from '../../i18n'
 import { characterOf, type Seat } from '../seat/seat'

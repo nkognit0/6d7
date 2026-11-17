@@ -151,6 +151,19 @@ describe('CampaignSession', () => {
     expect(s.exploredOf('m1')).toBeUndefined()
   })
 
+  it('journals a change of a sheet by its fields, not the whole sheet, and takes it back', async () => {
+    const { storage, journal } = memoryStorage()
+    const s = new CampaignSession(docs(), storage)
+    const sheet = { schema: 1 as const, sheet: { name: 'Арина', hp: 12, notes: 'длинные записи' }, spells: [], inventory: [], companion: null }
+    s.apply([{ doc: 'seat/p1', set: sheet }], { record: false })
+    s.apply([{ doc: 'seat/p1', op: { sheet: { hp: 9 } } }])
+    expect(s.seat('p1')?.sheet).toEqual({ name: 'Арина', hp: 9, notes: 'длинные записи' })
+    await tick()
+    expect(journal[journal.length - 1][1]).toEqual({ doc: 'seat/p1', op: { sheet: { hp: 9 } } })
+    s.undo()
+    expect(s.seat('p1')).toEqual(sheet)
+  })
+
   it('keeps the game: saved like the rest, never undone', async () => {
     const { storage, journal } = memoryStorage()
     const s = new CampaignSession(docs(), storage)

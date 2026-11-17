@@ -1,12 +1,12 @@
 // Steps 6-8: origin feat choices, skills / tools / languages, level 1 class choices.
 import {
   abilityName, byId, categoryItems, classFeatures, classOptions, fightingStyles, languages, nameOf, ruName, skills, spellsFor, toolItems, weapons
-} from '@app/data'
-import type { ClassChoice } from '@app/data'
-import type { Derived, FeatSlot } from '@app/rules/derive'
-import { invocationName } from '@app/rules/text'
-import type { FeatPicks, WizardState } from '@app/wizard/state'
-import type { StepProps } from '@app/wizard/steps/common'
+} from '@rules/data'
+import type { ClassChoice } from '@rules/data'
+import type { Derived, FeatSlot } from '@rules/rules/derive'
+import { invocationName } from '@rules/rules/text'
+import type { FeatPicks, WizardState } from '@rules/wizard/state'
+import type { StepProps } from '@rules/wizard/steps/common'
 import { useStrings } from '../../i18n'
 import { skillOrTool, useDescribe } from '../describe'
 import { FeatureList, Fixed, Pick, PickMany, options } from '../fields'

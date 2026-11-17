@@ -1,14 +1,14 @@
 // Steps of «Новый уровень». The choices, their options and texts come from the old app's plan.
-import { byId, classes, classFeatures, nameOf, rules, subclasses } from '@app/data'
+import { byId, classes, classFeatures, nameOf, rules, subclasses } from '@rules/data'
 import {
   charLevel, classFeaturesAt, featChoices, featOptions, featStepKind, featureChoices, grantText, hpGain, nextLevel, speciesGainsAt,
   speciesLineageMissing, spellChoices, spellPlan, subclassFeaturesAt, subclassOf, type ChoiceDef, type LevelPicks
-} from '@app/levelup/plan'
-import { SPECIES_TRAIT_RU } from '@app/levelup/apply'
-import { MAX_LEVEL, multiclassBlocker, type SheetInfo } from '@app/levelup/read'
-import { rollDie } from '@app/rules/dice'
-import { signed } from '@app/rules/derive'
-import { ARMOR_RU } from '@app/wizard/steps/common'
+} from '@rules/levelup/plan'
+import { SPECIES_TRAIT_RU } from '@rules/levelup/apply'
+import { MAX_LEVEL, multiclassBlocker, type SheetInfo } from '@rules/levelup/read'
+import { rollDie } from '@rules/rules/dice'
+import { signed } from '@rules/rules/derive'
+import { ARMOR_RU } from '@rules/wizard/steps/common'
 import { useStrings, type Catalog } from '../../i18n'
 import { Button, NavTab, RowTabs } from '../../ui'
 import { skillOrTool, type Describe } from '../describe'

@@ -3,14 +3,16 @@
 // the players; fog, drawing, conditions and the log on the right. The master can do whatever a
 // player does on the player's pages.
 import { useEffect, useRef, useState } from 'react'
-import { longRest, shortRest } from '@app/rest/rest'
+import { longRest, shortRest } from '@rules/rest/rest'
 import { archiveMessage } from '../../app/archiveMessage'
 import { SessionMessage } from '../../app/ScreenMessage'
+import '../../npc/pictures'
 import { go } from '../../app/route'
 import { ARCHIVE_EXT, downloadGame, importGameInto, seatKey, useSession, type CampaignSession, type Change, type PlayerSlot } from '../../campaign'
 import { useStrings } from '../../i18n'
 import type { MapEngine, MapTool } from '../../map'
 import { Button, GameMenuButton, Menu, MenuDivider, MenuItem, Plate, Popover, ProjectMenu, TopPanel, type PlayerIcon42Name } from '../../ui'
+import { diffSeat } from '../seat/patch'
 import { characterOf, emptySeat, withCharacter, type Seat } from '../seat/seat'
 import { rollEntry, type RollEntry } from '../player/Dice'
 import { SeatWindow, type SeatPage } from '../player/SeatWindow'
@@ -201,7 +203,10 @@ function PlayerButton({ player, open, current, onToggle, onPage }: {
 function PlayerPage({ session, player, page, onClose }: { session: CampaignSession; player: string; page: SeatPage; onClose: () => void }) {
   const seat = session.seat(player) ?? emptySeat()
   // the seat belongs to the player: its edits are saved, not undone
-  const change = (next: Seat) => session.apply([{ doc: seatKey(player), set: next }], { record: false })
+  const change = (next: Seat) => {
+    const op = diffSeat(session.seat(player), next)
+    if (op) session.apply([{ doc: seatKey(player), op }], { record: false })
+  }
   const wizards = useSeatWizards(seat, change)
   return (
     <>
@@ -224,7 +229,9 @@ function RestAll({ session, onDone }: { session: CampaignSession; onDone: (text:
       if (!seat) continue
       const c = characterOf(seat)
       const r = kind === 'long' ? longRest(c) : shortRest(c, [])
-      changes.push({ doc: seatKey(p.id), set: withCharacter(seat, r.character) })
+      // only what the rest changed: what the player is typing now stays
+      const op = diffSeat(seat, withCharacter(seat, r.character))
+      if (op) changes.push({ doc: seatKey(p.id), op })
       lines.push(s.master.restOf(p.name || String(seat.sheet.name || ''), r.changes.join(', ') || s.master.restNothing))
     }
     session.apply(changes, { record: false })

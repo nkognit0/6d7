@@ -2,14 +2,14 @@
 // back. The plan, the sheet reading and the writing are the old app's own (app/src/levelup).
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { DnDCharacter } from 'dnd-sheet'
-import { nameOf } from '@app/data'
-import { applyLevelUp } from '@app/levelup/apply'
+import { nameOf } from '@rules/data'
+import { applyLevelUp } from '@rules/levelup/apply'
 import {
   choicesValid, emptyPicks, featChoices, featStepKind, featureChoices, hpGain, nextLevel, speciesLineageMissing, spellChoices, spellPlan,
   subclassStepNeeded, type ChoiceDef, type LevelPicks
-} from '@app/levelup/plan'
-import { readSheet, retarget, type SheetInfo } from '@app/levelup/read'
-import { useHistory } from '@app/wizard/history'
+} from '@rules/levelup/plan'
+import { readSheet, retarget, type SheetInfo } from '@rules/levelup/read'
+import { useHistory } from '../useHistory'
 import { useStrings, type Catalog } from '../../i18n'
 import { Button } from '../../ui'
 import { scrollTop, WizardFooter, WizardFrame } from '../Frame'

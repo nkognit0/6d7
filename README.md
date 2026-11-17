@@ -13,17 +13,17 @@
 | `6d7/` | Приложение: Vite, React 18, TypeScript, CSS Modules, карта на PixiJS 8 (WebGL2) |
 | `docs/` | Описание приложения, решения по вопросам (`QnA.md`), модель данных, план, каталог компонентов, фичи на потом |
 | `assets/` | Экспорт дизайна из Figma: токены цветов и иконки |
+| `dnd-rules/` | Подмодуль: пакет правил D&D 2024 — логика, база, тип листа, иконки предметов и заклинаний |
 
 Внутри `6d7/src`: `ui/` — библиотека компонентов, `campaign/` — кампании и их хранение, `map/` — карта (ядро без браузера в `map/core`), `game/` — листы, инвентари, игра мастера и игрока, `editor/` — редактор кампании, `home/` — главный экран, `wizard/` — визарды персонажа, уровня и спутника.
 
 ## Как запустить
 
-Пока логика правил D&D и база берутся из соседних папок `app/` (старое приложение-лист) и `dnd-db/` (база правил), которых в этом репозитории нет. Поэтому из чистого клона 6d7 не соберётся. Логика и база переезжают в общий пакет правил — после этого хватит одного клона.
-
-Рядом с `app/` и `dnd-db/` (Node 20 или новее):
+Правила D&D — логика, база, тип листа и иконки — в пакете [dnd-rules](https://github.com/nkognit0/dnd-rules), он подключён подмодулем `dnd-rules/`. Клонировать вместе с ним (Node 20 или новее):
 
 ```bash
-cd 6d7
+git clone --recursive https://github.com/nkognit0/6d7.git
+cd 6d7/6d7
 npm ci
 npm run dev        # dev-сервер
 npm test           # тесты (vitest)
@@ -40,7 +40,7 @@ npm run build      # сборка в 6d7/dist
 
 - Токены NPC в `6d7/public/tokens` — [Too Many Tokens - DnD](https://github.com/IsThisMyRealName/too-many-tokens-dnd), MIT, © 2023 Jonathan Held (см. `6d7/public/tokens/LICENSE`).
 - Шрифты Inter и PT Serif Caption — SIL Open Font License (пакеты `@fontsource`).
-- На сайте, но не в репозитории: иконки предметов — [dnd-item-icons-by-gwill](https://github.com/Gwillewyn/dnd-item-icons-by-gwill) (CC BY 3.0), иконки заклинаний — Painterly Spell Icons, J. W. Bjerk (CC BY 3.0).
+- В пакете `dnd-rules` (см. его README): иконки предметов — [dnd-item-icons-by-gwill](https://github.com/Gwillewyn/dnd-item-icons-by-gwill) (CC BY 3.0), иконки заклинаний — Painterly Spell Icons, J. W. Bjerk (CC BY 3.0); тип листа из dnd-sheet — MIT.
 - Правила D&D на сайте включают материал из System Reference Document 5.2.1 («SRD 5.2.1») от Wizards of the Coast LLC (https://www.dndbeyond.com/srd), лицензия Creative Commons Attribution 4.0 International (https://creativecommons.org/licenses/by/4.0/legalcode). Остальной контент правил — собственность правообладателей, лицензия AGPL на него не распространяется.
 
 Dungeons & Dragons и D&D — товарные знаки Wizards of the Coast. 6d7 — фанатский проект, с Wizards of the Coast не связан.

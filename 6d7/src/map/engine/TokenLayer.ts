@@ -2,7 +2,8 @@ import { Container, Graphics, Sprite, Text } from 'pixi.js'
 import { cellPx, pinToImage } from '../core/geometry'
 import type { GridSettings, Token, Vec } from '../core/types'
 import type { MapTheme } from './theme'
-import { loadTexture, tokenImage } from './textures'
+import { tokenImage } from './images'
+import { loadTexture } from './textures'
 
 // a token takes its whole cell; the player's ring is 1/16 of a cell (8 px at 100%)
 const RING = 1 / 16

@@ -1,7 +1,7 @@
 // The tokens of a player on the map: the hero and the companion, both in the player's color. What
 // the sheet says (name, portrait, sight in darkness) the tokens follow; the player game and the
 // master's game build them the same way.
-import { visionOf } from '@app/rules/vision'
+import { visionOf } from '@rules/rules/vision'
 import type { PlayerSlot } from '../../campaign'
 import type { Token } from '../../map'
 import { characterOf, type Seat } from '../seat/seat'

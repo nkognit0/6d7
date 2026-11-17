@@ -8,6 +8,7 @@ import { allowPlayerOp } from '../net/allow'
 import { tabLink } from '../net/link'
 import type { CampaignInfo, GameMessage, MapPayload, Roll } from '../net/protocol'
 import { companionToken, heroToken } from '../player/tokens'
+import { applySeatPatch, diffSeat } from '../seat/patch'
 import type { Seat } from '../seat/seat'
 import type { ExploredKeeper } from './explored'
 
@@ -52,9 +53,8 @@ export function useHost(session: CampaignSession, explored: ExploredKeeper | nul
     }
     watch(session.gameDoc?.active ?? null)
 
-    // the sheets as sent last; whose tab changed a sheet (it has the change already)
+    // the sheets as the players' tabs know them: what changed since goes to them as a change of fields
     const sent = new Map<string, Seat | undefined>(session.campaign.players.map((p) => [p.id, session.seat(p.id)]))
-    const seatFrom = new Map<string, string>()
     const offSession = session.subscribe(() => {
       const now = session.gameDoc?.active ?? null
       if (now !== active) {
@@ -63,10 +63,11 @@ export function useHost(session: CampaignSession, explored: ExploredKeeper | nul
       }
       for (const p of session.campaign.players) {
         const seat = session.seat(p.id)
-        if (seat === sent.get(p.id)) continue
+        const was = sent.get(p.id)
+        if (seat === was) continue
         sent.set(p.id, seat)
-        if (seat) link.send({ type: 'seat', player: p.id, seat, from: seatFrom.get(p.id) ?? null })
-        seatFrom.delete(p.id)
+        const patch = seat && diffSeat(was, seat)
+        if (patch) link.send({ type: 'seat', player: p.id, patch, from: null })
       }
     })
 
@@ -104,8 +105,11 @@ export function useHost(session: CampaignSession, explored: ExploredKeeper | nul
         }
         case 'playerSeat':
           if (!known(m.player)) break
-          seatFrom.set(m.player, m.tab)
-          session.apply([{ doc: seatKey(m.player), set: m.seat }], { record: false })
+          // the player's tab has its change already: the others of this player take it as it is,
+          // and only what else changes the sheet (a rest, the master) goes back as a change of its own
+          sent.set(m.player, applySeatPatch(sent.get(m.player), m.patch))
+          session.apply([{ doc: seatKey(m.player), op: m.patch }], { record: false })
+          link.send({ type: 'seat', player: m.player, patch: m.patch, from: m.tab })
           break
         case 'roll':
           if (known(m.player)) latest.current.onRoll(m.player, m.roll)

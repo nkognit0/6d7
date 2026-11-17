@@ -1,7 +1,7 @@
 // The dice (6d7 / game / player 34:7783): the window next to the dice button and the log of
 // rolls in the bottom right corner. The log lives only in the current game (QnA).
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { rollDie } from '@app/rules/dice'
+import { rollDie } from '@rules/rules/dice'
 import { useStrings } from '../../i18n'
 import type { FlowColor } from '../../map'
 import { Button, cx, Divider, Modal, Plate, RowField, Select, TextInput } from '../../ui'

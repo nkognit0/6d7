@@ -4,6 +4,7 @@ import { newId } from '../map/core/geometry'
 import { applyOp } from '../map/core/scene'
 import type { ExploredData } from '../map/core/explored'
 import type { FlowColor, MapOp, MapScene } from '../map/core/types'
+import { applySeatPatch, type SeatPatch } from '../game/seat/patch'
 import type { GameDoc, GameMap } from './game'
 import type { Campaign, CampaignDocs, CampaignMeta, CampaignOp, CampaignSettings, Change, DocKey, PlayerSlot } from './types'
 
@@ -122,14 +123,15 @@ export function applyChange(docs: CampaignDocs, ch: Change): CampaignDocs {
   if (kind === 'map') {
     const maps = { ...docs.maps }
     if ('op' in ch) {
-      if (maps[id]) maps[id] = applyOp(maps[id], ch.op)
+      if (maps[id]) maps[id] = applyOp(maps[id], ch.op as MapOp)
     } else if ('set' in ch) maps[id] = ch.set as CampaignDocs['maps'][string]
     else delete maps[id]
     return { ...docs, maps }
   }
   if (kind === 'seat') {
     const seats = { ...docs.seats }
-    if ('set' in ch) seats[id] = ch.set as CampaignDocs['seats'][string]
+    if ('op' in ch) seats[id] = applySeatPatch(seats[id], ch.op as SeatPatch)
+    else if ('set' in ch) seats[id] = ch.set as CampaignDocs['seats'][string]
     else if ('drop' in ch) delete seats[id]
     return { ...docs, seats }
   }

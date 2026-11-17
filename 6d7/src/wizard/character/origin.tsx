@@ -1,10 +1,10 @@
 // Steps 1-3: class, background, species.
 import {
   abilityName, backgrounds, byId, categoryItems, classes, nameOf, originFeats, ruName, skills, speciesOptions, species as speciesList, toolItems
-} from '@app/data'
-import type { Derived } from '@app/rules/derive'
-import type { WizardState } from '@app/wizard/state'
-import { ARMOR_RU, type StepProps } from '@app/wizard/steps/common'
+} from '@rules/data'
+import type { Derived } from '@rules/rules/derive'
+import type { WizardState } from '@rules/wizard/state'
+import { ARMOR_RU, type StepProps } from '@rules/wizard/steps/common'
 import { useStrings } from '../../i18n'
 import { skillOrTool as skillOrToolRef } from '../describe'
 import { Fixed, Pick, PickMany, options } from '../fields'

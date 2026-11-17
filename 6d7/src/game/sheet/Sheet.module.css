@@ -99,7 +99,6 @@
   width: 100%;
   resize: none;
   font: var(--font-sheet-text);
-  field-sizing: content;
   overflow: hidden;
   background-image: linear-gradient(transparent 27px, var(--rule) 27px, var(--rule) 28px);
   background-size: 100% 28px;

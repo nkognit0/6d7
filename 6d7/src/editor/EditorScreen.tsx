@@ -3,6 +3,7 @@ import { go, type EditorTab } from '../app/route'
 import { shortcutLabel, useShortcuts } from '../app/shortcuts'
 import { archiveMessage } from '../app/archiveMessage'
 import { SessionMessage } from '../app/ScreenMessage'
+import '../npc/pictures'
 import { ARCHIVE_EXT, downloadArchive, importInto, repo, useSession, type CampaignSession } from '../campaign'
 import { useStrings } from '../i18n'
 import {

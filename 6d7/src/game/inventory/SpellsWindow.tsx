@@ -4,9 +4,9 @@
 // of the sheet); the spell slots with their boxes, Pact Magic in a row of its own (no «Сбросить»:
 // the boxes are cleared by hand).
 import { useState } from 'react'
-import { byId, nameOf, ruName, type SpellData } from '@app/data'
-import { spellIconUrl } from '@app/spells/spells'
-import { castingTime, duration, range } from '@app/wiki/ru'
+import { byId, nameOf, ruName, type SpellData } from '@rules/data'
+import { spellIconUrl } from '@rules/spells/spells'
+import { castingTime, duration, range } from '@rules/wiki/ru'
 import { Button, GameWindow, Icon, IconButton, InventorySlot, NavTab, SearchInput, SlotGrid, SpellSlotRow, WindowPane, slotMark } from '../../ui'
 import { useStrings } from '../../i18n'
 import {
@@ -47,6 +47,8 @@ export function SpellsWindow({ seat, onChange }: { seat: Seat; onChange: (seat: 
   const s = useStrings()
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<number | null>(null)
+  // «Доступные»: what the character can learn, without a query too
+  const [browse, setBrowse] = useState(false)
   const [chosen, setChosen] = useState<string | null>(null)
   // a phone shows one pane: the grid, the description of the tapped spell or the spell slots
   const narrow = useNarrow()
@@ -54,7 +56,8 @@ export function SpellsWindow({ seat, onChange }: { seat: Seat; onChange: (seat: 
   const entry = seat.spells.find((e) => e.id === chosen) ?? null
   const show = (pane: 'grid' | 'detail' | 'slots') => !narrow || (pane === 'detail' ? view === 'detail' && !!entry : view === pane || (pane === 'grid' && view === 'detail' && !entry))
   const shown = seat.spells.filter((e) => filter == null || spellLevel(e) === filter)
-  const results = query.trim() ? searchAvailable(seat, query) : []
+  const searching = !!query.trim() || browse
+  const results = searching ? searchAvailable(seat, query) : []
   const count = preparedCount(seat)
   const max = preparedMax(seat)
   const levels = Array.from({ length: 9 }, (_, i) => i + 1).filter((l) => slotTotal(seat, l) > 0)
@@ -74,11 +77,12 @@ export function SpellsWindow({ seat, onChange }: { seat: Seat; onChange: (seat: 
               <div className={styles.search}><SearchInput placeholder={s.common.search} value={query} onChange={(e) => setQuery(e.target.value)} aria-label={s.spells.searchHint} /></div>
             </div>
             <div className={styles.tabs} role="tablist">
-              <NavTab selected={filter == null} onClick={() => setFilter(null)}>{s.spells.filterAll}</NavTab>
-              <NavTab selected={filter === 0} onClick={() => setFilter(0)}>{s.spells.filterCantrips}</NavTab>
+              <NavTab selected={filter == null && !browse} onClick={() => { setFilter(null); setBrowse(false) }}>{s.spells.filterAll}</NavTab>
+              <NavTab selected={filter === 0 && !browse} onClick={() => { setFilter(0); setBrowse(false) }}>{s.spells.filterCantrips}</NavTab>
               {Array.from({ length: 9 }, (_, i) => i + 1).map((l) => (
-                <NavTab key={l} selected={filter === l} onClick={() => setFilter(l)}>{s.spells.filterLevel(l)}</NavTab>
+                <NavTab key={l} selected={filter === l && !browse} onClick={() => { setFilter(l); setBrowse(false) }}>{s.spells.filterLevel(l)}</NavTab>
               ))}
+              <NavTab selected={browse} onClick={() => { setFilter(null); setBrowse(true) }}>{s.spells.available}</NavTab>
             </div>
           </>
         )}
@@ -89,15 +93,15 @@ export function SpellsWindow({ seat, onChange }: { seat: Seat; onChange: (seat: 
           </div>
         ) : undefined}>
         <div className={styles.body}>
-          {query.trim() ? (
+          {searching ? (
             <div className={styles.results}>
               {!results.length && <span className={styles.note}>{s.common.nothingFound}</span>}
               {results.map((sp) => (
                 <div key={sp.id} className={styles.result}>
-                  <img src={spellIconUrl(sp.id)} alt="" />
+                  <img src={spellIconUrl(sp.id)} alt="" loading="lazy" />
                   <div className={styles.resultName}><span>{nameOf(sp)}</span><span>{sp.level ? s.spells.slotLevel(sp.level) : s.spells.cantrip}</span></div>
                   <div className={styles.resultButtons}>
-                    <Button variant="primary" onClick={() => { onChange(learnSpell(seat, sp.id)); setChosen(sp.id); setQuery('') }}>{s.spells.learn}</Button>
+                    <Button variant="primary" onClick={() => { onChange(learnSpell(seat, sp.id)); setChosen(sp.id); setQuery(''); setBrowse(false) }}>{s.spells.learn}</Button>
                   </div>
                 </div>
               ))}

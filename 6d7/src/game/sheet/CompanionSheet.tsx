@@ -2,7 +2,7 @@
 // the rules of the companion; every field is editable, the picture is uploaded by the player.
 // At 0 Hit Points it tells how the rules bring the companion back and does it.
 import { useState } from 'react'
-import { companionDown, reviveCompanion, reviveOf, type CompanionSheet as Fields } from '@app/companion/companion'
+import { companionDown, reviveCompanion, reviveOf, type CompanionSheet as Fields } from '@rules/companion/companion'
 import { Button } from '../../ui'
 import { useStrings } from '../../i18n'
 import { characterOf, withCharacter, type Seat } from '../seat/seat'

@@ -2,8 +2,8 @@
 // seat: the player's game and the sheet demo. A higher-level start opens «Новый уровень» again
 // until the sheet reaches that level.
 import { useMemo, useState } from 'react'
-import type { CompanionSheet as CompanionData } from '@app/companion/companion'
-import { MAX_LEVEL, sheetLevel } from '@app/levelup/read'
+import type { CompanionSheet as CompanionData } from '@rules/companion/companion'
+import { MAX_LEVEL, sheetLevel } from '@rules/levelup/read'
 import { useStrings } from '../../i18n'
 import { ConfirmDialog } from '../../ui'
 import { CharacterWizard } from '../../wizard/character/CharacterWizard'

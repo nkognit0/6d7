@@ -1,7 +1,6 @@
-// Publishes the app on GitHub Pages (https://nkognit0.github.io/6d7/): builds it here (the rules
-// logic and the pictures live in ../app and ../dnd-db, which are not in the repository), adds the
-// item and spell icons the dev server takes from app/public, and force-pushes
-// the result to the gh-pages branch of the repository's origin as one commit.
+// Publishes the app on GitHub Pages (https://nkognit0.github.io/6d7/): builds it here, adds the item
+// and spell icons of the rules package (../dnd-rules/icons; the dev server serves them from there),
+// and force-pushes the result to the gh-pages branch of the repository's origin as one commit.
 //   npm run deploy            build and publish
 //   npm run deploy -- --dry   build only (dist/ is the site; `npx vite preview` shows it)
 import { execFileSync } from 'node:child_process'
@@ -24,7 +23,7 @@ const read = (cmd, args, cwd) => execFileSync(cmd, args, { cwd, encoding: 'utf8'
 npm(['run', 'build'], project)
 
 // the pictures the code points to by relative paths: icons/items, icons/spells (the NPC tokens come with public/)
-for (const p of ['icons/items', 'icons/spells']) cpSync(resolve(root, 'app/public', p), resolve(dist, p), { recursive: true })
+for (const p of ['icons/items', 'icons/spells']) cpSync(resolve(root, 'dnd-rules', p), resolve(dist, p), { recursive: true })
 // without Jekyll: it would hide files that start with «_» (icons/items/_item.svg)
 writeFileSync(resolve(dist, '.nojekyll'), '')
 

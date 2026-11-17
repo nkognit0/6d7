@@ -1,7 +1,7 @@
 // Step 11: free-form details. Only the name is required.
-import { alignments, nameOf } from '@app/data'
-import type { PersonalityState, WizardState } from '@app/wizard/state'
-import type { StepProps } from '@app/wizard/steps/common'
+import { alignments, nameOf } from '@rules/data'
+import type { PersonalityState, WizardState } from '@rules/wizard/state'
+import type { StepProps } from '@rules/wizard/steps/common'
 import { useStrings } from '../../i18n'
 import { AreaField, Pick, TextField } from '../fields'
 import styles from '../Wizard.module.css'

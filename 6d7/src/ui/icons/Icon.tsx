@@ -2,10 +2,13 @@ import type { CSSProperties } from 'react'
 import geometry from './svg/geometry.json'
 import styles from './Icon.module.css'
 
-// every SVG from assets/ (copied by scripts/icons.mjs), keyed by "icon.16/search.svg"
-const FILES = import.meta.glob('./svg/**/*.svg', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
-const svg = (path: string) => {
-  const s = FILES[`./svg/${path}`]
+// the SVGs from assets/ (copied by scripts/icons.mjs), keyed by "icon.16/search.svg": one-color ones go
+// inline (they take the CSS color); colored ones are files of their own, loaded when shown (the
+// big player icons are only in the games, not on the home screen)
+const INLINE = import.meta.glob(['./svg/icon.16/*.svg', './svg/icon.28/*.svg'], { query: '?raw', import: 'default', eager: true }) as Record<string, string>
+const FILES = import.meta.glob(['./svg/icon.16.color/*.svg', './svg/icon.16.player/*.svg', './svg/icon.42.player/*.svg'], { query: '?url', import: 'default', eager: true }) as Record<string, string>
+const find = (list: Record<string, string>, path: string) => {
+  const s = list[`./svg/${path}`]
   if (!s) throw new Error(`no icon ${path}`)
   return s
 }
@@ -35,7 +38,7 @@ function Mono({ path, size, className, style, title }: Base & { path: string; si
       role={title ? 'img' : undefined}
       aria-label={title}
       aria-hidden={title ? undefined : true}
-      dangerouslySetInnerHTML={{ __html: svg(path) }}
+      dangerouslySetInnerHTML={{ __html: find(INLINE, path) }}
     />
   )
 }
@@ -51,11 +54,7 @@ function Shaded({ path, size, className, style, title }: Base & { path: string; 
       aria-label={title}
       aria-hidden={title ? undefined : true}
     >
-      <span
-        className={styles.file}
-        style={{ width: g.w, height: g.h, left: -g.x, top: -g.y }}
-        dangerouslySetInnerHTML={{ __html: svg(path) }}
-      />
+      <img className={styles.file} src={find(FILES, path)} alt="" width={g.w} height={g.h} style={{ left: -g.x, top: -g.y }} draggable={false} />
     </span>
   )
 }

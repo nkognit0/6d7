@@ -1,12 +1,12 @@
 // What a player does with the inventories of a seat. Items: get, buy, equip, attune, delete — the
 // armour class and what magic items give follow (the old app's rules logic). Spells: learn,
 // prepare, forget, spend and reset slots. Search shows the spells of the character's lists.
-import { byId, classFeatures, nameOf, type SpellData } from '@app/data'
-import { gearPatch } from '@app/inventory/gear'
-import { pay, walletFields, walletOf } from '@app/inventory/inventory'
-import { attunementLimit, needsAttunement } from '@app/inventory/magic'
-import { classEntries } from '@app/levelup/read'
-import { searchSpells } from '@app/spells/spells'
+import { byId, classFeatures, nameOf, spells, type SpellData } from '@rules/data'
+import { gearPatch } from '@rules/inventory/gear'
+import { pay, walletFields, walletOf } from '@rules/inventory/inventory'
+import { attunementLimit, needsAttunement } from '@rules/inventory/magic'
+import { classEntries } from '@rules/levelup/read'
+import { searchSpells } from '@rules/spells/spells'
 import { bagOfCells, characterOf, newUid, spellLevel, withCharacter, type ItemCell, type Seat } from './seat'
 
 // ---- items
@@ -71,12 +71,18 @@ export function maxSlotLevel(seat: Seat): number {
   return max
 }
 
-/** Search among the spells the character can learn: its lists, up to its highest slot. */
-export function searchAvailable(seat: Seat, query: string): SpellData[] {
+/**
+ * The spells the character can learn (its lists, up to its highest slot, not known yet), by a query
+ * or, without one, all of them by circle and name. The lists come first, the words second: a short
+ * query keeps the spells of every circle.
+ */
+export function searchAvailable(seat: Seat, query: string, limit = 200): SpellData[] {
   const lists = spellLists(seat)
   const max = maxSlotLevel(seat)
   const known = new Set(seat.spells.map((e) => e.id))
-  return searchSpells(query, 200).filter((s) => !known.has(s.id) && s.level <= max && s.classes.some((l) => lists.has(l))).slice(0, 30)
+  const can = (s: SpellData) => !known.has(s.id) && s.level <= max && s.classes.some((l) => lists.has(l))
+  const found = query.trim() ? searchSpells(query, Infinity) : [...spells].sort((a, b) => a.level - b.level || nameOf(a).localeCompare(nameOf(b), 'ru'))
+  return found.filter(can).slice(0, limit)
 }
 
 export const learnSpell = (seat: Seat, id: string): Seat =>

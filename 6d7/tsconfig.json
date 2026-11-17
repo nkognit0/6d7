@@ -22,14 +22,14 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@app/*": [
-        "../app/src/*"
+      "@rules/*": [
+        "../dnd-rules/src/*"
       ],
-      "@data/*": [
-        "../dnd-db/data/*"
+      "@rules-data/*": [
+        "../dnd-rules/data/*"
       ],
       "dnd-sheet": [
-        "src/game/dndSheet.ts"
+        "../dnd-rules/src/sheet/index.ts"
       ]
     }
   },

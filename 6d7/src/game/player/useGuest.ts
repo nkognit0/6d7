@@ -5,10 +5,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ExploredMask, MapStore, newId, trackExplored, type RuleOverrides } from '../../map'
 import { tabLink, type GameLink } from '../net/link'
 import type { CampaignInfo, MapPayload, Roll } from '../net/protocol'
+import { applySeatPatch, diffSeat } from '../seat/patch'
 import type { Seat } from '../seat/seat'
 
 /** How long to wait for the master's answer before telling the game has not started. */
 const WAIT_MS = 800
+/** The sheet goes to the master this long after the player stops typing… */
+const SEND_MS = 300
+/** …and at least this often while the player types on. */
+const SEND_EVERY_MS = 1000
 
 /** The map of the game in this tab: a copy the master keeps up to date. */
 export interface GuestMap {
@@ -25,6 +30,12 @@ export function useGuest(campaignId: string, playerId: string) {
   const [state, setState] = useState<GuestState>({ status: 'connecting' })
   const link = useRef<GameLink | null>(null)
   const tab = useMemo(() => newId(), [])
+  // the sheet as the master has it and as it is here: what differs goes to the master in pauses
+  const known = useRef<Seat | null>(null)
+  const mine = useRef<Seat | null>(null)
+  const sendTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingSince = useRef(0)
+  const send = useRef<() => void>(() => {})
 
   useEffect(() => {
     const l = tabLink(campaignId)
@@ -55,6 +66,15 @@ export function useGuest(campaignId: string, playerId: string) {
     const joinedWith = (patch: Partial<Extract<GuestState, { status: 'joined' }>>) =>
       setState((s) => (s.status === 'joined' ? { ...s, ...patch } : s))
     const hello = () => l.send({ type: 'hello', tab, player: playerId })
+    send.current = () => {
+      if (sendTimer.current) clearTimeout(sendTimer.current)
+      sendTimer.current = null
+      const now = mine.current
+      const patch = joined && now ? diffSeat(known.current ?? undefined, now) : null
+      if (!patch) return
+      known.current = now
+      l.send({ type: 'playerSeat', tab, player: playerId, patch })
+    }
 
     const timer = setTimeout(() => setState((s) => (s.status === 'connecting' ? { status: 'waiting' } : s)), WAIT_MS)
     const off = l.listen((m) => {
@@ -77,6 +97,7 @@ export function useGuest(campaignId: string, playerId: string) {
           if (m.to !== tab) break
           joined = true
           settings = m.state.campaign.settings
+          known.current = mine.current = m.state.seat
           setState({ status: 'joined', campaign: m.state.campaign, seat: m.state.seat, map: open(m.state.map) })
           break
         case 'map':
@@ -90,12 +111,22 @@ export function useGuest(campaignId: string, playerId: string) {
           if (joined && current && m.map === current.id && m.from !== tab) current.store.dispatch(m.op, 'remote')
           break
         case 'seat':
-          if (joined && m.player === playerId && m.from !== tab) joinedWith({ seat: m.seat })
+          // a change of the master's (a rest) or of another tab of this player; what this tab has not sent
+          // yet stays, unless the change took the same fields
+          if (!joined || m.player !== playerId || m.from === tab) break
+          known.current = applySeatPatch(known.current ?? undefined, m.patch)
+          mine.current = applySeatPatch(mine.current ?? undefined, m.patch)
+          joinedWith({ seat: mine.current })
           break
       }
     })
     hello()
+    // a tab being closed sends what it has not sent yet
+    const leave = () => send.current()
+    addEventListener('pagehide', leave)
     return () => {
+      removeEventListener('pagehide', leave)
+      send.current()
       clearTimeout(timer)
       off()
       unwatch?.()
@@ -104,11 +135,16 @@ export function useGuest(campaignId: string, playerId: string) {
     }
   }, [campaignId, playerId, tab])
 
-  /** The player changed the sheet: here at once, then at the master's. */
+  /** The player changed the sheet: here at once, at the master's when the typing pauses. */
   const changeSeat = useCallback((seat: Seat) => {
+    mine.current = seat
     setState((s) => (s.status === 'joined' ? { ...s, seat } : s))
-    link.current?.send({ type: 'playerSeat', tab, player: playerId, seat })
-  }, [tab, playerId])
+    const now = Date.now()
+    if (sendTimer.current) clearTimeout(sendTimer.current)
+    else pendingSince.current = now
+    const wait = Math.max(0, Math.min(SEND_MS, pendingSince.current + SEND_EVERY_MS - now))
+    sendTimer.current = setTimeout(() => send.current(), wait)
+  }, [])
 
   /** A roll goes into the master's log. */
   const roll = useCallback((r: Roll) => link.current?.send({ type: 'roll', tab, player: playerId, roll: r }), [tab, playerId])

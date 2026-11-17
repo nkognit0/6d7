@@ -5,7 +5,6 @@
 import { MAX_IMAGE_SIDE } from './format'
 import type { TileBlob, WorkerRequest, WorkerResponse } from './protocol'
 import { encode, sliceStrip, type StripTask, type TileSource } from './slice'
-import { generateTestMap } from './testMap'
 
 const post = (m: WorkerResponse) => (self as unknown as Worker).postMessage(m)
 
@@ -123,13 +122,15 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
       const opaque = req.source.type === 'image/jpeg'
       const result = await build(req.job, bitmap, req.tileSize, opaque, started)
       post({ type: 'done', job: req.job, ...result })
-    } else {
+    } else if (import.meta.env.DEV) {
+      // the test dungeon is for development (the map prototype, the stub of the player's game): the site has none of it
       post({ type: 'progress', job: req.job, stage: 'draw', done: 0, total: 1 })
+      const { generateTestMap } = await import('./testMap')
       const { canvas, layout } = generateTestMap(req.cols, req.rows, req.cellPx, req.seed)
       const bitmap = canvas.transferToImageBitmap()
       const result = await build(req.job, bitmap, req.tileSize, true, started)
       post({ type: 'done', job: req.job, ...result, layout })
-    }
+    } else throw new Error('no test maps in this build')
   } catch (err) {
     post({ type: 'error', job: req.job, code: 'other', message: String(err) })
   }

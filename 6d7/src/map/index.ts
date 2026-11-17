@@ -12,7 +12,7 @@ export { sightBlockers, moveBlockers, visibilityPolygon, visionRadius, pathBlock
 export { MAP_IMAGE_ACCEPT, MAX_IMAGE_SIDE, type ImageFormat } from './image/format'
 export { importMapImage, createTestMap, MemoryTileProvider, MapImageError, TILE_SIZE, type ImportedImage, type ImportProgress, type TileSink } from './image/pyramid'
 export type { TestMapLayout, TileBlob } from './image/protocol'
-export { resolveCatalog, resolveImages } from './engine/textures'
+export { resolveCatalog, resolveImages } from './engine/images'
 export { MapEngine, type MapRole, type MapTool, type MapViewState, type MapStats, type ZoomInfo } from './engine/MapEngine'
 export { CELL_AT_100 } from './engine/camera'
 export { MapView, type MapViewProps } from './react/MapView'

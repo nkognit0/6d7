@@ -3,12 +3,12 @@
 // chosen thing with «Экипировать», «Маг. настройка» and «Удалить». No places on the hero: a
 // thing in use is marked in its cell, and the sheet follows it (armour class, magic items).
 import { useState } from 'react'
-import { baseId, byId, nameOf, type EquipmentData } from '@app/data'
-import { sheetWeaponRow } from '@app/inventory/gear'
-import { COINS, iconUrl, searchItems, walletOf } from '@app/inventory/inventory'
-import { attunementRequirement, effectsText } from '@app/inventory/magic'
-import { ITEM_CATEGORY_RU, MAGIC_TYPE_RU, RARITY_RU, count, lightText } from '@app/wiki/ru'
-import { price } from '@app/wizard/steps/common'
+import { baseId, byId, nameOf, type EquipmentData } from '@rules/data'
+import { sheetWeaponRow } from '@rules/inventory/gear'
+import { COINS, iconUrl, searchItems, walletOf } from '@rules/inventory/inventory'
+import { attunementRequirement, effectsText } from '@rules/inventory/magic'
+import { ITEM_CATEGORY_RU, MAGIC_TYPE_RU, RARITY_RU, count, lightText } from '@rules/wiki/ru'
+import { price } from '@rules/wizard/steps/common'
 import { Button, CoinValue, GameWindow, Icon, IconButton, InventorySlot, SearchInput, SlotGrid, WindowPane, slotMark } from '../../ui'
 import { useStrings } from '../../i18n'
 import { addThing, attunable, attunedCount, attunementMax, buyThing, removeCell, setAttuned, setEquipped } from '../seat/actions'

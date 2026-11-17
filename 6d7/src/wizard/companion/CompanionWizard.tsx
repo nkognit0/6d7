@@ -4,11 +4,11 @@
 // rules are the old app's own (app/src/companion).
 import { useMemo, useState } from 'react'
 import type { DnDCharacter } from 'dnd-sheet'
-import { nameOf } from '@app/data'
+import { nameOf } from '@rules/data'
 import {
   accessOf, buildCompanion, companionKinds, creatureById, creatureTypeName, formsOf, kindById, levelUpCompanion, ownerOf, scaleOf,
   type CompanionSheet
-} from '@app/companion/companion'
+} from '@rules/companion/companion'
 import { useStrings } from '../../i18n'
 import { Button } from '../../ui'
 import { Fixed, Pick, TextField } from '../fields'

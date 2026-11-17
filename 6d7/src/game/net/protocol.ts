@@ -3,6 +3,7 @@
 // will: players send it what they do, it checks, applies and tells everyone.
 import type { CampaignSettings, PlayerSlot } from '../../campaign'
 import type { ExploredData, MapOp, MapScene } from '../../map'
+import type { SeatPatch } from '../seat/patch'
 import type { Seat } from '../seat/seat'
 
 /** What a player needs of the campaign. */
@@ -48,12 +49,13 @@ export type GameMessage =
   | { type: 'op'; map: string; op: MapOp; from: string | null }
   /** a change of a player's was refused: the map as it is, to that tab */
   | { type: 'resync'; to: string; map: MapPayload }
-  /** a sheet changed (by the master, a rest, another tab of the player) */
-  | { type: 'seat'; player: string; seat: Seat; from: string | null }
+  /** a sheet changed by its fields (the master, a rest, a tab of the player); `from` — the tab that made it */
+  | { type: 'seat'; player: string; patch: SeatPatch; from: string | null }
   /** the player's place is gone: the tab of that player stops */
   | { type: 'gone'; player: string }
   // ——— a player to the master ———
   | { type: 'hello'; tab: string; player: string }
   | { type: 'playerOp'; tab: string; player: string; map: string; op: MapOp }
-  | { type: 'playerSeat'; tab: string; player: string; seat: Seat }
+  /** what the player changed in the sheet: only the changed fields, in pauses of typing */
+  | { type: 'playerSeat'; tab: string; player: string; patch: SeatPatch }
   | { type: 'roll'; tab: string; player: string; roll: Roll }

@@ -1,6 +1,7 @@
 // An open campaign: its documents in memory, every change saved at once (a journal of changes,
 // a snapshot in pauses — docs/data-model.md, «Автосохранение») and the history of «Отменить».
 // The editor and the master's game work with it; the network will feed it the same changes.
+import { applySeatPatch, invertSeatPatch, type SeatPatch } from '../game/seat/patch'
 import type { Seat } from '../game/seat/seat'
 import { newId } from '../map/core/geometry'
 import { invertMapOp } from '../map/core/invert'
@@ -197,6 +198,10 @@ export class CampaignSession {
       if (gm) return [{ doc, set: { schema: 1, scene: gm.store.get(), base: gm.base } satisfies GameMap }]
       return 'set' in ch ? [{ doc, drop: true }] : []
     }
+    if (kind === 'seat' && 'op' in ch) {
+      const seat = this.seats.get(id)
+      return seat ? [{ doc: ch.doc as `seat/${string}`, op: invertSeatPatch(seat, ch.op as SeatPatch) }] : [{ doc: ch.doc, drop: true }]
+    }
     const prev = kind === 'seat' ? this.seats.get(id) : kind === 'game' ? this.game : kind === 'game/explored' ? this.explored.get(id) : undefined
     if (prev) return [{ doc: ch.doc, set: prev }]
     return 'set' in ch ? [{ doc: ch.doc, drop: true }] : []
@@ -237,7 +242,8 @@ export class CampaignSession {
     } else if (kind === 'campaign') {
       this.doc = 'op' in ch ? applyCampaignOp(this.doc, ch.op as CampaignOp) : 'set' in ch ? (ch.set as Campaign) : this.doc
     } else if (kind === 'seat') {
-      if ('set' in ch) this.seats.set(id, ch.set as Seat)
+      if ('op' in ch) this.seats.set(id, applySeatPatch(this.seats.get(id), ch.op as SeatPatch))
+      else if ('set' in ch) this.seats.set(id, ch.set as Seat)
       else this.seats.delete(id)
     } else if (kind === 'game') {
       this.game = 'set' in ch ? (ch.set as GameDoc) : null

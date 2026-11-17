@@ -1,5 +1,6 @@
 // The documents of a campaign (docs/data-model.md): plain serializable objects shared by the
 // editor, the game, the archive and (later) the server. No browser or React code here.
+import type { SeatPatch } from '../game/seat/patch'
 import type { Seat } from '../game/seat/seat'
 import type { ExploredData } from '../map/core/explored'
 import type { FlowColor, MapOp, MapRules, MapScene } from '../map/core/types'
@@ -71,6 +72,8 @@ export type Change =
   | { doc: `map/${string}`; op: MapOp }
   /** an operation on the scene of a map of the game */
   | { doc: `game/map/${string}`; op: MapOp }
+  /** a change of a player's sheet by its fields */
+  | { doc: `seat/${string}`; op: SeatPatch }
   | { doc: DocKey; set: unknown }
   | { doc: DocKey; drop: true }
 

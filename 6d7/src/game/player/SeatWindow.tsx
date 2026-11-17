@@ -3,7 +3,8 @@
 // overlay. A click past the window closes it; a phone has no room past it, so there it gets «Закрыть».
 // The master opens the same windows for a player.
 import { useRef, useState } from 'react'
-import { longRest, shortRest } from '@app/rest/rest'
+import { MAX_LEVEL } from '@rules/levelup/read'
+import { longRest } from '@rules/rest/rest'
 import { useStrings } from '../../i18n'
 import { Button, ConfirmDialog, Icon, IconButton, Menu, MenuDivider, MenuItem, Overlay, Popover, TopPanel } from '../../ui'
 import { ItemsWindow } from '../inventory/ItemsWindow'
@@ -14,6 +15,7 @@ import { importCharacter } from '../seat/import'
 import { characterOf, withCharacter, type Seat } from '../seat/seat'
 import { CharacterSheet } from '../sheet/CharacterSheet'
 import { CompanionSheet } from '../sheet/CompanionSheet'
+import { ShortRestDialog } from './ShortRest'
 import type { useSeatWizards } from './useSeatWizards'
 import styles from './Player.module.css'
 
@@ -24,10 +26,13 @@ type Wizards = ReturnType<typeof useSeatWizards>
 export function RestButton({ seat, onChange, onMessage }: { seat: Seat; onChange: (seat: Seat) => void; onMessage: (text: string) => void }) {
   const s = useStrings()
   const [open, setOpen] = useState(false)
+  // a short rest asks how many hit dice to spend
+  const [short, setShort] = useState(false)
   const rest = (kind: 'short' | 'long') => {
     setOpen(false)
+    if (kind === 'short') return setShort(true)
     const c = characterOf(seat)
-    const r = kind === 'long' ? longRest(c) : shortRest(c, [])
+    const r = longRest(c)
     onMessage(r.changes.join(' · ') || s.rest.nothingToRestore)
     onChange(withCharacter(seat, r.character))
   }
@@ -40,6 +45,7 @@ export function RestButton({ seat, onChange, onMessage }: { seat: Seat; onChange
           <MenuItem onClick={() => rest('long')}>{s.rest.long}</MenuItem>
         </Menu>
       </Popover>
+      {short && <ShortRestDialog seat={seat} onChange={onChange} onMessage={onMessage} onClose={() => setShort(false)} />}
     </div>
   )
 }
@@ -148,7 +154,7 @@ export function SeatWindow({ page, seat, onChange, wizards, onClose }: {
   const [message, setMessage] = useState<string | null>(null)
   const narrow = useNarrow()
   const levelUp = (
-    <Button variant="primary" disabled={!wizards.canLevelUp} onClick={wizards.levelUp}>{s.sheet.levelUp((wizards.level ?? 0) + 1)}</Button>
+    <Button variant="primary" disabled={!wizards.canLevelUp} onClick={wizards.levelUp}>{s.sheet.levelUp(Math.min(MAX_LEVEL, (wizards.level ?? 0) + 1))}</Button>
   )
   const rest = <RestButton seat={seat} onChange={onChange} onMessage={setMessage} />
   const companionItems: MoreItem[] = [
