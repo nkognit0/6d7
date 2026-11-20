@@ -5,8 +5,9 @@ import type { CampaignSession } from '../../campaign'
 import { useStrings } from '../../i18n'
 import type { MapScene, Token } from '../../map'
 import { matches, npcCards } from '../../npc/catalog'
+import { NpcPictureCard } from '../../npc/NpcPictureCard'
 import {
-  ContextMenu, cx, Icon, IconButton, MenuItem, NavTab, NpcCard, RowCard, RowSwitch, RowTabs, SearchInput, SidebarSection, useContextMenu
+  ContextMenu, cx, Icon, IconButton, MenuItem, NavTab, RowCard, RowSwitch, RowTabs, SearchInput, SidebarSection, useContextMenu
 } from '../../ui'
 import styles from './Master.module.css'
 
@@ -91,7 +92,7 @@ export function MasterMaps({ session, shown, active, onPick, onPlay, onLook, onD
         <SidebarSection fill className={styles.npcSection}>
           <div className={styles.npcList}>
             {npcs.map((n) => (
-              <NpcCard key={n.key} layout="list" image={n.image} name={n.name} note={n.note} className={cx(styles.dragCard, !onDrag && styles.inactive)}
+              <NpcPictureCard key={n.key} layout="list" image={n.image} name={n.name} note={n.note} className={cx(styles.dragCard, !onDrag && styles.inactive)}
                 onPointerDown={onDrag ? dragIn(n.token) : undefined} />
             ))}
             {!npcs.length && <p className={styles.note}>{!catalog && !query && !session.campaign.npcs.length ? s.editor.maps.noNpc : s.common.nothingFound}</p>}

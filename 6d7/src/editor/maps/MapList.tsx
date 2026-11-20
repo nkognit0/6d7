@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useState, type ComponentProps } from 'react'
 import { freeName, mapKey, type CampaignSession } from '../../campaign'
+import { useMediaUrl } from '../../game/media/media'
+import type { MediaRef } from '../../game/seat/seat'
 import { matches } from '../../npc/catalog'
 import { createScene, type MapScene } from '../../map'
 import { useStrings } from '../../i18n'
@@ -58,8 +60,9 @@ export function MapList({ session, selected, onSelect }: { session: CampaignSess
       {shown.length > 0 && (
         <SidebarSection className={styles.mapList}>
           {shown.map((m) => (
-            <RowCard
+            <MapCard
               key={m.id}
+              scene={m}
               selected={m.id === selected}
               onClick={() => onSelect(m.id)}
               onContextMenu={(e) => {
@@ -78,7 +81,7 @@ export function MapList({ session, selected, onSelect }: { session: CampaignSess
               }
             >
               {renaming === m.id ? <InlineEdit value={m.name} aria-label={t.title} onDone={(name) => rename(m.id, name)} /> : m.name || t.untitled}
-            </RowCard>
+            </MapCard>
           ))}
         </SidebarSection>
       )}
@@ -97,4 +100,13 @@ export function MapList({ session, selected, onSelect }: { session: CampaignSess
       )}
     </aside>
   )
+}
+
+/**
+ * A map of the list with its picture above the name (QnA, 14.11.2026): the smallest level of the
+ * picture from the media store; a map without a picture — a dark placeholder.
+ */
+function MapCard({ scene, ...rest }: { scene: MapScene } & Omit<ComponentProps<typeof RowCard>, 'picture'>) {
+  const url = useMediaUrl((scene.image?.preview ?? null) as MediaRef | null)
+  return <RowCard picture={url} {...rest} />
 }

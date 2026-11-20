@@ -17,6 +17,8 @@ export interface MapViewProps {
   onZoom?: (zoom: ZoomInfo) => void
   onStats?: (stats: MapStats) => void
   onSelect?: (tokenId: string | null) => void
+  /** a right click with a tool: the screen drops the tool */
+  onToolEnd?: () => void
   className?: string
 }
 
@@ -35,7 +37,8 @@ export function MapView({ store, tiles, view, explored, className, ...callbacks 
       explored,
       onZoom: (z) => latest.current.callbacks.onZoom?.(z),
       onStats: (s) => latest.current.callbacks.onStats?.(s),
-      onSelect: (id) => latest.current.callbacks.onSelect?.(id)
+      onSelect: (id) => latest.current.callbacks.onSelect?.(id),
+      onToolEnd: () => latest.current.callbacks.onToolEnd?.()
     })
     engine.current = e
     let alive = true

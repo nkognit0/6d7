@@ -1,4 +1,4 @@
-import { autoDetectRenderer, Container, Graphics, type Renderer } from 'pixi.js'
+import { autoDetectRenderer, Container, Graphics, RenderTexture, Sprite, type Renderer } from 'pixi.js'
 import {
   cellPin, cellPx, dist, distToPolyline, distToSegment, imagePin, imageToGrid, newId, nodePin, pinToImage, projectT, samePin
 } from '../core/geometry'
@@ -8,11 +8,11 @@ import type { Door, FlowColor, MapRules, MapScene, Pin, RuleOverrides, Token, Ti
 import { moveBlockers, pathBlocked } from '../core/visibility'
 import { ExploredMask } from '../core/explored'
 import { doorSeen, playerSight, playersSee, trackExplored, type ExploredTracker } from '../core/exploring'
-import { BuildLayer, strokeWalls } from './BuildLayer'
+import { BuildLayer, spawnRadius, strokeWalls, type SpawnState } from './BuildLayer'
 import { Camera, CELL_AT_100, type CameraBounds } from './camera'
 import { DrawLayer, drawingPaint, PENCIL } from './DrawLayer'
 import { FogLayer } from './FogLayer'
-import { GridLayer } from './GridLayer'
+import { GridLayer, SPOT_CELLS } from './GridLayer'
 import { readTheme, type MapTheme } from './theme'
 import { TileLayer } from './TileLayer'
 import { TokenLayer } from './TokenLayer'
@@ -37,6 +37,8 @@ export interface MapViewState {
   brush: number
   /** settings of the campaign: the map follows them where it did not change them itself */
   campaignRules?: RuleOverrides
+  /** the campaign editor: the master selects and drags the spawn point (in the game it stays put) */
+  editor?: boolean
 }
 
 export interface MapStats {
@@ -66,6 +68,8 @@ export interface MapEngineOptions {
   onZoom?: (zoom: ZoomInfo) => void
   onStats?: (stats: MapStats) => void
   onSelect?: (tokenId: string | null) => void
+  /** a right click with a tool (and no wall line going): the screen drops the tool */
+  onToolEnd?: () => void
   /**
    * What players have seen on this map: the game keeps it up to date (`trackExplored`) and saves
    * it, the engine only shows it. Without it the engine keeps its own while it lives.
@@ -73,17 +77,30 @@ export interface MapEngineOptions {
   explored?: ExploredMask
 }
 
+type NewDoor = Omit<Door, 'id' | 'open'>
+
 type Gesture =
-  | { kind: 'pan'; id: number; last: Vec }
+  | { kind: 'pan'; id: number; last: Vec; down: Vec; button: number }
   | { kind: 'pinch'; startDist: number; startScale: number; anchor: Vec }
   | { kind: 'token'; id: number; tokenId: string; down: Vec; moved: boolean; pin: Pin }
   | { kind: 'door'; id: number; doorId: string; down: Vec }
+  /** the door tool: a click puts one door, a drag along the wall stretches it over every cell it passes */
+  | { kind: 'door-place'; id: number; first: NewDoor; span: NewDoor }
+  /** the spawn point dragged (the select tool in the editor) or put (the spawn tool) */
+  | { kind: 'spawn'; id: number; down: Vec; moved: boolean }
   | { kind: 'wall'; id: number; down: Vec }
   | { kind: 'fog'; id: number; erase: boolean; radius: number; points: number[] }
   | { kind: 'pencil'; id: number; points: number[] }
   | { kind: 'erase'; id: number }
 
 const TAP = 6
+/**
+ * At this zoom and below the master's grid is hidden, in the editor and in the game, and shows
+ * only around the pointer over the map (QnA, 14.11.2026).
+ */
+const SPARSE_GRID_PERCENT = 20
+/** …in a circle at least this big on screen (radius, px) */
+const POINTER_SPOT_PX = 128
 /** the master sees the fog half transparent to work under it (QnA: 60%) */
 const MASTER_FOG = 0.6
 const MIN_STEP = 2
@@ -97,6 +114,13 @@ export class MapEngine {
   private renderer: Renderer | null = null
   private stage = new Container()
   private below = new Container()
+  /**
+   * The tiles are drawn into a texture of the view first: the grid reads the color of the map
+   * under its lines from it, and the stage shows it as one sprite.
+   */
+  private belowRoot = new Container()
+  private tilesRT: RenderTexture | null = null
+  private tilesSprite = new Sprite()
   private above = new Container()
   private overlay = new Graphics()
   private camera = new Camera()
@@ -119,9 +143,13 @@ export class MapEngine {
   private pointers = new Map<number, Vec>()
   private gesture: Gesture | null = null
   private hover: Vec | null = null
+  /** the open end of the wall line being drawn: every click adds a segment from it (QnA, 14.11.2026) */
   private wallStart: Pin | null = null
   private space = false
   private selected: string | null = null
+  private spawnSelected = false
+  /** where the spawn point is being dragged or put */
+  private spawnDrag: Vec | null = null
   private hoverDoor: string | null = null
   private erasing: string | null = null
   /** a token dragged in from the interface: where it lands and where the pointer is */
@@ -144,7 +172,8 @@ export class MapEngine {
     this.fog = new FogLayer(this.touch ? 1024 : 2048)
     this.above.addChild(this.draws.container, this.build.container, this.tokens.npc, this.fog.sprite, this.tokens.players, this.overlay)
     this.below.addChild(this.tiles.container)
-    this.stage.addChild(this.below, this.grid.mesh, this.above)
+    this.belowRoot.addChild(this.below)
+    this.stage.addChild(this.tilesSprite, this.grid.mesh, this.above)
   }
 
   async init() {
@@ -164,6 +193,9 @@ export class MapEngine {
       return
     }
     this.renderer = renderer
+    this.tilesRT = RenderTexture.create({ width: this.size.w, height: this.size.h, resolution: this.dpr })
+    this.tilesSprite.texture = this.tilesRT
+    this.grid.setTiles(this.tilesRT)
     const scene = this.opts.store.get()
     if (!scene.image) this.camera.scale = this.camera.scaleForPercent(100, cellPx(scene.grid))
     const canvas = renderer.canvas as HTMLCanvasElement
@@ -183,7 +215,7 @@ export class MapEngine {
   setView(view: MapViewState) {
     const prev = this.view
     this.view = view
-    if (prev.role !== view.role) this.selectToken(null)
+    if (prev.role !== view.role || prev.look !== view.look || prev.editor !== view.editor) this.selectToken(null)
     if (prev.role !== view.role || prev.look !== view.look) this.dirty.add('build').add('tokens').add('vision')
     if (JSON.stringify(prev.campaignRules ?? {}) !== JSON.stringify(view.campaignRules ?? {})) {
       this.ownTracker?.update()
@@ -192,6 +224,7 @@ export class MapEngine {
     if (prev.tool !== view.tool) {
       this.wallStart = null
       this.erasing = null
+      this.cancelGesture()
       this.dirty.add('build').add('draws')
     }
     this.requestRender()
@@ -277,6 +310,9 @@ export class MapEngine {
     this.draws.destroy()
     this.fog.destroy()
     this.overlay.destroy()
+    this.tilesSprite.destroy()
+    this.belowRoot.destroy({ children: true })
+    this.tilesRT?.destroy(true)
     if (this.renderer) {
       ;(this.renderer.canvas as HTMLCanvasElement).remove()
       this.renderer.destroy()
@@ -343,18 +379,24 @@ export class MapEngine {
       c.position.set(this.camera.x, this.camera.y)
       c.scale.set(this.camera.scale)
     }
-    // players see the grid only around a token they drag, each on their own screen
-    const spot = this.dragSpot()
-    this.grid.mesh.visible = scene.grid.enabled && (master || !!spot)
-    this.grid.update(this.camera, this.size.w, this.size.h, this.dpr, { x: scene.grid.offsetX, y: scene.grid.offsetY }, cell, scene.image, master, spot, {
-      paint: this.theme.grid, contrast: this.theme.gridContrast
-    })
+    // players see the grid only around a token they drag, each on their own screen; the master's
+    // grid hides when the map is zoomed out to 20% or less and shows around the pointer
+    const drag = this.dragSpot()
+    const sparse = master && this.camera.percent(cell) <= SPARSE_GRID_PERCENT + 1e-6
+    const spot = drag ?? (sparse ? this.hover : null)
+    const spotRadius = drag ? cell * SPOT_CELLS : Math.max(cell * SPOT_CELLS, POINTER_SPOT_PX / this.camera.scale)
+    this.grid.mesh.visible = scene.grid.enabled && ((master && !sparse) || !!spot)
+    this.grid.update(this.camera, this.size.w, this.size.h, this.dpr, { x: scene.grid.offsetX, y: scene.grid.offsetY }, cell, scene.image,
+      { everywhere: master && !sparse, spot, spotRadius, adaptive: master },
+      { paint: this.theme.grid, light: this.theme.gridLight, dark: this.theme.gridDark, background: this.theme.canvas })
     this.tiles.update(this.camera, this.size.w, this.size.h, this.dpr)
     this.build.updateZoom(this.camera.scale)
+    this.build.drawSpawn(this.spawnState(scene, master), cell, this.camera.scale, this.theme)
     this.fog.style(this.rules(scene).darkness ? this.theme.fogDark : this.theme.fog, master ? MASTER_FOG : 1, !!scene.image && scene.fog.length > 0)
     this.drawOverlay(scene)
     if (this.ghost) this.tokens.setGhost(this.ghost.token, this.ghost.at, scene.grid, this.theme)
 
+    if (this.tilesRT) renderer.render({ container: this.belowRoot, target: this.tilesRT, clear: true, clearColor: [0, 0, 0, 0] })
     renderer.render(this.stage)
 
     const now = performance.now()
@@ -418,6 +460,14 @@ export class MapEngine {
     }) ?? null
   }
 
+  /** The spawn point as the master sees it: where it stands or is dragged, and the spawn tool's preview. */
+  private spawnState(scene: MapScene, master: boolean): SpawnState {
+    if (!master) return { at: null, ghost: null, selected: false, erasing: false }
+    const at = this.spawnDrag ?? (scene.spawn ? pinToImage(scene.spawn, scene.grid) : null)
+    const ghost = this.tool() === 'spawn' && this.hover && !this.gesture ? this.snapToken(this.hover) : null
+    return { at, ghost, selected: this.spawnSelected, erasing: this.erasing === 'spawn' }
+  }
+
   private drawOverlay(scene: MapScene) {
     const g = this.overlay
     g.clear()
@@ -427,22 +477,23 @@ export class MapEngine {
     if ((tool === 'wall' || tool === 'barrier') && this.wallStart && this.hover) {
       const a = pinToImage(this.wallStart, scene.grid)
       const b = pinToImage(this.constrain(this.wallStart, this.snapWall(this.hover)), scene.grid)
-      strokeWalls(g, [[a.x, a.y, b.x, b.y]], tool, cell, this.theme)
+      if (dist(a, b) > 0) strokeWalls(g, [[a.x, a.y, b.x, b.y]], tool, cell, this.theme)
     }
     if ((tool === 'wall' || tool === 'barrier') && this.hover) {
       const p = pinToImage(this.wallStart ? this.constrain(this.wallStart, this.snapWall(this.hover)) : this.snapWall(this.hover), scene.grid)
       g.circle(p.x, p.y, 4 * px).fill({ color: this.theme.wall.color, alpha: this.theme.wall.alpha })
     }
-    if (tool === 'door' && this.hover) {
-      const d = this.doorAt(this.hover)
-      if (d) {
-        const a = pinToImage(d.a, scene.grid)
-        const b = pinToImage(d.b, scene.grid)
-        g.moveTo(a.x, a.y).lineTo(b.x, b.y).stroke({ width: cell / 8, color: this.theme.doorOutline.color, alpha: 0.6 })
-      }
+    if (tool === 'door') {
+      const gesture = this.gesture?.kind === 'door-place' ? this.gesture : null
+      const d = gesture ? gesture.span : this.hover && this.doorAt(this.hover)
+      if (d) this.build.door(g, pinToImage(d.a, scene.grid), pinToImage(d.b, scene.grid), cell, this.theme, { alpha: gesture ? 1 : 0.6 })
     }
     if ((tool === 'fog-paint' || tool === 'fog-erase') && this.hover) {
-      g.circle(this.hover.x, this.hover.y, this.brushRadius(scene)).stroke({ width: px, color: this.theme.cursor.color, alpha: this.theme.cursor.alpha })
+      // white on the circle, black just outside it: the brush shows on light and dark maps alike
+      const r = this.brushRadius(scene)
+      const { cursor, cursorShadow } = this.theme
+      g.circle(this.hover.x, this.hover.y, r + px).stroke({ width: px, color: cursorShadow.color, alpha: cursorShadow.alpha })
+      g.circle(this.hover.x, this.hover.y, r).stroke({ width: px, color: cursor.color, alpha: cursor.alpha })
     }
   }
 
@@ -481,6 +532,7 @@ export class MapEngine {
       this.size = { w: r.width, h: r.height }
       this.dpr = Math.min(window.devicePixelRatio || 1, 3)
       this.renderer.resize(r.width, r.height, this.dpr)
+      this.tilesRT?.resize(r.width, r.height, this.dpr)
       this.requestRender()
     })
     resize.observe(this.host)
@@ -517,9 +569,9 @@ export class MapEngine {
     this.hover = w
     const scene = this.opts.store.get()
     const id = e.pointerId
+    // the right button pans with a drag; a right click without moving ends the wall line or drops the tool (see `up`)
     if (e.button === 1 || e.button === 2 || this.space) {
-      if (e.button === 2 && this.wallStart) this.wallStart = null
-      this.gesture = { kind: 'pan', id, last: s }
+      this.gesture = { kind: 'pan', id, last: s, down: s, button: e.button }
       this.cursor('grabbing')
       return
     }
@@ -535,32 +587,39 @@ export class MapEngine {
           this.selectToken(t.id)
           return
         }
+        if (this.hitSpawn(w)) {
+          this.selectSpawn(true)
+          this.gesture = { kind: 'spawn', id, down: s, moved: false }
+          return
+        }
         const d = this.hitDoor(w)
         if (d && this.canOpen()) {
           this.gesture = { kind: 'door', id, doorId: d.id, down: s }
           return
         }
         this.selectToken(null)
-        this.gesture = { kind: 'pan', id, last: s }
+        this.gesture = { kind: 'pan', id, last: s, down: s, button: e.button }
         this.cursor('grabbing')
         return
       }
       case 'wall':
       case 'barrier': {
+        // the first click starts the line, every next one adds a segment and the line goes on from it
         const p = this.snapWall(w)
-        if (!this.wallStart) {
-          this.wallStart = p
-          this.gesture = { kind: 'wall', id, down: s }
-        } else this.finishWall(p)
+        if (this.wallStart) this.finishWall(p)
+        else this.wallStart = p
+        this.gesture = { kind: 'wall', id, down: s }
         break
       }
       case 'door': {
         const d = this.doorAt(w)
-        if (d) this.opts.store.dispatch({ type: 'door.add', door: { id: newId(), ...d, open: false } })
+        if (d) this.gesture = { kind: 'door-place', id, first: d, span: d }
         break
       }
       case 'spawn':
-        this.opts.store.dispatch({ type: 'spawn', pin: this.tokenPin(w) })
+        // the point follows the pointer while the button is down and lands on release
+        this.spawnDrag = this.snapToken(w)
+        this.gesture = { kind: 'spawn', id, down: s, moved: true }
         break
       case 'build-erase':
         this.eraseBuild(w)
@@ -621,6 +680,14 @@ export class MapEngine {
         if (t) this.tokens.preview(t.id, this.snapToken(w), scene.grid)
         break
       }
+      case 'spawn':
+        if (!g.moved && dist(s, g.down) < TAP) break
+        g.moved = true
+        this.spawnDrag = this.snapToken(w)
+        break
+      case 'door-place':
+        g.span = this.doorSpan(g.first, w)
+        break
       case 'fog': {
         const n = g.points.length
         if (Math.hypot(w.x - g.points[n - 2], w.y - g.points[n - 1]) * this.camera.scale < MIN_STEP) break
@@ -666,6 +733,18 @@ export class MapEngine {
     switch (g.kind) {
       case 'pan':
         this.cursor('')
+        if (g.button === 2 && dist(s, g.down) < TAP) this.rightClick()
+        break
+      case 'spawn': {
+        const at = this.spawnDrag
+        this.spawnDrag = null
+        if (!g.moved || !at) break
+        const pin = this.tokenPin(at)
+        if (!scene.spawn || !samePin(pin, scene.spawn)) this.opts.store.dispatch({ type: 'spawn', pin })
+        break
+      }
+      case 'door-place':
+        this.opts.store.dispatch({ type: 'door.add', door: { id: newId(), ...g.span, open: false } })
         break
       case 'token': {
         const t = scene.tokens.find((x) => x.id === g.tokenId)
@@ -712,6 +791,8 @@ export class MapEngine {
       this.dirty.add('vision')
     }
     if (g.kind === 'pencil') this.draws.drawLive(null, scene.grid, this.theme.master)
+    if (g.kind === 'spawn') this.spawnDrag = null
+    if (g.kind === 'pan') this.cursor('')
     if (g.kind === 'token') {
       const t = scene.tokens.find((x) => x.id === g.tokenId)
       if (t) this.tokens.preview(t.id, null, scene.grid, t)
@@ -756,9 +837,10 @@ export class MapEngine {
     let cursor = ''
     if (tool === 'select') {
       const t = this.hitToken(w)
-      const d = !t && this.canOpen() ? this.hitDoor(w) : null
+      const spawn = !t && this.hitSpawn(w)
+      const d = !t && !spawn && this.canOpen() ? this.hitDoor(w) : null
       door = d?.id ?? null
-      if ((t && this.canMove(t)) || d) cursor = 'pointer'
+      if ((t && this.canMove(t)) || spawn || d) cursor = 'pointer'
     } else if (tool === 'build-erase') {
       erasing = this.hitBuild(w)
     } else if (tool === 'draw-erase') {
@@ -813,18 +895,70 @@ export class MapEngine {
     return Math.abs(end.u - start.u) >= Math.abs(end.v - start.v) ? { ...end, v: start.v } : { ...end, u: start.u }
   }
 
+  /** Adds the segment from the open end of the line to `p`; the line goes on from its end. */
   private finishWall(p: Pin) {
     const start = this.wallStart
-    this.wallStart = null
     if (!start) return
     const end = this.constrain(start, p)
-    if (samePin(start, end)) return
+    const grid = this.opts.store.get().grid
+    // a second click on the same point (a double click) adds nothing
+    if (samePin(start, end) || dist(pinToImage(start, grid), pinToImage(end, grid)) * this.camera.scale < MIN_STEP) return
     const kind = this.tool() === 'barrier' ? 'barrier' : 'wall'
     this.opts.store.dispatch({ type: 'wall.add', wall: { id: newId(), kind, a: start, b: end } })
+    this.wallStart = end
+  }
+
+  /** A right click: ends the wall line if one is drawn, otherwise drops the tool. */
+  private rightClick() {
+    if (this.wallStart) {
+      this.wallStart = null
+      this.requestRender()
+    } else if (this.view.tool !== 'select') this.opts.onToolEnd?.()
+  }
+
+  /**
+   * The door of the door tool stretched from its first cell edge towards the pointer, along the
+   * same wall: whole cells with the grid, freely without it. It stops at the wall's ends and at
+   * other doors.
+   */
+  private doorSpan(first: NewDoor, w: Vec): NewDoor {
+    const scene = this.opts.store.get()
+    const wall = scene.walls.find((x) => x.id === first.wallId)
+    if (!wall) return first
+    const at = (p: Pin) => pinToImage(p, scene.grid)
+    const A = at(wall.a)
+    const B = at(wall.b)
+    if (dist(A, B) < 1) return first
+    const along = (p: Pin) => projectT(at(p), A, B)
+    const [lo0, hi0] = [along(first.a), along(first.b)].sort((x, y) => x - y)
+    const step = hi0 - lo0
+    if (step <= 0) return first
+    let min = 0
+    let max = 1
+    for (const d of scene.doors) {
+      if (d.wallId !== wall.id) continue
+      const [p1, p2] = [along(d.a), along(d.b)].sort((x, y) => x - y)
+      if (p2 <= lo0 + 1e-6) min = Math.max(min, p2)
+      else if (p1 >= hi0 - 1e-6) max = Math.min(max, p1)
+    }
+    const t = projectT(w, A, B)
+    let lo = lo0
+    let hi = hi0
+    const grid = scene.grid.enabled && first.a.space === 'grid'
+    if (grid) {
+      if (t > hi0) hi = hi0 + Math.min(Math.ceil((t - hi0) / step), Math.floor((max - hi0) / step + 1e-6)) * step
+      if (t < lo0) lo = lo0 - Math.min(Math.ceil((lo0 - t) / step), Math.floor((lo0 - min) / step + 1e-6)) * step
+    } else {
+      hi = Math.min(max, Math.max(hi0, t + step / 2))
+      lo = Math.max(min, Math.min(lo0, t - step / 2))
+    }
+    const point = (u: number) => ({ x: A.x + (B.x - A.x) * u, y: A.y + (B.y - A.y) * u })
+    const pin = (u: number): Pin => (grid ? nodePin(point(u), scene.grid) : imagePin(point(u)))
+    return { wallId: wall.id, a: pin(lo), b: pin(hi) }
   }
 
   /** The door that would be placed here: one cell edge lying on a wall or barrier. */
-  private doorAt(w: Vec): Omit<Door, 'id' | 'open'> | null {
+  private doorAt(w: Vec): NewDoor | null {
     const scene = this.opts.store.get()
     const { grid } = scene
     const c = cellPx(grid)
@@ -897,7 +1031,7 @@ export class MapEngine {
     const c = this.cell()
     const d = this.hitDoor(w)
     if (d) return d.id
-    if (scene.spawn && dist(pinToImage(scene.spawn, scene.grid), w) <= c * 0.35) return 'spawn'
+    if (scene.spawn && dist(pinToImage(scene.spawn, scene.grid), w) <= spawnRadius(c, this.camera.scale)) return 'spawn'
     const tol = Math.max(c / 8, 6 / this.camera.scale)
     for (const x of scene.walls) if (distToSegment(w, pinToImage(x.a, scene.grid), pinToImage(x.b, scene.grid)) <= tol) return x.id
     return null
@@ -942,10 +1076,26 @@ export class MapEngine {
     return rulesOf(scene, this.view.campaignRules)
   }
 
+  /** The spawn point under the pointer, when it can be selected and dragged: the master's, in the editor. */
+  private hitSpawn(w: Vec): boolean {
+    const scene = this.opts.store.get()
+    if (!scene.spawn || !this.view.editor || this.view.role !== 'master' || (this.view.look ?? 'master') !== 'master') return false
+    return dist(pinToImage(scene.spawn, scene.grid), w) <= spawnRadius(this.cell(), this.camera.scale)
+  }
+
+  /** Selecting a token drops the spawn point's selection, and the other way round. */
   private selectToken(id: string | null) {
+    this.selectSpawn(false)
     if (id === this.selected) return
     this.selected = id
     this.dirty.add('tokens')
     this.opts.onSelect?.(id)
+  }
+
+  private selectSpawn(on: boolean) {
+    if (on) this.selectToken(null)
+    if (this.spawnSelected === on) return
+    this.spawnSelected = on
+    this.requestRender()
   }
 }

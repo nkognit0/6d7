@@ -23,8 +23,12 @@ export function resolveCatalog(url: (tokenId: string) => string | undefined) {
   catalogUrl = url
 }
 
-/** The picture of a token: a catalog NPC's by its id (an address saved with it earlier is ignored), else `image`. */
+/**
+ * The picture of a token: the app's own file (a portrait, an NPC's own avatar), else a catalog
+ * NPC's by its id (an address of a catalog picture saved with it earlier is ignored), else `image`.
+ */
 export function tokenImage(t: Pick<Token, 'image' | 'token'>): string | undefined {
+  if (t.image && [...resolvers.keys()].some((prefix) => t.image!.startsWith(prefix))) return t.image
   return (t.token && catalogUrl(t.token)) || t.image
 }
 

@@ -1,15 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { CampaignSession, SavedNpc } from '../campaign'
+import { storePicture } from '../game/media/media'
 import { useStrings } from '../i18n'
 import { newId } from '../map'
 import { matches, npcToken, searchTokens, tokenTexts, type NpcToken } from '../npc/catalog'
+import { NpcPictureCard } from '../npc/NpcPictureCard'
 import {
-  Button, ConfirmDialog, Icon, IconButton, NavTab, NpcCard, RowField, RowTabs, RowTitle, SearchInput, SidebarSection, Textarea, TextInput
+  Button, ConfirmDialog, Icon, IconButton, NavTab, RowField, RowTabs, RowTitle, SearchInput, SidebarSection, SlotGrid, Textarea, TextInput
 } from '../ui'
 import { rarityText } from '../npc/catalog'
 import styles from './NpcTab.module.css'
 
 type Tab = 'catalog' | 'saved'
+
+/** Cards of the catalog: 130–150 px, stretched across the whole width (QnA, 14.11.2026). */
+const CARD_MIN = 130
+const CARD_MAX = 150
+/** Pictures the browser reads for an avatar. */
+const PICTURE_ACCEPT = 'image/png,image/jpeg,image/webp,image/avif,.png,.jpg,.jpeg,.webp,.avif'
 /** What the panel edits: a catalog token (a new NPC) or a saved NPC. */
 type Choice = { kind: 'token'; id: string } | { kind: 'saved'; id: string }
 
@@ -45,9 +53,9 @@ export function NpcTab({ session }: { session: CampaignSession }) {
   const savedNpc = chosen?.kind === 'saved' ? npcs.find((n) => n.id === chosen.id) : undefined
   const token = chosen ? npcToken(chosen.kind === 'token' ? chosen.id : (savedNpc?.token ?? '')) : undefined
 
-  const save = (name: string, description: string) => {
+  const save = (name: string, description: string, image: string | undefined) => {
     if (!token) return
-    const npc: SavedNpc = { id: savedNpc?.id ?? newId(), token: token.id, name: name.trim() || token.name, description }
+    const npc: SavedNpc = { id: savedNpc?.id ?? newId(), token: token.id, name: name.trim() || token.name, description, ...(image ? { image } : {}) }
     session.apply([{ doc: 'campaign', op: { type: 'npc.put', npc } }])
     // a new NPC shows where it went: «Сохранённые», chosen
     if (!savedNpc) {
@@ -62,8 +70,8 @@ export function NpcTab({ session }: { session: CampaignSession }) {
     session.apply([{ doc: 'campaign', op: { type: 'npc.remove', id: npc.id } }])
   }
 
-  const card = (key: string, c: NpcToken | undefined, name: string, note: string, selected: boolean, pick: () => void) => (
-    <NpcCard key={key} image={c?.url ?? ''} name={name} note={note} selected={selected} onClick={pick} />
+  const card = (key: string, image: string, name: string, note: string, selected: boolean, pick: () => void) => (
+    <NpcPictureCard key={key} className={styles.card} image={image} name={name} note={note} selected={selected} onClick={pick} />
   )
 
   return (
@@ -76,11 +84,11 @@ export function NpcTab({ session }: { session: CampaignSession }) {
           </RowTabs>
           <SearchInput className={styles.search} value={query} placeholder={s.common.search} title={t.searchHint} onChange={(e) => setQuery(e.target.value)} />
         </div>
-        <div className={styles.grid}>
+        <SlotGrid className={styles.grid} min={CARD_MIN} max={CARD_MAX}>
           {tab === 'catalog'
-            ? tokens.map((c) => card(c.id, c, c.name, rarityText(c.id), chosen?.id === c.id, () => setChoice({ kind: 'token', id: c.id })))
-            : saved.map((n) => card(n.id, npcToken(n.token), n.name, n.description.split('\n')[0] || rarityText(n.token), chosen?.id === n.id, () => setChoice({ kind: 'saved', id: n.id })))}
-        </div>
+            ? tokens.map((c) => card(c.id, c.url, c.name, rarityText(c.id), chosen?.id === c.id, () => setChoice({ kind: 'token', id: c.id })))
+            : saved.map((n) => card(n.id, n.image ?? npcToken(n.token)?.url ?? '', n.name, n.description.split('\n')[0] || rarityText(n.token), chosen?.id === n.id, () => setChoice({ kind: 'saved', id: n.id })))}
+        </SlotGrid>
         {!ids.length && <p className={styles.empty}>{tab === 'saved' && !npcs.length ? t.noSaved : s.common.nothingFound}</p>}
       </div>
 
@@ -94,6 +102,7 @@ export function NpcTab({ session }: { session: CampaignSession }) {
             token={token}
             name={savedNpc?.name ?? token.name}
             description={savedNpc ? savedNpc.description : rarityText(token.id)}
+            image={savedNpc?.image}
             onSave={save}
             onDelete={savedNpc && (() => setDeleting(savedNpc))}
           />
@@ -113,28 +122,62 @@ export function NpcTab({ session }: { session: CampaignSession }) {
   )
 }
 
-/** The panel of one NPC: the big card, «Имя», «Описание», «Сохранить» (and deleting a saved one). */
-function NpcForm({ token, name: initialName, description: initialDescription, onSave, onDelete }: {
+/**
+ * The panel of one NPC: the big card, «Имя», «Описание», «Сохранить» (and deleting a saved one).
+ * A click on the card loads the master's own avatar (QnA, 14.11.2026); like the fields, it is
+ * written by «Сохранить».
+ */
+function NpcForm({ token, name: initialName, description: initialDescription, image: initialImage, onSave, onDelete }: {
   token: NpcToken
   name: string
   description: string
-  onSave: (name: string, description: string) => void
+  /** the NPC's own avatar (`media:<hash>`) */
+  image?: string
+  onSave: (name: string, description: string, image: string | undefined) => void
   onDelete?: () => void
 }) {
   const s = useStrings()
   const t = s.editor.npc
   const [name, setName] = useState(initialName)
   const [description, setDescription] = useState(initialDescription)
+  const [image, setImage] = useState(initialImage)
+  const [error, setError] = useState(false)
+  const file = useRef<HTMLInputElement>(null)
+
+  // the picture is made small (512 px, WebP) and goes to the media store, like a portrait of a sheet
+  const upload = async (f: File) => {
+    setError(false)
+    try {
+      setImage(await storePicture(f))
+    } catch {
+      setError(true)
+    }
+  }
+
   return (
     <form
       className={styles.form}
       onSubmit={(e) => {
         e.preventDefault()
-        onSave(name, description)
+        onSave(name, description, image)
       }}
     >
       <SidebarSection className={styles.fields}>
-        <NpcCard layout="preview" image={token.url} name={name.trim() || token.name} note={description.split('\n')[0] || rarityText(token.id)} />
+        <button type="button" className={styles.avatar} title={t.uploadAvatar} aria-label={t.uploadAvatar} onClick={() => file.current?.click()}>
+          <NpcPictureCard layout="preview" image={image ?? token.url} name={name.trim() || token.name} note={description.split('\n')[0] || rarityText(token.id)} />
+        </button>
+        <input
+          ref={file}
+          type="file"
+          accept={PICTURE_ACCEPT}
+          hidden
+          onChange={(e) => {
+            const f = e.target.files?.[0]
+            e.target.value = ''
+            if (f) void upload(f)
+          }}
+        />
+        {error && <p className={styles.error}>{t.avatarError}</p>}
         <RowField label={t.name}>
           <TextInput value={name} onChange={(e) => setName(e.target.value)} />
         </RowField>

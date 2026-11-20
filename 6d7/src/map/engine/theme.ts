@@ -8,9 +8,11 @@ export type Paint = { color: number; alpha: number }
 export interface MapTheme {
   /** empty field around and under the map */
   canvas: Paint
+  /** the players' dark grid line around a dragged token */
   grid: Paint
-  /** the master's light grid line (blend mode 'screen') */
-  gridContrast: Paint
+  /** the master's grid line over dark places of the map (white) and over light ones (black) */
+  gridLight: Paint
+  gridDark: Paint
   wall: Paint
   wallOutline: Paint
   barrier: Paint
@@ -23,8 +25,11 @@ export interface MapTheme {
   spawnRing: Paint
   /** CSS color of the spawn icon */
   spawnIcon: string
-  /** neutral marks of the tools: the fog brush circle */
+  /** the spawn point when the map is zoomed out: solid bright blue */
+  spawnSolid: Paint
+  /** the fog brush circle: a white line with a black one outside, seen on any map */
   cursor: Paint
+  cursorShadow: Paint
   fog: Paint
   /** fog in darkness */
   fogDark: Paint
@@ -48,7 +53,8 @@ export function readTheme(el: Element = document.documentElement): MapTheme {
   return {
     canvas: paint('--bg-secondary'),
     grid: paint('--outline-primary'),
-    gridContrast: paint('--txt-primary'),
+    gridLight: paint('--txt-button'),
+    gridDark: paint('--icon-button'),
     wall: paint('--outline-danger'),
     wallOutline: paint('--bg-secondary'),
     barrier: paint('--outline-brand'),
@@ -59,7 +65,9 @@ export function readTheme(el: Element = document.documentElement): MapTheme {
     spawnFill: paint('--bg-info'),
     spawnRing: paint('--outline-brand'),
     spawnIcon: css('--icon-info'),
-    cursor: paint('--txt-primary'),
+    spawnSolid: paint('--outline-brand'),
+    cursor: paint('--txt-button'),
+    cursorShadow: paint('--icon-button'),
     fog: paint('--bg-primary'),
     fogDark: paint('--bg-secondary'),
     selection: paint('--outline-brand'),

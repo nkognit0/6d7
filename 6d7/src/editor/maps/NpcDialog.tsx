@@ -49,8 +49,10 @@ export function NpcDialog({ session, mapId, token, at, onClose }: {
   const save = () => {
     const id = token.saved ?? newId()
     const clean = name.trim() || token.name
+    // the NPC's own avatar stays: the window on the map does not change it (it is changed on the «NPC» tab)
+    const image = saved ? saved.image : token.image?.startsWith('media:') ? token.image : undefined
     session.apply([
-      { doc: 'campaign', op: { type: 'npc.put', npc: { id, token: token.token ?? '', name: clean, description } } },
+      { doc: 'campaign', op: { type: 'npc.put', npc: { id, token: token.token ?? '', name: clean, description, ...(image ? { image } : {}) } } },
       { doc: mapKey(mapId), op: { type: 'token.update', id: token.id, patch: { name: clean, saved: id } } }
     ])
     onClose()

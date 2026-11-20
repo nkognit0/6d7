@@ -97,7 +97,7 @@ export function PlayerField({ player, seat, onChange, settings, map, onRoll, own
   return (
     <div className={styles.field}>
       {map ? (
-        <MapView store={map.store} tiles={map.tiles} view={view} explored={map.explored} onEngine={(e) => (engine.current = e)} />
+        <MapView store={map.store} tiles={map.tiles} view={view} explored={map.explored} onEngine={(e) => (engine.current = e)} onToolEnd={() => setTool('select')} />
       ) : (
         <p className={styles.preparing}>{s.player.noMap}</p>
       )}

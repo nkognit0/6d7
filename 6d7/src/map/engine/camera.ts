@@ -5,6 +5,10 @@
 export const CELL_AT_100 = 128
 /** On touch screens zooming goes at least this far, even past the picture's own pixels. */
 export const MIN_TOUCH_CELL = 64
+/** Zooming in always reaches 200% of the picture's pixels (QnA, 14.11.2026). */
+export const MAX_PICTURE_SCALE = 2
+/** Zoomed out, the whole picture fits the field with this gap on every side (QnA, 14.11.2026). */
+export const FIT_GAP = 48
 /** How far the map may be dragged past its edge, to uncover what the interface hides. */
 const OVERSCROLL = 240
 const OVERSCROLL_SHARE = 0.3
@@ -40,14 +44,19 @@ export class Camera {
   }
 
   /**
-   * Zoom range: out until the whole map fits, in until one picture pixel is one screen pixel
-   * (on touch screens at least a 64 px cell). Without a picture: 25–200%.
+   * Zoom range: out until the whole picture fits the field with a 48 px gap on every side, in
+   * up to 200% of the picture's pixels (on touch screens at least a 64 px cell). The same in the
+   * editor and in the game. Without a picture: 25–200%.
    */
   limits(b: CameraBounds) {
     if (!b.image) return { min: this.scaleForPercent(25, b.cell), max: this.scaleForPercent(200, b.cell) }
-    let max = 1 / b.dpr
+    let max = MAX_PICTURE_SCALE
     if (b.touch) max = Math.max(max, MIN_TOUCH_CELL / b.cell)
-    const fit = b.view.w > 0 && b.view.h > 0 ? Math.min(b.view.w / b.image.width, b.view.h / b.image.height) : max
+    const w = b.view.w - 2 * FIT_GAP
+    const h = b.view.h - 2 * FIT_GAP
+    // a field smaller than the gaps: the picture just fits it
+    const fit = w > 0 && h > 0 ? Math.min(w / b.image.width, h / b.image.height)
+      : b.view.w > 0 && b.view.h > 0 ? Math.min(b.view.w / b.image.width, b.view.h / b.image.height) : max
     return { min: Math.min(fit, max), max }
   }
 

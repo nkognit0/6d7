@@ -137,6 +137,40 @@
   flex-shrink: 0;
 }
 
+/* a card with a picture above its row: the maps of the editor (not in the mockup) */
+.cardPicture {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  height: auto;
+  padding: var(--spacer-xs);
+}
+
+.picture {
+  display: block;
+  aspect-ratio: 5 / 2;
+  border-radius: var(--radius-small);
+  background: var(--bg-tertiary);
+  overflow: hidden;
+}
+
+.picture > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* the row under the picture: the text 8 px from the edge of the card, as in a plain row */
+.cardRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacer-m);
+  min-width: 0;
+  height: var(--control-height);
+  padding-left: var(--spacer-xs);
+}
+
 /* row-nav-assets (329:879) */
 .tabs {
   position: relative;

@@ -60,7 +60,7 @@
 | TopPanel, BottomNavigation | `100:3404`, `100:3004` | `components/Bars` |
 | ModeSwitch — переключатель режимов редактора («Редактирование», «Глазами игрока»): кнопки на подложке bg/tertiary, выбранная — на icon/button с тенью | top-panel / mode-switch (6d7 `6:422`) | `components/ModeSwitch` |
 | SidebarSection, SidebarTitle, RowTitle | `887:4304`, `887:4452`, `32:2409` | `components/Sidebar` |
-| RowSubtitle, RowField (line, dropdown, multiline), RowSwitch, RowCard, RowTabs | `32:2770`, `32:3139`, `32:3950`, `32:3870`, `38:247`, `89:1647`, `329:879` | `components/Rows` |
+| RowSubtitle, RowField (line, dropdown, multiline), RowSwitch, RowCard (`picture` — картинка над строкой, для списка карт редактора; не из макета), RowTabs | `32:2770`, `32:3139`, `32:3950`, `32:3870`, `38:247`, `89:1647`, `329:879` | `components/Rows` |
 | ScrollArea; скроллбар всего приложения (12 px, ползунок bg/scroll, без дорожки и стрелок) | scroll-bar `1:1382`, 6d7 `14:1470` | `components/ScrollArea`, `ui/scrollbar.css` |
 | Divider, Modal | `24:1305`; modal/dice `34:7794` | `components/Modal` |
 
@@ -71,10 +71,10 @@
 | GameMenuButton — кнопка навигации 58 px | menu `28:434` | `components/Game` |
 | Plate — плашки кластеров кнопок; линия outline/primary со всех сторон, кроме краёв экрана из `edge` (одна сторона или две — угол) | `43:7044`, `41:5994`; обводки `61:4259`, `61:3985`, `61:4464` | `components/Game` |
 | Slider, NumberField (X, Y, размер сетки; значение меняется перетаскиванием подписи, как в Figma: `scrub` x/y, `step`, `min`/`max`) | `9:686`, `9:749` | `components/Slider` |
-| InventorySlot (рамки `equipped`, `attuned`; `selected` — заливка bg/info), SlotGrid (квадратные клетки 80–100 px на всю ширину, число колонок — `slotColumns`) | `33:6735` | `components/InventorySlot` |
+| InventorySlot (рамки `equipped`, `attuned`; `selected` — заливка bg/info), SlotGrid (клетки 80–100 px на всю ширину, число колонок — `slotColumns`; пределы `min`/`max` меняются — карточки вкладки NPC 130–150 px) | `33:6735` | `components/InventorySlot` |
 | NpcCard: grid, list, preview (имя и подпись — в одну строку с многоточием) | `14:1451`, `13:1179`, `40:3918` | `components/Cards` |
 | CampaignCard (название — текст или поле InlineEdit; принимает обработчики, например правый щелчок) | `17:1630` | `components/Cards` |
-| PlayerRow, InviteCode (строка 45 px: линия под строкой — под отступом 8 px) | `14:1568`, `14:1569` | `components/Game` |
+| PlayerRow, InviteCode (строка 45 px: линия под строкой — под отступом 8 px; код подчёркивается при наведении, по нажатию — тултип «Скопировано» на `bg/tooltip`, 1,5 с) | `14:1568`, `14:1569` | `components/Game` |
 | SettingRow (строка 63 px, линия — под отступом) | `41:4128` | `components/Game` |
 | CoinValue | `34:6919` | `components/Game` |
 | SpellSlotRow | `34:7386` | `components/Game` |

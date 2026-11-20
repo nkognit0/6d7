@@ -1,4 +1,11 @@
 /* 6d7 / editor / players: invite code (14:1569) */
+.wrap {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
+}
+
 .code {
   font: var(--font-body);
   max-width: 100%;
@@ -13,7 +20,27 @@
   cursor: pointer;
 }
 
+/* under the pointer the code reads as a link (QnA, 14.11.2026) */
+.code:hover,
+.code[data-state='hover'],
 .code:focus-visible {
   outline: none;
   text-decoration: underline;
+}
+
+/* «Скопировано» above the code */
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + var(--spacer-xs));
+  left: 50%;
+  z-index: 10;
+  transform: translateX(-50%);
+  padding: var(--spacer-xs) var(--spacer-m);
+  border-radius: var(--radius-small);
+  background: var(--bg-tooltip);
+  box-shadow: var(--elevation-context);
+  font: var(--font-caption);
+  color: var(--bg-secondary);
+  white-space: nowrap;
+  pointer-events: none;
 }

@@ -159,6 +159,7 @@ function Master({ session, onRestart }: { session: CampaignSession; onRestart: (
           onBack={active ? () => setPreview(null) : undefined}
           onRoll={(entry) => setLog((l) => [...l, entry])}
           onEngine={setEngine}
+          onToolEnd={() => setTool('select')}
           explored={explored}
         />
         <MasterTools session={session} mapId={previewing ? null : active} tool={tool} onTool={setTool} brush={brush} onBrush={setBrush} log={log} />

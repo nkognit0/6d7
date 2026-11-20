@@ -80,7 +80,8 @@ export class FogLayer {
       g.scale.set(this.s)
       g.position.set(-this.rect.x * this.s, -this.rect.y * this.s)
     }
-    this.blur.strength = Math.max(2, (cell * this.s) / 4)
+    // soft edges: an eighth of a cell (a quarter before 14.11.2026 — the user asked for half as soft)
+    this.blur.strength = Math.max(1, (cell * this.s) / 8)
     for (const rt of [this.fogRT, this.composeRT, this.softRT]) this.clearRT(renderer, rt)
   }
 

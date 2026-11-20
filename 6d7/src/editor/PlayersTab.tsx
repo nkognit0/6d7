@@ -67,7 +67,7 @@ export function PlayersTab({ session }: { session: CampaignSession }) {
                 onChange={(e) => session.apply([{ doc: 'campaign', op: { type: 'player.update', id: p.id, patch: { name: e.target.value } } }])}
               />
             }
-            code={codes[p.id] && <InviteCode code={codes[p.id]} />}
+            code={codes[p.id] && <InviteCode code={codes[p.id]} title={s.common.copyCode} copied={s.common.copied} />}
             action={<IconButton label={t.removePlayer} icon={<Icon name="minus" />} onClick={() => setRemoving(p)} />}
           />
         ))}

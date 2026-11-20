@@ -138,8 +138,12 @@ export function GameKit() {
         <Row label="игрок">
           <div style={{ width: 560 }}>
             <PlayerRow avatar={<Avatar name="Макар" color="green" />} name={<TextInput defaultValue="Макар" placeholder="Введите имя игрока…" />}
-              code={<InviteCode code="K7Q-2MX-9D4" />} action={<IconButton label="Удалить игрока" icon={<Icon name="minus" />} />} />
+              code={<InviteCode code="K7Q-2MX-9D4" title="Скопировать код" copied="Скопировано" />} action={<IconButton label="Удалить игрока" icon={<Icon name="minus" />} />} />
           </div>
+        </Row>
+        <Row label="код: наведение, скопирован">
+          <InviteCode code="K7Q-2MX-9D4" title="Скопировать код" copied="Скопировано" previewState="hover" />
+          <span style={{ paddingTop: 32 }}><InviteCode code="K7Q-2MX-9D4" title="Скопировать код" copied="Скопировано" previewState="copied" /></span>
         </Row>
         <Row label="настройка">
           <div style={{ width: 480 }}>

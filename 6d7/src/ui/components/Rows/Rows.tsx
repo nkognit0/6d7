@@ -44,25 +44,40 @@ export function RowField({ label, layout = 'inline', inactive, htmlFor, children
  * Figma: Sidebar rows / row-card (89:1647): a selectable list row (maps of the campaign) with
  * icon buttons on the right.
  */
-export function RowCard({ children, selected, status, inactive, actions, previewState, className, ...rest }: HTMLAttributes<HTMLDivElement> & {
+export function RowCard({ children, selected, status, inactive, actions, picture, previewState, className, ...rest }: HTMLAttributes<HTMLDivElement> & {
   selected?: boolean
   status?: 'alert' | 'error'
   inactive?: boolean
   actions?: ReactNode
+  /**
+   * A picture above the row (the maps of the editor, QnA 14.11.2026): an address, or null for a
+   * dark placeholder; without the prop the card is a plain row. Not in the mockup.
+   */
+  picture?: string | null
   previewState?: Extract<PreviewState, 'hover' | 'focus'>
 }) {
+  const row = (
+    <>
+      <span className={styles.text}>{children}</span>
+      {actions && <span className={styles.cardActions} onClick={(e) => e.stopPropagation()}>{actions}</span>}
+    </>
+  )
   return (
     <div
       role="option"
       aria-selected={!!selected}
       aria-disabled={inactive || undefined}
       tabIndex={inactive ? -1 : 0}
-      className={cx(styles.card, status && styles[status], inactive && styles.cardInactive, className)}
+      className={cx(styles.card, picture !== undefined && styles.cardPicture, status && styles[status], inactive && styles.cardInactive, className)}
       {...stateAttr(previewState)}
       {...rest}
     >
-      <span className={styles.text}>{children}</span>
-      {actions && <span className={styles.cardActions} onClick={(e) => e.stopPropagation()}>{actions}</span>}
+      {picture === undefined ? row : (
+        <>
+          <span className={styles.picture}>{picture && <img src={picture} alt="" draggable={false} />}</span>
+          <span className={styles.cardRow}>{row}</span>
+        </>
+      )}
     </div>
   )
 }

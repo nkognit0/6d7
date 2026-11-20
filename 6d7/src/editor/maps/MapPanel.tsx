@@ -7,8 +7,9 @@ import {
   type MapScene, type MapTool, type Token, type ZoomInfo
 } from '../../map'
 import { npcCards } from '../../npc/catalog'
+import { NpcPictureCard } from '../../npc/NpcPictureCard'
 import {
-  Button, cx, Icon, IconButton, NpcCard, NumberField, RowSubtitle, RowSwitch, SearchInput, SidebarSection, SidebarTitle, Slider
+  Button, cx, Icon, IconButton, NumberField, RowSubtitle, RowSwitch, SearchInput, SidebarSection, SidebarTitle, Slider
 } from '../../ui'
 import styles from './Maps.module.css'
 
@@ -192,7 +193,7 @@ export function MapPanel({ session, scene, dispatch, engine, zoom, tool, onTool,
               <SearchInput value={query} placeholder={s.common.search} onChange={(e) => setQuery(e.target.value)} />
               <div className={styles.npcList}>
                 {npcs.map((n) => (
-                  <NpcCard key={n.key} layout="list" image={n.image} name={n.name} note={n.note} className={styles.dragCard} onPointerDown={dragIn(n.token)} />
+                  <NpcPictureCard key={n.key} layout="list" image={n.image} name={n.name} note={n.note} className={styles.dragCard} onPointerDown={dragIn(n.token)} />
                 ))}
                 {!npcs.length && <p className={styles.note}>{!catalog && !query && !session.campaign.npcs.length ? t.noNpc : s.common.nothingFound}</p>}
               </div>
@@ -202,7 +203,7 @@ export function MapPanel({ session, scene, dispatch, engine, zoom, tool, onTool,
       </div>
 
       <SidebarSection className={styles.save}>
-        <Button stretch disabled={session.saved} onClick={() => void session.save()}>{s.common.save}</Button>
+        <Button stretch disabled={session.saved} onClick={() => void session.save()}>{session.saved ? s.common.saved : s.common.save}</Button>
       </SidebarSection>
     </aside>
   )

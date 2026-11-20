@@ -96,6 +96,9 @@ export class TokenLayer {
       return text
     }
     const image = tokenImage(t)
+    // the catalog's tokens are round pictures already; a picture of the user's own (a portrait, an
+    // NPC's own avatar) is cut into a circle
+    const round = !!ring || (!!image && image === t.image)
     if (image) {
       const inner = ring ? r - c * RING : r
       loadTexture(image).then(
@@ -104,7 +107,7 @@ export class TokenLayer {
           const sprite = new Sprite(tex)
           sprite.anchor.set(0.5)
           sprite.width = sprite.height = inner * 2
-          if (ring) {
+          if (round) {
             const mask = new Graphics().circle(0, 0, inner).fill(0xffffff)
             root.addChild(mask)
             sprite.mask = mask

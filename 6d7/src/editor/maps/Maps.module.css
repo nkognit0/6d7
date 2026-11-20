@@ -161,6 +161,11 @@
   scrollbar-gutter: stable;
 }
 
+/* 216 px like the rest of the panel, with or without a scrollbar taking its place (QnA, 14.11.2026) */
+.npcList > .dragCard {
+  width: 216px;
+}
+
 .dragCard {
   flex-shrink: 0;
   cursor: grab;

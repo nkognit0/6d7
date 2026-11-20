@@ -13,7 +13,7 @@ import type { ExploredKeeper } from './explored'
 import type { Notice } from './MasterGame'
 import styles from './Master.module.css'
 
-export function MasterField({ session, mapId, preview, tool, brush, notice, onNotice, onBack, onRoll, onEngine, explored }: {
+export function MasterField({ session, mapId, preview, tool, brush, notice, onNotice, onBack, onRoll, onEngine, onToolEnd, explored }: {
   session: CampaignSession
   /** the map on the field; null — none chosen yet */
   mapId: string | null
@@ -28,6 +28,8 @@ export function MasterField({ session, mapId, preview, tool, brush, notice, onNo
   onRoll: (entry: RollEntry) => void
   /** the engine of the map of the game (not of a map being looked at) */
   onEngine: (engine: MapEngine | null) => void
+  /** a right click with a tool drops it */
+  onToolEnd: () => void
   /** keeps what players have seen on the map of the game */
   explored: ExploredKeeper
 }) {
@@ -58,10 +60,10 @@ export function MasterField({ session, mapId, preview, tool, brush, notice, onNo
       </div>
     )
   }
-  return <Field session={session} mapId={mapId} store={store} preview={preview} tool={tool} brush={brush} bar={bar} onRoll={onRoll} onEngine={onEngine} keeper={explored} />
+  return <Field session={session} mapId={mapId} store={store} preview={preview} tool={tool} brush={brush} bar={bar} onRoll={onRoll} onEngine={onEngine} onToolEnd={onToolEnd} keeper={explored} />
 }
 
-function Field({ session, mapId, store, preview, tool, brush, bar, onRoll, onEngine, keeper }: {
+function Field({ session, mapId, store, preview, tool, brush, bar, onRoll, onEngine, onToolEnd, keeper }: {
   session: CampaignSession
   mapId: string
   store: MapStore
@@ -71,6 +73,7 @@ function Field({ session, mapId, store, preview, tool, brush, bar, onRoll, onEng
   bar: React.ReactNode
   onRoll: (entry: RollEntry) => void
   onEngine: (engine: MapEngine | null) => void
+  onToolEnd: () => void
   keeper: ExploredKeeper
 }) {
   const s = useStrings()
@@ -129,7 +132,7 @@ function Field({ session, mapId, store, preview, tool, brush, bar, onRoll, onEng
   return (
     <div className={styles.stage}>
       {scene.image ? (
-        <MapView store={store} tiles={repo.tiles} view={view} explored={explored} onSelect={setSelected}
+        <MapView store={store} tiles={repo.tiles} view={view} explored={explored} onSelect={setSelected} onToolEnd={onToolEnd}
           onEngine={(e) => {
             engine.current = e
             if (!preview) onEngine(e)

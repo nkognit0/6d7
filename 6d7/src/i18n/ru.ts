@@ -4,6 +4,8 @@
 export const ru = {
   common: {
     save: 'Сохранить',
+    /** the save button when there is nothing to save */
+    saved: 'Сохранено',
     cancel: 'Отмена',
     close: 'Закрыть',
     delete: 'Удалить',
@@ -128,7 +130,7 @@ export const ru = {
       removeFromMap: 'Убрать с карты',
       npcName: 'Имя',
       npcDescription: 'Описание',
-      noNpc: 'Ничего не найдено. Сохранённые NPC появятся здесь после «Сохранить» в окне NPC на карте.'
+      noNpc: 'Включите каталог или создайте свои токены в разделе «NPC».'
     },
     npc: {
       catalog: 'Каталог',
@@ -139,6 +141,8 @@ export const ru = {
       description: 'Описание',
       searchHint: 'Раса, редкость или имя — на русском или английском',
       deleteNpc: 'Удалить NPC',
+      uploadAvatar: 'Загрузить свой аватар',
+      avatarError: 'Не удалось прочитать картинку. Подойдут PNG, JPEG, WebP и AVIF.',
       deleteConfirm: (name: string) => `Удалить NPC «${name}»? Те, что уже стоят на картах, останутся.`,
       noSaved: 'Сохранённых NPC пока нет. Выберите NPC в каталоге и нажмите «Сохранить».'
     },

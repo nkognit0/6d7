@@ -58,7 +58,7 @@ function MapEditor({ session, mapId, store, mode }: { session: CampaignSession; 
 
   const settings = session.campaign.settings
   const view = useMemo<MapViewState>(
-    () => ({ role: 'master', look: mode === 'player' ? 'player' : 'master', playerId: 'master', drawColor: 'master', tool, brush, campaignRules: settings }),
+    () => ({ role: 'master', look: mode === 'player' ? 'player' : 'master', playerId: 'master', drawColor: 'master', tool, brush, campaignRules: settings, editor: true }),
     [mode, tool, brush, settings]
   )
   // map edits go through the store: the campaign saves and records them
@@ -88,7 +88,7 @@ function MapEditor({ session, mapId, store, mode }: { session: CampaignSession; 
           // a click on an NPC opens its window; a drag only moves it
           const d = down.current
           down.current = null
-          if (!d || Math.hypot(e.clientX - d.x, e.clientY - d.y) >= TAP || tool !== 'select') return
+          if (!d || e.button !== 0 || Math.hypot(e.clientX - d.x, e.clientY - d.y) >= TAP || tool !== 'select') return
           const t = store.get().tokens.find((x) => x.id === chosen.current)
           if (t?.kind === 'npc') setDialog({ id: t.id, x: e.clientX, y: e.clientY })
         }}
@@ -99,6 +99,7 @@ function MapEditor({ session, mapId, store, mode }: { session: CampaignSession; 
           view={view}
           onEngine={setEngine}
           onZoom={setZoom}
+          onToolEnd={() => setTool('select')}
           onSelect={(id) => {
             chosen.current = id
             setSelected(id)

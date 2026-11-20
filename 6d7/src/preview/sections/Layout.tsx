@@ -11,6 +11,10 @@ const MODES = [
   { value: 'player' as const, label: 'Глазами игрока', icon: <Icon name="play" /> }
 ]
 const MAPS = ['Название локации 1', 'Название локации 2', 'Название локации 3', 'Название локации 4']
+/** a stand-in for the picture of a map */
+const MAP_PICTURE = `data:image/svg+xml;utf8,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="80"><rect width="200" height="80" fill="#4a5a3c"/><circle cx="140" cy="40" r="28" fill="#7a9cc6"/><rect x="20" y="20" width="60" height="40" fill="#b8a77a"/></svg>'
+)}`
 
 export function Layout() {
   const [page, setPage] = useState<string>('Карты')
@@ -158,6 +162,15 @@ export function Layout() {
           <Cell caption="alert" width={216}><RowCard status="alert">Название локации</RowCard></Cell>
           <Cell caption="error" width={216}><RowCard status="error">Название локации</RowCard></Cell>
           <Cell caption="неактивное" width={216}><RowCard inactive>Название локации</RowCard></Cell>
+          <Cell caption="с картинкой" width={216}>
+            <RowCard picture={MAP_PICTURE} actions={<IconButton label="Действия с картой" icon={<Icon name="more.three.dots" />} />}>Название локации</RowCard>
+          </Cell>
+          <Cell caption="с картинкой, выбрана" width={216}>
+            <RowCard picture={MAP_PICTURE} selected actions={<IconButton label="Действия с картой" icon={<Icon name="more.three.dots" />} />}>Название локации</RowCard>
+          </Cell>
+          <Cell caption="без картинки" width={216}>
+            <RowCard picture={null} previewState="hover" actions={<IconButton label="Действия с картой" icon={<Icon name="more.three.dots" />} />}>Название локации</RowCard>
+          </Cell>
         </Row>
       </Section>
 
