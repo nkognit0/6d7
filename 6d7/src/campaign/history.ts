@@ -1,9 +1,9 @@
 import type { Change } from './types'
 
 /** One step of «Отменить / Повторить»: the changes made and the changes that take them back. */
-export interface HistoryStep {
-  forward: Change[]
-  backward: Change[]
+export interface HistoryStep<C = Change> {
+  forward: C[]
+  backward: C[]
 }
 
 /** Edits of the same thing within this time make one step (dragging a grid field, typing a name). */
@@ -11,16 +11,17 @@ export const MERGE_MS = 1000
 const LIMIT = 200
 
 /**
- * The history of the open editor (not saved: it lives while the campaign is open). Steps are
+ * The history of the open editor (not saved: it lives while the campaign is open) or of a screen
+ * of the game (a sheet, an inventory: it lives while the screen is open). Steps are
  * undone in order, last first, so the stored opposites stay valid.
  */
-export class History {
-  private done: HistoryStep[] = []
-  private undone: HistoryStep[] = []
+export class History<C = Change> {
+  private done: HistoryStep<C>[] = []
+  private undone: HistoryStep<C>[] = []
   private last: { key: string; at: number } | null = null
 
   /** `key` — what the step edits; a step with the same key soon after the last one joins it. */
-  record(forward: Change[], backward: Change[], key: string | null = null, now = Date.now()) {
+  record(forward: C[], backward: C[], key: string | null = null, now = Date.now()) {
     if (!forward.length) return
     this.undone = []
     const top = this.done[this.done.length - 1]
@@ -43,14 +44,14 @@ export class History {
   }
 
   /** The step to take back; it moves to the redo list. */
-  takeUndo(): HistoryStep | null {
+  takeUndo(): HistoryStep<C> | null {
     const step = this.done.pop() ?? null
     if (step) this.undone.push(step)
     this.last = null
     return step
   }
 
-  takeRedo(): HistoryStep | null {
+  takeRedo(): HistoryStep<C> | null {
     const step = this.undone.pop() ?? null
     if (step) this.done.push(step)
     this.last = null

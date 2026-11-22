@@ -25,9 +25,9 @@ void main() {
 // antialiased. It fades out when cells get too small to read (no moire when the whole map is in
 // view). Away from the spotlight the grid has the opacity uBase (1: the whole grid, 0: only the
 // spotlight); around the spotlight it shows fully and fades out towards its edge.
-// The master's line takes its color from the map under it (QnA, 14.11.2026): white where the
-// pixel is dark (lightness L* below 50), black where it is light. The map is read from uTiles —
-// the picture as it is on screen now.
+// The line takes its color from the map under it (QnA, 14.11.2026) — the master's grid and the
+// players' grid around a dragged token alike: white where the pixel is dark (lightness L* below 50),
+// black where it is light. The map is read from uTiles — the picture as it is on screen now.
 const fragment = `
 in vec2 vScreen;
 in vec2 vView;
@@ -37,10 +37,7 @@ uniform float uScale;
 uniform vec2 uOrigin;
 uniform float uCell;
 uniform float uDpr;
-// not uColor: Pixi binds its own uColor (the mesh tint) under that name
-uniform vec4 uLineColor;
-// 1: the color by the map under the line (uLight on dark, uDark on light), 0: uLineColor
-uniform float uAdaptive;
+// the line over dark places and over light ones (not uColor: Pixi binds its own uColor)
 uniform vec4 uLight;
 uniform vec4 uDark;
 // the empty field where the picture does not cover the screen
@@ -70,21 +67,16 @@ void main() {
   if (uSpot.z > 0.0) k = max(k, 1.0 - smoothstep(uSpot.z * 0.35, uSpot.z, distance(world, uSpot.xy)));
   a *= k;
   if (uBounds.z >= uBounds.x && (world.x < uBounds.x || world.y < uBounds.y || world.x > uBounds.z || world.y > uBounds.w)) a = 0.0;
-  vec4 line = uLineColor;
-  if (uAdaptive > 0.5) {
-    // the tiles are premultiplied: what they do not cover is the empty field
-    vec4 t = texture(uTiles, vView);
-    line = lightness(t.rgb + (1.0 - t.a) * uBackground) < 50.0 ? uLight : uDark;
-  }
+  // the tiles are premultiplied: what they do not cover is the empty field
+  vec4 t = texture(uTiles, vView);
+  vec4 line = lightness(t.rgb + (1.0 - t.a) * uBackground) < 50.0 ? uLight : uDark;
   finalColor = line * a;
 }
 `
 
 /** Colors of the grid (QnA, «Кто видит сетку?»). */
 export interface GridLook {
-  /** the players' dark line around a dragged token */
-  paint: Paint
-  /** the master's line over dark and light places of the map */
+  /** the line over dark and light places of the map */
   light: Paint
   dark: Paint
   /** the empty field around the picture */
@@ -98,14 +90,10 @@ export interface GridShow {
   spot: { x: number; y: number } | null
   /** radius of the spotlight in image pixels */
   spotRadius: number
-  /** the master's line: its color follows the map under it */
-  adaptive: boolean
 }
 
-/** The players' grid is half transparent. */
-const OPACITY = 0.5
-/** The master's grid: white or black at 30% (QnA, 14.11.2026). */
-const ADAPTIVE_OPACITY = 0.3
+/** White or black at 30% (QnA, 14.11.2026). */
+const OPACITY = 0.3
 /** Radius of the spotlight around a dragged token, in cells. */
 export const SPOT_CELLS = 4
 
@@ -136,8 +124,6 @@ export class GridLayer {
           uOrigin: { value: new Float32Array([0, 0]), type: 'vec2<f32>' },
           uCell: { value: 100, type: 'f32' },
           uDpr: { value: 1, type: 'f32' },
-          uLineColor: { value: new Float32Array([1, 1, 1, 1]), type: 'vec4<f32>' },
-          uAdaptive: { value: 0, type: 'f32' },
           uLight: { value: new Float32Array([1, 1, 1, 1]), type: 'vec4<f32>' },
           uDark: { value: new Float32Array([0, 0, 0, 1]), type: 'vec4<f32>' },
           uBackground: { value: new Float32Array([0, 0, 0]), type: 'vec3<f32>' },
@@ -164,8 +150,8 @@ export class GridLayer {
     bounds: { width: number; height: number } | null, show: GridShow, look: GridLook
   ) {
     const u = this.uniforms as {
-      uSize: Float32Array; uCamera: Float32Array; uScale: number; uOrigin: Float32Array; uCell: number; uDpr: number; uLineColor: Float32Array
-      uAdaptive: number; uLight: Float32Array; uDark: Float32Array; uBackground: Float32Array; uBounds: Float32Array; uBase: number; uSpot: Float32Array
+      uSize: Float32Array; uCamera: Float32Array; uScale: number; uOrigin: Float32Array; uCell: number; uDpr: number
+      uLight: Float32Array; uDark: Float32Array; uBackground: Float32Array; uBounds: Float32Array; uBase: number; uSpot: Float32Array
     }
     this.mesh.scale.set(viewW, viewH)
 
@@ -180,10 +166,8 @@ export class GridLayer {
     u.uOrigin[1] = origin.y
     u.uCell = cell
     u.uDpr = dpr
-    u.uAdaptive = show.adaptive ? 1 : 0
-    u.uLineColor.set(premultiplied(look.paint, OPACITY))
-    u.uLight.set(premultiplied(look.light, ADAPTIVE_OPACITY))
-    u.uDark.set(premultiplied(look.dark, ADAPTIVE_OPACITY))
+    u.uLight.set(premultiplied(look.light, OPACITY))
+    u.uDark.set(premultiplied(look.dark, OPACITY))
     const bg = premultiplied(look.background, 1)
     u.uBackground.set([bg[0], bg[1], bg[2]])
     u.uBounds.set(bounds ? [0, 0, bounds.width, bounds.height] : [0, 0, -1, -1])

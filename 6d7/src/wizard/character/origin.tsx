@@ -51,7 +51,7 @@ export function BackgroundStep({ s, d, set }: StepProps) {
         onChange={(v) => set('background', { backgroundId: v, toolChoice: [] })} describe="background" />
       {bg && (
         <div className={styles.grid2}>
-          <Fixed label={t.bgAbilities} value={bg.ability_scores.map(abilityName)} description={t.bgAbilitiesHint} />
+          <Fixed label={t.bgAbilities} value={bg.ability_scores.map(abilityName)} />
           <Fixed label={t.originFeat} value={featName} />
           <Fixed label={t.skills} value={bg.skill_proficiencies.map(skillName)} />
           {bg.tool_proficiencies.fixed.length > 0 && <Fixed label={t.tool} value={bg.tool_proficiencies.fixed.map((id) => nameOf(byId.item[id]))} />}

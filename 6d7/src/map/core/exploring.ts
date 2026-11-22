@@ -4,6 +4,7 @@
 import type { ExploredMask } from './explored'
 import { cellPx, distToPolyline, pinToImage } from './geometry'
 import { rulesOf } from './scene'
+import { tokenCenter } from './tokens'
 import type { MapStore } from './store'
 import type { Door, FogStroke, MapScene, RuleOverrides, Vec } from './types'
 import { sightBlockers, visibilityPolygon, visionRadius } from './visibility'
@@ -25,7 +26,7 @@ export function playerSight(scene: MapScene): number[][] {
   const polys: number[][] = []
   for (const t of scene.tokens) {
     if (t.kind !== 'player') continue
-    const p = pinToImage(t.pin, scene.grid)
+    const p = tokenCenter(t, scene.grid)
     const poly = visibilityPolygon(p.x, p.y, blockers, visionRadius(t, scene), bounds)
     if (poly.length >= 6) polys.push(poly)
   }

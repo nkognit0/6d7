@@ -5,6 +5,7 @@ import { useStrings } from '../i18n'
 import { newId } from '../map'
 import { matches, npcToken, searchTokens, tokenTexts, type NpcToken } from '../npc/catalog'
 import { NpcPictureCard } from '../npc/NpcPictureCard'
+import { TokenSizeField } from '../npc/TokenSizeField'
 import {
   Button, ConfirmDialog, Icon, IconButton, NavTab, RowField, RowTabs, RowTitle, SearchInput, SidebarSection, SlotGrid, Textarea, TextInput
 } from '../ui'
@@ -53,9 +54,11 @@ export function NpcTab({ session }: { session: CampaignSession }) {
   const savedNpc = chosen?.kind === 'saved' ? npcs.find((n) => n.id === chosen.id) : undefined
   const token = chosen ? npcToken(chosen.kind === 'token' ? chosen.id : (savedNpc?.token ?? '')) : undefined
 
-  const save = (name: string, description: string, image: string | undefined) => {
+  const save = (name: string, description: string, image: string | undefined, size: number) => {
     if (!token) return
-    const npc: SavedNpc = { id: savedNpc?.id ?? newId(), token: token.id, name: name.trim() || token.name, description, ...(image ? { image } : {}) }
+    const npc: SavedNpc = {
+      id: savedNpc?.id ?? newId(), token: token.id, name: name.trim() || token.name, description, ...(size > 1 ? { size } : {}), ...(image ? { image } : {})
+    }
     session.apply([{ doc: 'campaign', op: { type: 'npc.put', npc } }])
     // a new NPC shows where it went: «Сохранённые», chosen
     if (!savedNpc) {
@@ -103,6 +106,7 @@ export function NpcTab({ session }: { session: CampaignSession }) {
             name={savedNpc?.name ?? token.name}
             description={savedNpc ? savedNpc.description : rarityText(token.id)}
             image={savedNpc?.image}
+            size={savedNpc?.size ?? 1}
             onSave={save}
             onDelete={savedNpc && (() => setDeleting(savedNpc))}
           />
@@ -123,17 +127,19 @@ export function NpcTab({ session }: { session: CampaignSession }) {
 }
 
 /**
- * The panel of one NPC: the big card, «Имя», «Описание», «Сохранить» (and deleting a saved one).
+ * The panel of one NPC: the big card, «Имя», «Описание», «Размер фишки», «Сохранить» (and deleting a saved one).
  * A click on the card loads the master's own avatar (QnA, 14.11.2026); like the fields, it is
  * written by «Сохранить».
  */
-function NpcForm({ token, name: initialName, description: initialDescription, image: initialImage, onSave, onDelete }: {
+function NpcForm({ token, name: initialName, description: initialDescription, image: initialImage, size: initialSize, onSave, onDelete }: {
   token: NpcToken
   name: string
   description: string
   /** the NPC's own avatar (`media:<hash>`) */
   image?: string
-  onSave: (name: string, description: string, image: string | undefined) => void
+  /** the side of its token in cells, 1–4 */
+  size: number
+  onSave: (name: string, description: string, image: string | undefined, size: number) => void
   onDelete?: () => void
 }) {
   const s = useStrings()
@@ -141,6 +147,7 @@ function NpcForm({ token, name: initialName, description: initialDescription, im
   const [name, setName] = useState(initialName)
   const [description, setDescription] = useState(initialDescription)
   const [image, setImage] = useState(initialImage)
+  const [size, setSize] = useState(initialSize)
   const [error, setError] = useState(false)
   const file = useRef<HTMLInputElement>(null)
 
@@ -159,7 +166,7 @@ function NpcForm({ token, name: initialName, description: initialDescription, im
       className={styles.form}
       onSubmit={(e) => {
         e.preventDefault()
-        onSave(name, description, image)
+        onSave(name, description, image, size)
       }}
     >
       <SidebarSection className={styles.fields}>
@@ -184,6 +191,7 @@ function NpcForm({ token, name: initialName, description: initialDescription, im
         <RowField label={t.description} layout="stacked">
           <Textarea className={styles.description} value={description} onChange={(e) => setDescription(e.target.value)} />
         </RowField>
+        <TokenSizeField value={size} onChange={setSize} />
       </SidebarSection>
       <SidebarSection className={styles.save}>
         <div className={styles.actions}>

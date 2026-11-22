@@ -1,6 +1,6 @@
 import { autoDetectRenderer, Container, Graphics, RenderTexture, Sprite, type Renderer } from 'pixi.js'
 import {
-  cellPin, cellPx, dist, distToPolyline, distToSegment, imagePin, imageToGrid, newId, nodePin, pinToImage, projectT, samePin
+  cellPx, dist, distToPolyline, distToSegment, imagePin, imageToGrid, newId, nodePin, pinToImage, projectT, samePin
 } from '../core/geometry'
 import type { MapStore } from '../core/store'
 import { rulesOf } from '../core/scene'
@@ -8,6 +8,7 @@ import type { Door, FlowColor, MapRules, MapScene, Pin, RuleOverrides, Token, Ti
 import { moveBlockers, pathBlocked } from '../core/visibility'
 import { ExploredMask } from '../core/explored'
 import { doorSeen, playerSight, playersSee, trackExplored, type ExploredTracker } from '../core/exploring'
+import { placeTaken, snapTokenCenter, tokenCenter, tokenPinAt, tokenSize } from '../core/tokens'
 import { BuildLayer, spawnRadius, strokeWalls, type SpawnState } from './BuildLayer'
 import { Camera, CELL_AT_100, type CameraBounds } from './camera'
 import { DrawLayer, drawingPaint, PENCIL } from './DrawLayer'
@@ -15,7 +16,7 @@ import { FogLayer } from './FogLayer'
 import { GridLayer, SPOT_CELLS } from './GridLayer'
 import { readTheme, type MapTheme } from './theme'
 import { TileLayer } from './TileLayer'
-import { TokenLayer } from './TokenLayer'
+import { TOKEN_COMPACT_PERCENT, TokenLayer } from './TokenLayer'
 
 export type MapRole = 'master' | 'player'
 
@@ -138,6 +139,7 @@ export class MapEngine {
   private destroyed = false
   private frame = 0
   private size = { w: 0, h: 0 }
+  private compactTokens = false
   private dpr = Math.min(window.devicePixelRatio || 1, 3)
   private touch = matchMedia('(pointer: coarse)').matches
   private pointers = new Map<number, Vec>()
@@ -193,7 +195,9 @@ export class MapEngine {
       return
     }
     this.renderer = renderer
-    this.tilesRT = RenderTexture.create({ width: this.size.w, height: this.size.h, resolution: this.dpr })
+    // dynamic: the sprite follows the texture when the view is resized (else it keeps the old size
+    // and the map looks stretched in a narrowed window)
+    this.tilesRT = RenderTexture.create({ width: this.size.w, height: this.size.h, resolution: this.dpr, dynamic: true })
     this.tilesSprite.texture = this.tilesRT
     this.grid.setTiles(this.tilesRT)
     const scene = this.opts.store.get()
@@ -265,7 +269,7 @@ export class MapEngine {
       const r = canvas.getBoundingClientRect()
       const inside = ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom
       const pointer = inside ? this.camera.toWorld(ev.clientX - r.left, ev.clientY - r.top) : null
-      this.ghost = { token, at: pointer && this.snapToken(pointer), pointer }
+      this.ghost = { token, at: pointer && this.snapToken(pointer, tokenSize(token)), pointer }
       this.requestRender()
     }
     const end = (ev: PointerEvent) => {
@@ -275,14 +279,16 @@ export class MapEngine {
       const at = ev.type === 'pointerup' ? this.ghost?.at : null
       this.ghost = null
       this.tokens.setGhost(null, null, this.opts.store.get().grid, this.theme)
-      if (at) {
-        const scene = this.opts.store.get()
-        const pin = this.tokenPin(at)
+      const scene = this.opts.store.get()
+      const size = tokenSize(token)
+      // a token takes its cells: none lands on another
+      if (at && !placeTaken(scene, at, size, token.id)) {
+        const pin = this.tokenPin(at, size)
         const on = scene.tokens.find((t) => t.id === token.id)
         // a player puts a token only where players see, and moves one only where no wall stands between
         const player = this.view.role === 'player'
         if (on) {
-          if (!player || !pathBlocked(pinToImage(on.pin, scene.grid), at, moveBlockers(scene))) {
+          if (!player || !pathBlocked(tokenCenter(on, scene.grid), at, moveBlockers(scene))) {
             this.opts.store.dispatch({ type: 'token.update', id: token.id, patch: { pin } })
           }
         } else if (!player || playersSee(scene, at, this.explored, this.view.campaignRules)) {
@@ -367,9 +373,15 @@ export class MapEngine {
     this.camera.clamp(this.bounds())
 
     if (this.dirty.has('build')) this.build.draw(scene, this.theme, { role: this.view.look ?? this.view.role, hoverDoor: this.hoverDoor, erasing: this.erasing })
+    // zoomed out, tokens become plain discs: they are drawn anew when the zoom crosses the line
+    const compact = this.camera.percent(cell) < TOKEN_COMPACT_PERCENT
+    if (compact !== this.compactTokens) {
+      this.compactTokens = compact
+      this.dirty.add('tokens')
+    }
     if (this.dirty.has('tokens')) {
       // players cannot see NPCs under the fog; the server will not even send them later
-      this.tokens.sync(scene.tokens, scene.grid, this.theme, this.selected, () => false)
+      this.tokens.sync(scene.tokens, scene.grid, this.theme, this.selected, () => false, compact)
     }
     if (this.dirty.has('draws')) this.draws.draw(scene.drawings, scene.grid, this.theme, this.view.tool === 'draw-erase' ? this.erasing : null)
     if (this.dirty.has('vision')) this.updateVision(renderer, scene)
@@ -387,12 +399,12 @@ export class MapEngine {
     const spotRadius = drag ? cell * SPOT_CELLS : Math.max(cell * SPOT_CELLS, POINTER_SPOT_PX / this.camera.scale)
     this.grid.mesh.visible = scene.grid.enabled && ((master && !sparse) || !!spot)
     this.grid.update(this.camera, this.size.w, this.size.h, this.dpr, { x: scene.grid.offsetX, y: scene.grid.offsetY }, cell, scene.image,
-      { everywhere: master && !sparse, spot, spotRadius, adaptive: master },
-      { paint: this.theme.grid, light: this.theme.gridLight, dark: this.theme.gridDark, background: this.theme.canvas })
+      { everywhere: master && !sparse, spot, spotRadius },
+      { light: this.theme.gridLight, dark: this.theme.gridDark, background: this.theme.canvas })
     this.tiles.update(this.camera, this.size.w, this.size.h, this.dpr)
     this.build.updateZoom(this.camera.scale)
     this.build.drawSpawn(this.spawnState(scene, master), cell, this.camera.scale, this.theme)
-    this.fog.style(this.rules(scene).darkness ? this.theme.fogDark : this.theme.fog, master ? MASTER_FOG : 1, !!scene.image && scene.fog.length > 0)
+    this.fog.style(this.rules(scene).darkness ? this.theme.fogDark : this.theme.fog, master ? MASTER_FOG : 1, !!scene.image && this.hasFog(scene))
     this.drawOverlay(scene)
     if (this.ghost) this.tokens.setGhost(this.ghost.token, this.ghost.at, scene.grid, this.theme)
 
@@ -424,6 +436,11 @@ export class MapEngine {
     }
   }
 
+  /** The map has fog, or the master is drawing the first stroke of it now. */
+  private hasFog(scene: MapScene) {
+    return scene.fog.length > 0 || this.gesture?.kind === 'fog'
+  }
+
   /** The pointer while a token is dragged (on the map or in from the interface): the grid spotlight. */
   private dragSpot(): Vec | null {
     const g = this.gesture
@@ -436,11 +453,12 @@ export class MapEngine {
    * kept by the core as the map changes (`playerSight`, `trackExplored`): the engine only shows them.
    */
   private updateVision(renderer: Renderer, scene: MapScene) {
-    if (!scene.image || !this.fog.ready || !scene.fog.length) return
+    if (!scene.image || !this.fog.ready || !this.hasFog(scene)) return
     const started = performance.now()
     const polys = playerSight(scene)
     if (this.explored) this.fog.setExplored(this.explored)
-    this.fog.compose(renderer, polys, this.rules(scene).dynamicFog)
+    const g = this.gesture
+    this.fog.compose(renderer, polys, this.rules(scene).dynamicFog, g?.kind === 'fog' ? { mode: g.erase ? 'erase' : 'paint', radius: g.radius, points: g.points } : null)
     this.stats.visionMs = performance.now() - started
   }
 
@@ -677,7 +695,7 @@ export class MapEngine {
         if (!g.moved && dist(s, g.down) < TAP) break
         g.moved = true
         const t = scene.tokens.find((x) => x.id === g.tokenId)
-        if (t) this.tokens.preview(t.id, this.snapToken(w), scene.grid)
+        if (t) this.tokens.preview(t.id, this.snapToken(w, tokenSize(t)), scene.grid)
         break
       }
       case 'spawn':
@@ -749,14 +767,16 @@ export class MapEngine {
       case 'token': {
         const t = scene.tokens.find((x) => x.id === g.tokenId)
         if (!t || !g.moved) break
-        const target = this.snapToken(w)
-        const from = pinToImage(t.pin, scene.grid)
-        // players cannot walk through walls, barriers or closed doors (checked along the straight path)
-        if (this.view.role === 'player' && pathBlocked(from, target, moveBlockers(scene))) {
+        const size = tokenSize(t)
+        const target = this.snapToken(w, size)
+        const from = tokenCenter(t, scene.grid)
+        // players cannot walk through walls, barriers or closed doors (checked along the straight
+        // path); nobody puts a token on another
+        if ((this.view.role === 'player' && pathBlocked(from, target, moveBlockers(scene))) || placeTaken(scene, target, size, t.id)) {
           this.tokens.preview(t.id, null, scene.grid, t)
           break
         }
-        const pin = this.tokenPin(target)
+        const pin = this.tokenPin(target, size)
         if (!samePin(pin, t.pin)) this.opts.store.dispatch({ type: 'token.update', id: t.id, patch: { pin } })
         else this.tokens.preview(t.id, null, scene.grid, t)
         break
@@ -867,15 +887,13 @@ export class MapEngine {
     return (this.view.brush * cellPx(scene.grid)) / 4
   }
 
-  /** Where a token lands: the cell center with the grid, the pointer without it. */
-  private snapToken(w: Vec): Vec {
-    const grid = this.opts.store.get().grid
-    return grid.enabled ? pinToImage(cellPin(w, grid), grid) : w
+  /** Where a token (the spawn point: size 1) lands: on whole cells with the grid, at the pointer without it. */
+  private snapToken(w: Vec, size = 1): Vec {
+    return snapTokenCenter(w, size, this.opts.store.get().grid)
   }
 
-  private tokenPin(w: Vec): Pin {
-    const grid = this.opts.store.get().grid
-    return grid.enabled ? cellPin(w, grid) : imagePin(w)
+  private tokenPin(center: Vec, size = 1): Pin {
+    return tokenPinAt(center, size, this.opts.store.get().grid)
   }
 
   /** A wall end: a grid node, or free with snapping to the ends of existing walls. */
@@ -1003,11 +1021,11 @@ export class MapEngine {
 
   private hitToken(w: Vec): Token | null {
     const scene = this.opts.store.get()
-    const r = cellPx(scene.grid) / 2
+    const c = cellPx(scene.grid)
     const list = [...scene.tokens].sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'player' ? -1 : 1))
     for (const t of list) {
       if (this.view.role === 'player' && t.kind === 'npc') continue
-      if (dist(pinToImage(t.pin, scene.grid), w) <= r) return t
+      if (dist(tokenCenter(t, scene.grid), w) <= (tokenSize(t) * c) / 2) return t
     }
     return null
   }

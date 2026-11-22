@@ -148,7 +148,7 @@ export function CharacterSheet({ seat, onChange }: { seat: Seat; onChange: (seat
     </div>
   )
   return (
-    <>
+    <div className={styles.pages}>
       <section className={styles.page} id="sheet">
         <p className={styles.title}>{s.sheet.title}</p>
         <Header {...props} />
@@ -194,7 +194,7 @@ export function CharacterSheet({ seat, onChange }: { seat: Seat; onChange: (seat
           <Field {...props} name="hair" label={s.sheet.field.hair} />
         </div>
         <Section title={s.sheet.backstory}>
-          <div className={`${styles.card} ${styles.box}`}><Area {...props} name="backstory" label={s.sheet.backstory} rows={6} /></div>
+          <div className={`${styles.card} ${styles.box}`}><Area {...props} name="backstory" label={s.sheet.backstory} rows={6} square /></div>
         </Section>
         <Section title={s.sheet.allies} gap>
           <div className={styles.org}>
@@ -223,6 +223,6 @@ export function CharacterSheet({ seat, onChange }: { seat: Seat; onChange: (seat
           </div>
         </div>
       </section>
-    </>
+    </div>
   )
 }

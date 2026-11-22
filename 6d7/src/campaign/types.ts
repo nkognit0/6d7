@@ -23,6 +23,8 @@ export interface SavedNpc {
   token: string
   name: string
   description: string
+  /** the side of its token on the map in cells, 1–4 (QnA, 22.11.2026); none — 1 */
+  size?: number
   /** the master's own picture (`media:<hash>`) instead of the catalog token's (QnA, 14.11.2026) */
   image?: string
 }

@@ -8,9 +8,7 @@ export type Paint = { color: number; alpha: number }
 export interface MapTheme {
   /** empty field around and under the map */
   canvas: Paint
-  /** the players' dark grid line around a dragged token */
-  grid: Paint
-  /** the master's grid line over dark places of the map (white) and over light ones (black) */
+  /** the grid line over dark places of the map (white) and over light ones (black) */
   gridLight: Paint
   gridDark: Paint
   wall: Paint
@@ -36,6 +34,11 @@ export interface MapTheme {
   selection: Paint
   tokenFill: Paint
   tokenText: Paint
+  /** the ring of an NPC (a player's is of the player's color) */
+  tokenRing: Paint
+  /** a zoomed-out NPC: a white disc with a black ring inside the grey one */
+  tokenCompactFill: Paint
+  tokenCompactLine: Paint
   /** the master's pencil (grey, like the master's icons) */
   master: Paint
   flow: Record<FlowColor, Paint>
@@ -52,7 +55,6 @@ export function readTheme(el: Element = document.documentElement): MapTheme {
   }
   return {
     canvas: paint('--bg-secondary'),
-    grid: paint('--outline-primary'),
     gridLight: paint('--txt-button'),
     gridDark: paint('--icon-button'),
     wall: paint('--outline-danger'),
@@ -73,6 +75,9 @@ export function readTheme(el: Element = document.documentElement): MapTheme {
     selection: paint('--outline-brand'),
     tokenFill: paint('--bg-primary'),
     tokenText: paint('--txt-primary'),
+    tokenRing: paint('--outline-primary'),
+    tokenCompactFill: paint('--txt-button'),
+    tokenCompactLine: paint('--icon-button'),
     master: paint('--txt-secondary'),
     flow: Object.fromEntries(FLOW.map((f) => [f, paint(`--flow-${f}`)])) as Record<FlowColor, Paint>
   }

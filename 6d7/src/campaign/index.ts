@@ -3,6 +3,7 @@
 export * from './types'
 export { createCampaign, newPlayer, freeColor, freeName, normalizeCode, metaOf, FLOW_ORDER, DEFAULT_SETTINGS, CODE_LENGTH } from './campaign'
 export { CampaignSession } from './session'
+export { History, type HistoryStep } from './history'
 export { ArchiveError, ARCHIVE_EXT } from './archive'
 export { repo, type CodeTarget } from './local/LocalRepo'
 export { downloadArchive, downloadGame, importArchive, importGameInto, importInto } from './local/transfer'

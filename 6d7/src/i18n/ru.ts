@@ -143,6 +143,8 @@ export const ru = {
       deleteNpc: 'Удалить NPC',
       uploadAvatar: 'Загрузить свой аватар',
       avatarError: 'Не удалось прочитать картинку. Подойдут PNG, JPEG, WebP и AVIF.',
+      tokenSize: 'Размер фишки',
+      tokenSizeCells: (n: number) => `${n}×${n} ${n === 1 ? 'клетка' : 'клетки'}`,
       deleteConfirm: (name: string) => `Удалить NPC «${name}»? Те, что уже стоят на картах, останутся.`,
       noSaved: 'Сохранённых NPC пока нет. Выберите NPC в каталоге и нажмите «Сохранить».'
     },
@@ -554,7 +556,6 @@ export const ru = {
       none: 'Нет',
       background: 'Предыстория',
       bgAbilities: 'Характеристики для увеличения',
-      bgAbilitiesHint: 'Распределите на шаге «Характеристики»',
       originFeat: 'Черта происхождения',
       skills: 'Навыки',
       skill: 'Навык',

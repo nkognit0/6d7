@@ -4,7 +4,7 @@
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { ABILITIES, abilities, nameOf, skills } from '@rules/data'
 import { SKILL_FIELD } from '@rules/rules/sheet'
-import { Checkbox } from '../../ui'
+import { Checkbox, Icon } from '../../ui'
 import { useStrings } from '../../i18n'
 import { storePicture, useMediaUrl } from '../media/media'
 import type { MediaRef } from '../seat/seat'
@@ -57,7 +57,11 @@ const LINE = 28
  * lines to write on. The height is measured, not left to `field-sizing`, which not every browser
  * knows (Firefox, older Safari would cut a long text).
  */
-export function Area(props: P & { name: string; label: string; rows?: number }) {
+/**
+ * Ruled text that grows with its text. `square`: it grows only until its card is as high as it is
+ * wide (whole lines), then the text scrolls inside.
+ */
+export function Area(props: P & { name: string; label: string; rows?: number; square?: boolean }) {
   const v = str(props.c[props.name])
   const rows = props.rows ?? 2
   const ref = useRef<HTMLTextAreaElement>(null)
@@ -65,7 +69,16 @@ export function Area(props: P & { name: string; label: string; rows?: number }) 
     const el = ref.current
     if (!el) return
     el.style.height = 'auto'
-    el.style.height = `${Math.max(rows * LINE, el.scrollHeight)}px`
+    let height = Math.max(rows * LINE, el.scrollHeight)
+    const card = props.square ? el.parentElement : null
+    if (card) {
+      const css = getComputedStyle(card)
+      const room = card.clientWidth - parseFloat(css.paddingTop) - parseFloat(css.paddingBottom)
+      const most = Math.max(rows, Math.floor(room / LINE)) * LINE
+      el.style.overflowY = height > most ? 'auto' : ''
+      height = Math.min(height, most)
+    }
+    el.style.height = `${height}px`
   }
   useLayoutEffect(fit, [v, rows])
   // another width wraps the text anew
@@ -163,7 +176,7 @@ export function Picture(props: P & { name: string; label: string; className: str
       </button>
       {v && (
         <button type="button" className={styles.picClear} onClick={() => props.set({ [props.name]: '' })} aria-label={s.sheet.removePicture} title={s.sheet.removePicture}>
-          ×
+          <Icon name="close" />
         </button>
       )}
       <input ref={input} type="file" accept="image/*" hidden onChange={pick} />

@@ -86,6 +86,8 @@ export function useSeatWizards(seat: Seat, onChange: (seat: Seat) => void) {
     levelUp: () => setLevelUp(true),
     newCompanion: () => (companion ? setReplacing(true) : setCompanionWizard('new')),
     companionLevel: () => setCompanionWizard('level'),
+    /** a wizard (or its question) is open over the screen */
+    open: creating || levelUp || companionWizard != null || replacing,
     /** the open wizards: render it on the screen */
     element
   }

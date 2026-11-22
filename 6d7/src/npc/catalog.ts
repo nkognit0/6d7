@@ -106,6 +106,6 @@ export function npcCards(saved: SavedNpc[], catalog: boolean, query: string): Np
     })
     .map((n) => ({
       key: n.id, image: n.image ?? npcToken(n.token)?.url ?? '', name: n.name, note: n.description.split('\n')[0] || rarityText(n.token),
-      token: () => ({ id: newId(), kind: 'npc', name: n.name, token: n.token, saved: n.id, ...(n.image ? { image: n.image } : {}) })
+      token: () => ({ id: newId(), kind: 'npc', name: n.name, token: n.token, saved: n.id, ...(n.size && n.size > 1 ? { size: n.size } : {}), ...(n.image ? { image: n.image } : {}) })
     }))
 }

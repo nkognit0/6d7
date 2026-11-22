@@ -16,6 +16,7 @@ import { characterOf, withCharacter, type Seat } from '../seat/seat'
 import { CharacterSheet } from '../sheet/CharacterSheet'
 import { CompanionSheet } from '../sheet/CompanionSheet'
 import { ShortRestDialog } from './ShortRest'
+import { useSeatHistory } from './useSeatHistory'
 import type { useSeatWizards } from './useSeatWizards'
 import styles from './Player.module.css'
 
@@ -151,12 +152,14 @@ export function SeatWindow({ page, seat, onChange, wizards, onClose }: {
   onClose: () => void
 }) {
   const s = useStrings()
+  // edits of this window are undone while it is open; a wizard over it has its own steps
+  const change = useSeatHistory(seat, onChange, page, !wizards.open)
   const [message, setMessage] = useState<string | null>(null)
   const narrow = useNarrow()
   const levelUp = (
     <Button variant="primary" disabled={!wizards.canLevelUp} onClick={wizards.levelUp}>{s.sheet.levelUp(Math.min(MAX_LEVEL, (wizards.level ?? 0) + 1))}</Button>
   )
-  const rest = <RestButton seat={seat} onChange={onChange} onMessage={setMessage} />
+  const rest = <RestButton seat={seat} onChange={change} onMessage={setMessage} />
   const companionItems: MoreItem[] = [
     { label: s.companion.create, run: wizards.newCompanion },
     ...(wizards.companion ? [{ label: s.companion.levelUpCompanion, run: wizards.companionLevel }] : [])
@@ -183,19 +186,19 @@ export function SeatWindow({ page, seat, onChange, wizards, onClose }: {
       <div className={styles.layer}>
         <TopPanel className={styles.top} left={left} right={(
           <>
-            {sheet && !narrow && <SheetFiles seat={seat} onChange={onChange} onMessage={setMessage} />}
-            {sheet && narrow && <MoreMenu items={page === 'companion' ? companionItems : []} files seat={seat} onChange={onChange} onMessage={setMessage} />}
+            {sheet && !narrow && <SheetFiles seat={seat} onChange={change} onMessage={setMessage} />}
+            {sheet && narrow && <MoreMenu items={page === 'companion' ? companionItems : []} files seat={seat} onChange={change} onMessage={setMessage} />}
             {narrow && <IconButton label={s.common.close} icon={<Icon name="close" />} onClick={onClose} />}
           </>
         )} />
         {message && <div className={styles.message} onClick={() => setMessage(null)}>{message}</div>}
         {sheet ? (
           <div className={styles.scroll} onClick={outside}>
-            {page === 'sheet' ? <CharacterSheet seat={seat} onChange={onChange} /> : <CompanionSheet seat={seat} onChange={onChange} />}
+            {page === 'sheet' ? <CharacterSheet seat={seat} onChange={change} /> : <CompanionSheet seat={seat} onChange={change} />}
           </div>
         ) : (
           <div className={styles.window} onClick={outside}>
-            {page === 'items' ? <ItemsWindow seat={seat} onChange={onChange} /> : <SpellsWindow seat={seat} onChange={onChange} />}
+            {page === 'items' ? <ItemsWindow seat={seat} onChange={change} /> : <SpellsWindow seat={seat} onChange={change} />}
           </div>
         )}
       </div>

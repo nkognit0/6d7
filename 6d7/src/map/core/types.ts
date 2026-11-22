@@ -83,6 +83,8 @@ export interface Token {
   saved?: string
   /** vision in feet */
   darkvision?: number
+  /** NPC: the side in cells, 1–4 (QnA, 22.11.2026); none — 1. A player token is one cell. */
+  size?: number
   /** radius of an equipped light in feet */
   light?: number
 }

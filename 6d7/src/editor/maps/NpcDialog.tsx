@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { mapKey, type CampaignSession } from '../../campaign'
 import { useStrings } from '../../i18n'
-import { newId, type Token } from '../../map'
+import { newId, tokenSize, type Token } from '../../map'
+import { TokenSizeField } from '../../npc/TokenSizeField'
 import { Button, Modal, RowField, Textarea, TextInput } from '../../ui'
 import { rarityText } from '../../npc/catalog'
 import styles from './Maps.module.css'
@@ -10,9 +11,10 @@ import styles from './Maps.module.css'
 const GAP = 16
 
 /**
- * 6d7 / editor / maps (40:2994): the window of an NPC on the map, next to it — its name and
- * description. «Сохранить» makes it a unique NPC of the campaign («Сохранённые» of the NPC
- * catalog). «Убрать с карты» is not in the mockup: the NPC leaves the map (Delete does the same).
+ * 6d7 / editor / maps (40:2994): the window of an NPC on the map, next to it — its name,
+ * description and the size of its token. «Сохранить» makes it a unique NPC of the campaign
+ * («Сохранённые» of the NPC catalog). «Убрать с карты» is not in the mockup: the NPC leaves the
+ * map (Delete does the same).
  */
 export function NpcDialog({ session, mapId, token, at, onClose }: {
   session: CampaignSession
@@ -27,6 +29,7 @@ export function NpcDialog({ session, mapId, token, at, onClose }: {
   const saved = token.saved ? session.campaign.npcs.find((n) => n.id === token.saved) : undefined
   const [name, setName] = useState(saved?.name ?? token.name)
   const [description, setDescription] = useState(saved?.description ?? (token.token ? rarityText(token.token) : ''))
+  const [size, setSize] = useState(tokenSize(token))
   const ref = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
 
@@ -52,8 +55,8 @@ export function NpcDialog({ session, mapId, token, at, onClose }: {
     // the NPC's own avatar stays: the window on the map does not change it (it is changed on the «NPC» tab)
     const image = saved ? saved.image : token.image?.startsWith('media:') ? token.image : undefined
     session.apply([
-      { doc: 'campaign', op: { type: 'npc.put', npc: { id, token: token.token ?? '', name: clean, description, ...(image ? { image } : {}) } } },
-      { doc: mapKey(mapId), op: { type: 'token.update', id: token.id, patch: { name: clean, saved: id } } }
+      { doc: 'campaign', op: { type: 'npc.put', npc: { id, token: token.token ?? '', name: clean, description, ...(size > 1 ? { size } : {}), ...(image ? { image } : {}) } } },
+      { doc: mapKey(mapId), op: { type: 'token.update', id: token.id, patch: { name: clean, saved: id, size: size > 1 ? size : undefined } } }
     ])
     onClose()
   }
@@ -79,6 +82,7 @@ export function NpcDialog({ session, mapId, token, at, onClose }: {
           <RowField label={t.npcDescription} layout="stacked">
             <Textarea value={description} rows={5} onChange={(e) => setDescription(e.target.value)} />
           </RowField>
+          <TokenSizeField value={size} onChange={setSize} />
           <Button type="submit" stretch>{s.common.save}</Button>
           <Button variant="primary" stretch onClick={remove}>{t.removeFromMap}</Button>
         </form>

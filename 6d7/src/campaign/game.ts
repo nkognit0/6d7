@@ -5,6 +5,7 @@
 // merge the same way.
 import { ExploredMask, type ExploredData } from '../map/core/explored'
 import { cellPx, pinToImage } from '../map/core/geometry'
+import { placeTaken } from '../map/core/tokens'
 import { moveBlockers, pathBlocked } from '../map/core/visibility'
 import type { MapOp, MapRules, MapScene, Pin, RuleOverrides, Token } from '../map/core/types'
 
@@ -117,9 +118,10 @@ export function placePlayers(scene: MapScene, heroes: Omit<Token, 'pin'>[]): Map
   const cell = cellPx(scene.grid)
   const center = pinToImage(spawn, scene.grid)
   const blockers = moveBlockers(scene)
-  const taken = scene.tokens.filter((t) => t.kind === 'npc').map((t) => pinToImage(t.pin, scene.grid))
+  // the NPCs stay; a hero takes a cell none of them stands on (an NPC may take up to 4×4)
+  const npcs = { ...scene, tokens: scene.tokens.filter((t) => t.kind === 'npc') }
   const inside = (p: { x: number; y: number }) => !scene.image || (p.x >= 0 && p.y >= 0 && p.x <= scene.image.width && p.y <= scene.image.height)
-  const free = (p: { x: number; y: number }) => inside(p) && !taken.some((q) => Math.hypot(q.x - p.x, q.y - p.y) < cell / 2) && !pathBlocked(center, p, blockers)
+  const free = (p: { x: number; y: number }) => inside(p) && !placeTaken(npcs, p, 1) && !pathBlocked(center, p, blockers)
   // rings of cells around the spawn point, the nearest first
   const spots: { pin: Pin; d: number }[] = []
   for (let r = 0; r <= 4; r++) {

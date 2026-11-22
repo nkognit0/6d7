@@ -7,8 +7,9 @@ import { useEffect, useRef } from 'react'
 export type ShortcutScope = 'editor' | 'game'
 
 export const COMMANDS = {
-  undo: { keys: 'Mod+Z', scopes: ['editor'] },
-  redo: { keys: 'Mod+Shift+Z', scopes: ['editor'] },
+  /** in the game — the edits of the open sheet or inventory, while it is open */
+  undo: { keys: 'Mod+Z', scopes: ['editor', 'game'] },
+  redo: { keys: 'Mod+Shift+Z', scopes: ['editor', 'game'] },
   /** removes what is chosen (an NPC on the map; a token in the game) */
   remove: { keys: 'Delete', scopes: ['editor', 'game'] }
 } satisfies Record<string, { keys: string; scopes: ShortcutScope[] }>
@@ -57,14 +58,21 @@ function typing(target: EventTarget | null): boolean {
 }
 
 type Handlers = Partial<Record<CommandId, () => void>>
-const active: { scope: ShortcutScope; handlers: { current: Handlers } }[] = []
+interface Options {
+  /** the keys work in text fields too (a sheet: its fields are undone by the sheet, not one by one) */
+  inText?: boolean
+  /** off for a while (a wizard over the sheet) */
+  enabled?: boolean
+}
+const active: { scope: ShortcutScope; handlers: { current: Handlers }; options: { current: Options } }[] = []
 
 function onKey(e: KeyboardEvent) {
   if (e.repeat && !e.ctrlKey && !e.metaKey) return
-  if (typing(e.target)) return
+  const inText = typing(e.target)
   // the screen mounted last (a window over the editor) gets the keys first
   for (let i = active.length - 1; i >= 0; i--) {
-    const { scope, handlers } = active[i]
+    const { scope, handlers, options } = active[i]
+    if (options.current.enabled === false || (inText && !options.current.inText)) continue
     for (const [id, cmd] of Object.entries(COMMANDS) as [CommandId, (typeof COMMANDS)[CommandId]][]) {
       const run = handlers.current[id]
       if (!run || !(cmd.scopes as ShortcutScope[]).includes(scope) || !pressed(e, parse(cmd.keys))) continue
@@ -76,11 +84,13 @@ function onKey(e: KeyboardEvent) {
 }
 
 /** Handles commands while the component is on screen. */
-export function useShortcuts(scope: ShortcutScope, handlers: Handlers) {
+export function useShortcuts(scope: ShortcutScope, handlers: Handlers, options: Options = {}) {
   const ref = useRef(handlers)
   ref.current = handlers
+  const opts = useRef(options)
+  opts.current = options
   useEffect(() => {
-    const entry = { scope, handlers: ref }
+    const entry = { scope, handlers: ref, options: opts }
     if (!active.length) addEventListener('keydown', onKey)
     active.push(entry)
     return () => {

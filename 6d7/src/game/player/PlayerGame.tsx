@@ -18,6 +18,7 @@ import { useStubMap } from './stubMap'
 import { useGuest } from './useGuest'
 import { useNarrow } from '../inventory/narrow'
 import { MoreMenu, SheetFiles } from './SeatWindow'
+import { useSeatHistory } from './useSeatHistory'
 import { useSeatWizards } from './useSeatWizards'
 import styles from './Player.module.css'
 
@@ -100,6 +101,8 @@ function SheetStart({ seat, onChange }: { seat: Seat; onChange: (seat: Seat) => 
   const [clearing, setClearing] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const narrow = useNarrow()
+  // edits of the sheet are undone while this screen is open
+  const change = useSeatHistory(seat, onChange, 'start', !wizards.open && !clearing)
   const ready = wizards.level != null
   const levelUp = s.sheet.levelUp(Math.min(MAX_LEVEL, (wizards.level ?? 0) + 1))
   return (
@@ -114,22 +117,22 @@ function SheetStart({ seat, onChange }: { seat: Seat; onChange: (seat: Seat) => 
                 <Button variant="secondary" onClick={() => setClearing(true)}>{s.sheet.clear}</Button>
               </>
             )}
-            <Button disabled={!ready} title={ready ? undefined : s.player.startHint} onClick={() => onChange({ ...seat, started: true })}>{s.sheet.startGame}</Button>
+            <Button disabled={!ready} title={ready ? undefined : s.player.startHint} onClick={() => change({ ...seat, started: true })}>{s.sheet.startGame}</Button>
           </>
         }
         right={narrow
-          ? <MoreMenu items={[{ label: levelUp, run: wizards.levelUp, disabled: !wizards.canLevelUp }, { label: s.sheet.clear, run: () => setClearing(true) }]} files seat={seat} onChange={onChange} onMessage={setMessage} />
-          : <SheetFiles seat={seat} onChange={onChange} onMessage={setMessage} />}
+          ? <MoreMenu items={[{ label: levelUp, run: wizards.levelUp, disabled: !wizards.canLevelUp }, { label: s.sheet.clear, run: () => setClearing(true) }]} files seat={seat} onChange={change} onMessage={setMessage} />
+          : <SheetFiles seat={seat} onChange={change} onMessage={setMessage} />}
       />
       {message && <div className={styles.message} onClick={() => setMessage(null)}>{message}</div>}
       <div className={styles.scroll}>
-        <CharacterSheet seat={seat} onChange={onChange} />
+        <CharacterSheet seat={seat} onChange={change} />
       </div>
       {clearing && (
         <ConfirmDialog text={s.sheet.clearConfirm} confirm={s.sheet.clear} cancel={s.common.cancel}
           onConfirm={() => {
             setClearing(false)
-            onChange(emptySeat())
+            change(emptySeat())
           }}
           onCancel={() => setClearing(false)} />
       )}

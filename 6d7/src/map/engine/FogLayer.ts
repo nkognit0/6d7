@@ -8,7 +8,9 @@ import type { Paint } from './theme'
  * - `fog`: the master's brush strokes;
  * - `explored`: everything players have seen (static fog only) — `ExploredMask` of the core,
  *   uploaded as a small texture;
- * - the players' current view is cut out of both, then a blur gives soft edges.
+ * - the stroke the master is drawing now lies over what players have seen: it closes that only
+ *   when the stroke is done (the operation), but it shows at once;
+ * - the players' current view is cut out of all, then a blur gives soft edges.
  * The result is redrawn only when something changes; moving the camera costs nothing.
  * The masks are one cell bigger than the picture on every side, so the blur never thins the
  * fog at the map edge.
@@ -31,6 +33,7 @@ export class FogLayer {
   private fogSprite = new Sprite()
   private exploredSprite = new Sprite()
   private polys = new Graphics()
+  private live = new Graphics()
   private blurRoot = new Container()
   private blurSprite = new Sprite()
   private blur = new BlurFilter({ strength: 8, quality: 3 })
@@ -39,7 +42,7 @@ export class FogLayer {
     this.brushRoot.addChild(this.brush)
     this.exploredSprite.blendMode = 'erase'
     this.polys.blendMode = 'erase'
-    this.composeRoot.addChild(this.fogSprite, this.exploredSprite, this.polys)
+    this.composeRoot.addChild(this.fogSprite, this.exploredSprite, this.live, this.polys)
     this.blurSprite.filters = [this.blur]
     this.blurRoot.addChild(this.blurSprite)
     this.sprite.visible = false
@@ -76,7 +79,7 @@ export class FogLayer {
     this.sprite.position.set(this.rect.x, this.rect.y)
     this.sprite.scale.set(1 / this.s)
     // world → mask pixels
-    for (const g of [this.brush, this.polys]) {
+    for (const g of [this.brush, this.live, this.polys]) {
       g.scale.set(this.s)
       g.position.set(-this.rect.x * this.s, -this.rect.y * this.s)
     }
@@ -127,6 +130,17 @@ export class FogLayer {
     this.drawn = strokes.slice()
   }
 
+  // the shape of a stroke in white: a dot or a line of round ends
+  private shape(g: Graphics, s: Exclude<FogShape, { mode: 'cover' }>) {
+    const p = s.points
+    if (p.length === 2) g.circle(p[0], p[1], s.radius).fill(0xffffff)
+    else {
+      g.moveTo(p[0], p[1])
+      for (let i = 2; i < p.length; i += 2) g.lineTo(p[i], p[i + 1])
+      g.stroke({ width: s.radius * 2, color: 0xffffff, cap: 'round', join: 'round' })
+    }
+  }
+
   /** One stroke into the brush mask. */
   stroke(renderer: Renderer, s: FogShape) {
     if (!this.fogRT) return
@@ -138,20 +152,19 @@ export class FogLayer {
       renderer.render({ container: this.brushRoot, target: this.fogRT, clear: false })
       return
     }
-    const p = s.points
-    if (p.length === 2) g.circle(p[0], p[1], s.radius).fill(0xffffff)
-    else {
-      g.moveTo(p[0], p[1])
-      for (let i = 2; i < p.length; i += 2) g.lineTo(p[i], p[i + 1])
-      g.stroke({ width: s.radius * 2, color: 0xffffff, cap: 'round', join: 'round' })
-    }
+    this.shape(g, s)
     g.blendMode = s.mode === 'erase' ? 'erase' : 'normal'
     renderer.render({ container: this.brushRoot, target: this.fogRT, clear: false })
   }
 
-  /** What players see now is cut out of the fog; with static fog — what they have seen too. */
-  compose(renderer: Renderer, visible: number[][], dynamic: boolean) {
+  /**
+   * What players see now is cut out of the fog; with static fog — what they have seen too, except
+   * under `live`: the fog stroke being drawn now.
+   */
+  compose(renderer: Renderer, visible: number[][], dynamic: boolean, live: FogShape | null) {
     if (!this.composeRT || !this.softRT) return
+    this.live.clear()
+    if (live && live.mode === 'paint') this.shape(this.live, live)
     this.polys.clear()
     for (const poly of visible) this.polys.poly(poly).fill(0xffffff)
     this.exploredSprite.visible = !dynamic && !!this.exploredSource

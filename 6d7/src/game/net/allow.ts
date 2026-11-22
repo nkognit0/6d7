@@ -4,7 +4,7 @@
 import type { CampaignSettings } from '../../campaign'
 import type { ExploredMask } from '../../map/core/explored'
 import { doorSeen, playersSee } from '../../map/core/exploring'
-import { pinToImage } from '../../map/core/geometry'
+import { placeTaken, tokenCenter } from '../../map/core/tokens'
 import { rulesOf } from '../../map/core/scene'
 import type { FlowColor, MapOp, MapScene, Token } from '../../map/core/types'
 import { moveBlockers, pathBlocked } from '../../map/core/visibility'
@@ -38,13 +38,15 @@ export function allowPlayerOp(scene: MapScene, campaign: CampaignSettings, playe
       const t = op.token
       if (!rules.freeMove || !own(t) || scene.tokens.some((x) => x.id === t.id)) return false
       const want = ctx.expected ? ctx.expected(t) : t
-      return !!want && sameToken(t, want) && playersSee(scene, pinToImage(t.pin, scene.grid), ctx.explored, campaign)
+      const at = tokenCenter(t, scene.grid)
+      return !!want && sameToken(t, want) && playersSee(scene, at, ctx.explored, campaign) && !placeTaken(scene, at, 1)
     }
     case 'token.update': {
       const t = scene.tokens.find((x) => x.id === op.id)
       const pin = op.patch.pin
       if (!t || !own(t) || !rules.freeMove || !pin || Object.keys(op.patch).some((k) => k !== 'pin')) return false
-      return !pathBlocked(pinToImage(t.pin, scene.grid), pinToImage(pin, scene.grid), moveBlockers(scene))
+      const to = tokenCenter({ ...t, pin }, scene.grid)
+      return !pathBlocked(tokenCenter(t, scene.grid), to, moveBlockers(scene)) && !placeTaken(scene, to, 1, t.id)
     }
     // a closed door players see; players only open doors
     case 'door.open': {
